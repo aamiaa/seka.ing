@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark" class="h-100">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=0.7">
+	<title>seka.ing - Event Tracker</title>
+
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
+	<div class="my-3">
+		<img src="assets/event_warmth_2023.png" width="300">
+	</div>
+
+	<table id="eventTable" class="table table-hover table-warning" style="max-width: 40rem;">
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">Name</th>
+				<th scope="col" class="table-warning">Points</th>
+				<th scope="col" class="table-warning">Past hour</th>
+				<th scope="col" class="table-warning">Per game</th>
+			</tr>
+		</thead>
+		<tbody id="eventTableBody" class="table-group-divider">
+		</tbody>
+	</table>
+	
+	<p id="errorMsg" style="display: none;">Failed to fetch updated leaderboard. Try again later.</p>
+
+	<script>
+		function formatNumber(num) {
+			return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+		}
+
+		async function getLeaderboard() {
+			try {
+				const res = await fetch("/api/leaderboard")
+				if(!res.ok) {
+					console.error("getLeaderboard() failed (1):", res.status)
+					return null
+				}
+
+				const json = await res.json()
+				return json
+			} catch(ex) {
+				console.error("getLeaderboard() failed (2):", ex)
+				return null
+			}
+		}
+
+		async function updateLeaderboard() {
+			const table = document.getElementById("eventTable")
+			const errorMsg = document.getElementById("errorMsg")
+
+			const lbData = await getLeaderboard()
+			if(!lbData) {
+				table.style.display = "none"
+				errorMsg.style.removeProperty("display")
+				return
+			} else {
+				table.style.removeProperty("display")
+				errorMsg.style.display = "none"
+			}
+
+			const tableBody = document.getElementById("eventTableBody")
+			while(tableBody.firstChild) {
+				tableBody.removeChild(tableBody.lastChild)
+			}
+
+			for(const slot of lbData) {
+				const tableRow = document.createElement("tr")
+
+				const rankCell = document.createElement("td")
+				const nameCell = document.createElement("td")
+				const nameCellDiv = document.createElement("div")
+				const pointsCell = document.createElement("td")
+				const deltaCell = document.createElement("td")
+				const avgCell = document.createElement("td")
+
+				rankCell.setAttribute("scope", "row")
+				rankCell.innerText = slot.rank
+
+				nameCellDiv.setAttribute("class", "d-flex align-items-center gap-1")
+				if(slot.team != null) {
+					const teamImg = document.createElement("img")
+					teamImg.setAttribute("src", `/assets/team_${slot.team}.png`)
+					teamImg.setAttribute("width", "20")
+					teamImg.setAttribute("height", "20")
+
+					nameCellDiv.appendChild(teamImg)
+				}
+				const nameLabel = document.createElement("span")
+				nameLabel.innerText = slot.name
+				nameCellDiv.appendChild(nameLabel)
+				nameCell.appendChild(nameCellDiv)
+
+				pointsCell.innerText = formatNumber(slot.score)
+				deltaCell.innerText = !!slot.delta ? "+" + formatNumber(slot.delta) : "-"
+				avgCell.innerText = !!slot.average ? "+" + formatNumber(Math.floor(slot.average)) : "-"
+
+				if([3, 10, 50].includes(slot.rank - 1)) {
+					tableRow.setAttribute("class", "table-group-divider")
+				}
+
+				rankCell.setAttribute("class", "fw-bold text-center")
+				rankCell.style.color = "#00ccbb"
+				pointsCell.style.color = "#ff55ab"
+
+				tableRow.appendChild(rankCell)
+				tableRow.appendChild(nameCell)
+				tableRow.appendChild(pointsCell)
+				tableRow.appendChild(deltaCell)
+				tableRow.appendChild(avgCell)
+
+				tableBody.appendChild(tableRow)
+			}
+		}
+
+		updateLeaderboard()
+		setInterval(updateLeaderboard, 30 * 1000)
+	</script>
+</body>
+</html>
