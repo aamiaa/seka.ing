@@ -5,7 +5,7 @@ export default interface RankingSnapshot {
 	chapterId?: number,
 	rankings: PlayerRanking[],
 	isEventAggregate?: boolean,
-	userWorldBloomChapterRankings: any,
+	userWorldBloomChapterRankings: {gameCharacterId: number, isWorldBloomChapterAggregate: boolean, rankings: PlayerRanking[]}[],
 
 	createdAt: Date
 }

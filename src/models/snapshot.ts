@@ -51,7 +51,11 @@ export const RankingSnapshotSchema = new mongoose.Schema<IRankingSnapshotModel, 
 	chapterId: {type: Number},
 	rankings: [PlayerRankingSchema],
 	isEventAggregate: {type: Boolean},
-	userWorldBloomChapterRankings: {},
+	userWorldBloomChapterRankings: {
+		gameCharacterId: {type: Number},
+		isWorldBloomChapterAggregate: {type: Boolean},
+		rankings: [PlayerRankingSchema]
+	},
 	createdAt: {type: Date, required: true}
 })
 
