@@ -45,9 +45,6 @@ export default class EventTracker {
 		snapshot.rankings.forEach(user => user.userId = user.userId.toString())
 		snapshot.eventId = currentEvent.id
 		snapshot.createdAt = now
-		if(currentChapter) {
-			snapshot.chapterId = currentChapter.id
-		}
 		const snapshotDoc = new RankingSnapshotModel(snapshot)
 		if(now < new Date(currentEvent.rankingAnnounceAt.getTime() + 3 * 60 * 1000)) {
 			await snapshotDoc.save()
@@ -80,7 +77,7 @@ export default class EventTracker {
 			const average = (user.score - earliest)/count
 			return {
 				name: user.name,
-				team: user.userCheerfulCarnival.cheerfulCarnivalTeamId,
+				team: user.userCheerfulCarnival?.cheerfulCarnivalTeamId,
 				score: user.score,
 				rank: user.rank,
 				hash,
