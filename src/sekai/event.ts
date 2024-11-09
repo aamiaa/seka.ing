@@ -3,6 +3,7 @@ import HttpsProxyAgent from "https-proxy-agent"
 import crypto from "crypto"
 import { RankingSnapshotModel } from "../models/snapshot"
 import SekaiMasterDB from "../providers/sekai-master-db"
+import { SekaiEventType } from "../interface/event"
 
 export default class EventTracker {
 	private static client: SekaiApiClient
@@ -29,6 +30,7 @@ export default class EventTracker {
 
 		const now = new Date()
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
+		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
 		if(!currentEvent) {
 			this.leaderboard = {
 				event: {},
@@ -42,6 +44,9 @@ export default class EventTracker {
 		snapshot.rankings.forEach(user => user.userId = user.userId.toString())
 		snapshot.eventId = currentEvent.id
 		snapshot.createdAt = now
+		if(currentChapter) {
+			snapshot.chapterId = currentChapter.id
+		}
 		const snapshotDoc = await RankingSnapshotModel.create(snapshot)
 
 		const pastHour = new Date(now.getTime() - 3600 * 1000)
@@ -87,6 +92,9 @@ export default class EventTracker {
 				name_key: currentEvent.assetbundleName
 			},
 			rankings: currentLb
+		}
+		if(currentEvent.eventType === SekaiEventType.WORLD_BLOOM && currentChapter != null) {
+			this.leaderboard.event.chapter = SekaiMasterDB.getGameCharacter(currentChapter.gameCharacterId).givenName
 		}
 
 		console.log("[EventTracker] Updated!")

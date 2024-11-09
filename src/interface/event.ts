@@ -17,5 +17,16 @@ export interface SekaiEvent {
 export enum SekaiEventType {
 	MARATHON = "marathon",
 	CHEERFUL_CARNIVAL = "cheerful_carnival",
-	WORLD_LINK = "world_bloom"
+	WORLD_BLOOM = "world_bloom"
+}
+
+export interface SekaiWorldBloom {
+	id: number,
+	eventId: number,
+	gameCharacterId: number,
+	chapterNo: number,
+	chapterStartAt: Date,
+	aggregateAt: Date,
+	chapterEndAt: Date,
+	isSupplemental: boolean
 }
