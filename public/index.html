@@ -64,7 +64,7 @@
 			const eventData = data.event
 			document.getElementById("eventLogo").setAttribute("src", `assets/${eventData.name_key}.png`)
 			if(eventData.chapter_character) {
-				document.getElementById("eventChapterCharacter").setAttribute("src", `assets/character_${chapter_character}.png`)
+				document.getElementById("eventChapterCharacter").setAttribute("src", `assets/character_${eventData.chapter_character}.png`)
 			}
 			if(eventData.ends_at && !timerStarted) {
 				timerStarted = true
