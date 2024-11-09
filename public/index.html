@@ -11,6 +11,7 @@
 	<div class="my-3">
 		<img id="eventLogo" width="300">
 	</div>
+	<h4 id="eventChapter"></h4>
 
 	<table id="eventTable" class="table table-hover table-warning" style="max-width: 40rem;">
 		<thead>
@@ -57,6 +58,9 @@
 			
 			const eventData = data.event
 			document.getElementById("eventLogo").setAttribute("src", `assets/${eventData.name_key}.png`)
+			if(eventData.chapter) {
+				document.getElementById("eventChapter").innerText = eventData.chapter + " chapter"
+			}
 
 			const lbData = data.rankings
 			if(!lbData) {
