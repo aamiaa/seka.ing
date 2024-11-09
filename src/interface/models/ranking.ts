@@ -37,7 +37,7 @@ export interface PlayerProfileHonor {
 	profileHonorType: string,
 	honorId: number,
 	honorLevel: number,
-	bondsHonorViewType: string,
+	bondsHonorViewType?: string,
 	bondsHonorWorldId?: number
 }
 

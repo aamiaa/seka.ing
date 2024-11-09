@@ -32,7 +32,7 @@ export const PlayerRankingSchema = new mongoose.Schema<PlayerRanking>({
 		profileHonorType: {type: String, required: true},
 		honorId: {type: Number, required: true},
 		honorLevel: {type: Number, required: true},
-		bondsHonorViewType: {type: String, required: true},
+		bondsHonorViewType: {type: String},
 		bondsHonorWorldId: {type: Number}
 	}],
 	userCheerfulCarnival: {
