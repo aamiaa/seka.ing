@@ -126,12 +126,14 @@ export default class EventTracker {
 		this.leaderboard = {
 			event: {
 				name: currentEvent.name,
-				name_key: currentEvent.assetbundleName
+				name_key: currentEvent.assetbundleName,
+				ends_at: currentEvent.aggregateAt
 			},
 			rankings: currentLb
 		}
 		if(currentEvent.eventType === SekaiEventType.WORLD_BLOOM && currentChapter != null) {
 			this.leaderboard.event.chapter = SekaiMasterDB.getGameCharacter(currentChapter.gameCharacterId).givenName
+			this.leaderboard.event.ends_at = currentChapter.aggregateAt
 		}
 
 		console.log("[EventTracker] Updated!")
