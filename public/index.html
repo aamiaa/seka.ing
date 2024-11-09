@@ -9,7 +9,7 @@
 </head>
 <body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
 	<div class="my-3">
-		<img src="assets/event_warmth_2023.png" width="300">
+		<img id="eventLogo" width="300">
 	</div>
 
 	<table id="eventTable" class="table table-hover table-warning" style="max-width: 40rem;">
@@ -53,7 +53,12 @@
 			const table = document.getElementById("eventTable")
 			const errorMsg = document.getElementById("errorMsg")
 
-			const lbData = await getLeaderboard()
+			const data = await getLeaderboard()
+			
+			const eventData = data.event
+			document.getElementById("eventLogo").setAttribute("src", `assets/${eventData.name_key}.png`)
+
+			const lbData = data.rankings
 			if(!lbData) {
 				table.style.display = "none"
 				errorMsg.style.removeProperty("display")
