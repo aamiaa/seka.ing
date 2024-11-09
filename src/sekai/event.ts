@@ -132,7 +132,7 @@ export default class EventTracker {
 			rankings: currentLb
 		}
 		if(currentEvent.eventType === SekaiEventType.WORLD_BLOOM && currentChapter != null) {
-			this.leaderboard.event.chapter = SekaiMasterDB.getGameCharacter(currentChapter.gameCharacterId).givenName
+			this.leaderboard.event.chapter_character = currentChapter.gameCharacterId
 			this.leaderboard.event.ends_at = currentChapter.aggregateAt
 		}
 
