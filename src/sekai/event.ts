@@ -30,7 +30,6 @@ export default class EventTracker {
 
 		const now = new Date()
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
-		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
 		if(!currentEvent) {
 			this.leaderboard = {
 				event: {},
@@ -39,6 +38,8 @@ export default class EventTracker {
 			console.log("[EventTracker] No current event")
 			return
 		}
+
+		const currentChapter = currentEvent.eventType === SekaiEventType.WORLD_BLOOM && SekaiMasterDB.getCurrentWorldBloomChapter()
 
 		const snapshot = await this.client.getRankingTop100(currentEvent.id)
 		snapshot.rankings.forEach(user => user.userId = user.userId.toString())
