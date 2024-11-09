@@ -96,6 +96,7 @@
 				tableBody.removeChild(tableBody.lastChild)
 			}
 
+			let scrollTo
 			for(const slot of lbData) {
 				const tableRow = document.createElement("tr")
 
@@ -130,6 +131,10 @@
 				if([3, 10, 50].includes(slot.rank - 1)) {
 					tableRow.classList.add("class", "table-group-divider")
 				}
+				if(trackHash === slot.hash) {
+					tableRow.classList.add("table-row-tracked")
+					scrollTo = tableRow
+				}
 
 				rankCell.setAttribute("class", "fw-bold text-center")
 				rankCell.style.color = "#00ccbb"
@@ -142,10 +147,6 @@
 				tableRow.appendChild(avgCell)
 
 				tableBody.appendChild(tableRow)
-				if(trackHash === slot.hash) {
-					tableRow.classList.add("table-row-tracked")
-					tableRow.scrollIntoView({behavior: "smooth", block: "center"})
-				}
 
 				tableRow.addEventListener("click", function() {
 					if(trackHash === slot.hash) {
@@ -159,6 +160,10 @@
 						this.classList.add("table-row-tracked")
 					}
 				})
+			}
+
+			if(scrollTo) {
+				scrollTo.scrollIntoView({behavior: "smooth", block: "center"})
 			}
 		}
 
