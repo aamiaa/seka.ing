@@ -23,19 +23,27 @@
 	</div>
 	<div id="eventCountdown" class="flipdown mb-3"></div>
 
-	<table id="eventTable" class="table table-hover table-warning" style="max-width: 40rem;">
-		<thead>
-			<tr>
-				<th scope="col">#</th>
-				<th scope="col">Name</th>
-				<th scope="col" class="table-warning">Points</th>
-				<th scope="col" class="table-warning">Past hour</th>
-				<th scope="col" class="table-warning">Per game</th>
-			</tr>
-		</thead>
-		<tbody id="eventTableBody" class="table-group-divider">
-		</tbody>
-	</table>
+	<div class="row w-100 justify-content-center">
+		<div class="col-auto">
+			<div class="card bg-white">
+				<div class="card-body">
+					<table id="eventTable" class="table table-hover table-light" style="--bs-table-bg: white;">
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col">Name</th>
+								<th scope="col">Points</th>
+								<th scope="col">Past hour</th>
+								<th scope="col">Per game</th>
+							</tr>
+						</thead>
+						<tbody id="eventTableBody" class="table-group-divider">
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
 	
 	<p id="errorMsg" style="display: none;">Failed to fetch updated leaderboard. Try again later.</p>
 
@@ -108,7 +116,11 @@
 				const avgCell = document.createElement("td")
 
 				rankCell.setAttribute("scope", "row")
-				rankCell.innerText = slot.rank
+				if([1,2,3].includes(slot.rank)) {
+					rankCell.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crown w-6 h-6 text-yellow-400"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"></path><path d="M5 21h14"></path></svg>`
+				} else {
+					rankCell.innerText = slot.rank
+				}
 
 				nameCellDiv.setAttribute("class", "d-flex align-items-center gap-1")
 				if(slot.team != null) {
@@ -137,7 +149,20 @@
 				}
 
 				rankCell.setAttribute("class", "fw-bold text-center")
-				rankCell.style.color = "#00ccbb"
+				switch(slot.rank) {
+					case 1:
+						rankCell.style.color = "#facc15"
+						break
+					case 2:
+						rankCell.style.color = "#9ca3af"
+						break
+					case 3:
+						rankCell.style.color = "#d97706"
+						break
+					default:
+						rankCell.style.color = "#00ccbb"
+						break
+				}
 				pointsCell.style.color = "#ff55ab"
 
 				tableRow.appendChild(rankCell)
