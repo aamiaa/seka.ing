@@ -4,6 +4,7 @@ import crypto from "crypto"
 import { RankingSnapshotModel } from "../models/snapshot"
 import SekaiMasterDB from "../providers/sekai-master-db"
 import { SekaiEventType } from "../interface/event"
+import PlayerRanking from "../interface/models/ranking"
 
 export default class EventTracker {
 	private static client: SekaiApiClient
@@ -51,7 +52,13 @@ export default class EventTracker {
 		}
 
 		const pastHour = new Date(now.getTime() - 3600 * 1000)
-		const rankingPastHour = await RankingSnapshotModel.find({createdAt: {$gte: pastHour}}).lean()
+		let rankingPastHour = await RankingSnapshotModel.find({createdAt: {$gte: pastHour}}).lean()
+		let currentRanking = snapshotDoc.toObject().rankings
+		if(currentChapter != null) {
+			currentRanking = snapshotDoc.toObject().userWorldBloomChapterRankings.find(x => x.gameCharacterId === currentChapter.gameCharacterId).rankings
+			//@ts-ignore
+			rankingPastHour = rankingPastHour.map(x => x.userWorldBloomChapterRankings.find(x => x.gameCharacterId === currentChapter.gameCharacterId))
+		}
 
 		const currentLb = snapshotDoc.toObject().rankings.map(user => {
 			const hash = crypto.createHash("sha256").update(user.userId + "_" + currentEvent.assetbundleName).digest("hex")
