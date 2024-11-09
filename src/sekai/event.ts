@@ -5,6 +5,14 @@ import { RankingSnapshotModel } from "../models/snapshot"
 import SekaiMasterDB from "../providers/sekai-master-db"
 import { SekaiEventType } from "../interface/event"
 import PlayerRanking from "../interface/models/ranking"
+import { EventProfileModel } from "../models/event_profile"
+import RankingSnapshot, { SekaiRanking } from "../interface/models/snapshot"
+
+function populateUsersMap(map: Record<string, PlayerRanking>, users: PlayerRanking[]) {
+	for(const user of users) {
+		map[user.userId] = user
+	}
+}
 
 export default class EventTracker {
 	private static client: SekaiApiClient
@@ -42,25 +50,46 @@ export default class EventTracker {
 
 		const currentChapter = currentEvent.eventType === SekaiEventType.WORLD_BLOOM && SekaiMasterDB.getCurrentWorldBloomChapter()
 
-		const snapshot = await this.client.getRankingTop100(currentEvent.id)
-		snapshot.rankings.forEach(user => user.userId = user.userId.toString())
-		snapshot.eventId = currentEvent.id
-		snapshot.createdAt = now
+		const ranking = await this.client.getRankingTop100(currentEvent.id) as SekaiRanking
+		ranking.rankings.forEach(user => user.userId = user.userId.toString())
+
+		const snapshot: RankingSnapshot = {
+			...ranking,
+			eventId: currentEvent.id,
+			createdAt: now
+		}
 		const snapshotDoc = new RankingSnapshotModel(snapshot)
 		if(now < new Date(currentEvent.rankingAnnounceAt.getTime() + 3 * 60 * 1000)) {
 			await snapshotDoc.save()
+
+			const users: Record<string, PlayerRanking> = {}
+			populateUsersMap(users, snapshot.rankings)
+			if(currentChapter) {
+				snapshot.userWorldBloomChapterRankings.forEach(x => populateUsersMap(users, x.rankings))
+			}
+
+			await EventProfileModel.bulkWrite(Object.values(users).map(user => {
+				return {
+					updateOne: {
+						filter: {userId: user.userId, eventId: currentEvent.id},
+						update: {
+							$set: user
+						},
+						upsert: true
+					}
+				}
+			}))
 		}
 
 		const pastHour = new Date(now.getTime() - 3600 * 1000)
-		let rankingPastHour = await RankingSnapshotModel.find({createdAt: {$gte: pastHour}}).lean()
+		let rankingPastHour: {rankings: PlayerRanking[], userWorldBloomChapterRankings?: RankingSnapshot["userWorldBloomChapterRankings"]}[] = await RankingSnapshotModel.find({createdAt: {$gte: pastHour}}).lean()
 		let currentRanking = snapshotDoc.toObject().rankings
 		if(currentChapter != null) {
 			currentRanking = snapshotDoc.toObject().userWorldBloomChapterRankings.find(x => x.gameCharacterId === currentChapter.gameCharacterId).rankings
-			//@ts-ignore
 			rankingPastHour = rankingPastHour.map(x => x.userWorldBloomChapterRankings.find(x => x.gameCharacterId === currentChapter.gameCharacterId))
 		}
 
-		const currentLb = snapshotDoc.toObject().rankings.map(user => {
+		const currentLb = currentRanking.map(user => {
 			const hash = crypto.createHash("sha256").update(user.userId + "_" + currentEvent.assetbundleName).digest("hex")
 
 			let earliest = user.score
