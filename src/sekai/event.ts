@@ -47,7 +47,10 @@ export default class EventTracker {
 		if(currentChapter) {
 			snapshot.chapterId = currentChapter.id
 		}
-		const snapshotDoc = await RankingSnapshotModel.create(snapshot)
+		const snapshotDoc = new RankingSnapshotModel(snapshot)
+		if(now < new Date(currentEvent.rankingAnnounceAt.getTime() + 3 * 60 * 1000)) {
+			await snapshotDoc.save()
+		}
 
 		const pastHour = new Date(now.getTime() - 3600 * 1000)
 		const rankingPastHour = await RankingSnapshotModel.find({createdAt: {$gte: pastHour}}).lean()
