@@ -61,7 +61,7 @@
 		}
 
 		let timerStarted = false
-		let trackHash
+		let trackHash = localStorage.getItem("trackHash")
 		async function updateLeaderboard() {
 			const table = document.getElementById("eventTable")
 			const errorMsg = document.getElementById("errorMsg")
@@ -150,9 +150,11 @@
 				tableRow.addEventListener("click", function() {
 					if(trackHash === slot.hash) {
 						trackHash = null
+						localStorage.removeItem("trackHash")
 						this.classList.remove("table-row-tracked")
 					} else {
 						trackHash = slot.hash
+						localStorage.setItem("trackHash", slot.hash)
 						document.querySelector(".table-row-tracked")?.classList?.remove("table-row-tracked")
 						this.classList.add("table-row-tracked")
 					}
