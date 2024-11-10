@@ -4,6 +4,11 @@ import EventLeaderboard from "../sekai/event";
 import path from "path"
 import axios from "axios";
 import fs from "fs";
+import SekaiMasterDB from "../providers/sekai-master-db";
+import { SekaiEventType } from "../interface/event";
+import { RankingSnapshotModel } from "../models/snapshot";
+import { PipelineStage } from "mongoose";
+import { predict } from "../util/math";
 
 class ExpressServer {
 	public express: express.Application;
@@ -45,6 +50,65 @@ class ExpressServer {
 		})
 		this.express.get("/api/leaderboard", (req, res) => {
 			return res.json(EventLeaderboard.leaderboard)
+		})
+		this.express.get("/api/prediction", async (req, res) => {
+			const rank = parseInt(req.query.rank as string)
+			const checkWorldlink = req.query.worldlink
+			if(isNaN(rank) || !(rank >= 1 && rank <= 100)) {
+				return res.status(400).json({error: "Invalid rank"})
+			}
+
+			const currentEvent = SekaiMasterDB.getCurrentEvent()
+			if(!currentEvent || Date.now() > currentEvent.aggregateAt.getTime()) {
+				return res.status(400).json({error: "No event in progress"})
+			}
+
+			let endDate = currentEvent.aggregateAt
+			const pipeline: PipelineStage[] = [
+				{
+				  $match:
+					{
+					  eventId: currentEvent.id
+					}
+				},
+				{
+				  $unwind:
+					{
+					  path: "$rankings"
+					}
+				},
+				{
+				  $match:
+					{
+					  "rankings.rank": rank
+					}
+				},
+				{
+				  $project:
+					{
+					  date: "$createdAt",
+					  number: "$rankings.score",
+					  _id: 0
+					}
+				}
+			]
+
+			if(checkWorldlink === "true" && currentEvent.eventType === SekaiEventType.WORLD_BLOOM) {
+				const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
+				endDate = currentChapter.aggregateAt
+				pipeline.splice(1, 0, {
+					$project: {
+						rankings: {
+							$arrayElemAt: ["$userWorldBloomChapterRankings.rankings", currentChapter.chapterNo - 1],
+						},
+						createdAt: 1
+					}
+				})
+			}
+
+			const dataPoints = await RankingSnapshotModel.aggregate(pipeline)
+			const prediction = predict(dataPoints, endDate)
+			return res.json({prediction: Math.floor(prediction)})
 		})
 
 		this.express.all("*", (req, res) => {
