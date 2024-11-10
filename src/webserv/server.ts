@@ -9,6 +9,8 @@ import { SekaiEventType } from "../interface/event";
 import { RankingSnapshotModel } from "../models/snapshot";
 import { PipelineStage } from "mongoose";
 import { predict } from "../util/math";
+import { EventProfileModel } from "../models/event_profile";
+import crypto from "crypto"
 
 class ExpressServer {
 	public express: express.Application;
@@ -109,6 +111,76 @@ class ExpressServer {
 			const dataPoints = await RankingSnapshotModel.aggregate(pipeline)
 			const prediction = predict(dataPoints, endDate)
 			return res.json({prediction: Math.floor(prediction)})
+		})
+		this.express.get("/api/matches", async (req, res) => {
+			const hash = req.query.hash
+			const checkWorldlink = req.query.worldlink
+			if(!hash) {
+				return res.status(400).json({error: "Invalid hash"})
+			}
+
+			const currentEvent = SekaiMasterDB.getCurrentEvent()
+			if(!currentEvent || Date.now() > currentEvent.aggregateAt.getTime()) {
+				return res.status(400).json({error: "No event in progress"})
+			}
+
+			const userIds = (await EventProfileModel.find({}, {userId: 1})).map(x => x.userId)
+			const userId = userIds.find(x => 
+				hash === crypto.createHash("sha256").update(x + "_" + currentEvent.assetbundleName).digest("hex")
+			)
+			if(!userId) {
+				return res.status(400).json({error: "Unable to find user for the hash"})
+			}
+
+			const pipeline: PipelineStage[] = [
+				{
+				  $match:
+					{
+					  eventId: currentEvent.id
+					}
+				},
+				{
+				  $unwind:
+					{
+					  path: "$rankings"
+					}
+				},
+				{
+				  $match:
+					{
+					  "rankings.userId": userId
+					}
+				},
+				{
+				  $project:
+					{
+					  score: "$rankings.score"
+					}
+				},
+				{
+				  $group:
+				    {
+					  _id: "$score"
+				    }
+				},
+				{
+				  $count: "matches"
+				}
+			]
+
+			if(checkWorldlink === "true" && currentEvent.eventType === SekaiEventType.WORLD_BLOOM) {
+				const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
+				pipeline.splice(1, 0, {
+					$project: {
+						rankings: {
+							$arrayElemAt: ["$userWorldBloomChapterRankings.rankings", currentChapter.chapterNo - 1],
+						}
+					}
+				})
+			}
+
+			const result = await RankingSnapshotModel.aggregate(pipeline)
+			return res.json(result[0])
 		})
 
 		this.express.all("*", (req, res) => {
