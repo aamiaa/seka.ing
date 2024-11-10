@@ -24,7 +24,7 @@ class ExpressServer {
 		this.server = this.express.listen(6979, "127.0.0.1", () => console.log("[Express] Webserv started!"));
 
 		this.express.disable("x-powered-by")
-		this.express.use("/", express.static(path.join(__dirname, "..", "..", "public")))
+		this.express.use("/", express.static(path.join(__dirname, "..", "..", "public"), {maxAge: 14400}))
 		this.express.get("/assets/event_:name.png", async (req, res, next) => {
 			const eventName = req.params.name
 			try {
