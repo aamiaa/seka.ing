@@ -1,12 +1,11 @@
 import SekaiApiClient from "sekai-api"
 import HttpsProxyAgent from "https-proxy-agent"
-import crypto from "crypto"
 import { RankingSnapshotModel } from "../models/snapshot"
 import SekaiMasterDB from "../providers/sekai-master-db"
-import { SekaiEventType } from "../interface/event"
 import PlayerRanking from "../interface/models/ranking"
 import { EventProfileModel } from "../models/event_profile"
 import RankingSnapshot, { SekaiRanking } from "../interface/models/snapshot"
+import { sha256 } from "../util/hash"
 
 function populateUsersMap(map: Record<string, PlayerRanking>, users: PlayerRanking[]) {
 	for(const user of users) {
@@ -34,6 +33,41 @@ export default class EventTracker {
 		console.log("[EventTracker] Started!")
 	}
 
+	public static async getPastHourRanking() {
+		const now = new Date()
+		const currentEvent = SekaiMasterDB.getCurrentEvent()
+		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
+
+		const pastHour = new Date(now.getTime() - 3600 * 1000)
+		let rankingPastHour: {rankings: PlayerRanking[], userWorldBloomChapterRankings?: RankingSnapshot["userWorldBloomChapterRankings"]}[] = await RankingSnapshotModel.find({eventId: currentEvent.id, createdAt: {$gte: pastHour}}).lean()
+		if(currentChapter != null) {
+			rankingPastHour = rankingPastHour.map(x => x.userWorldBloomChapterRankings.find(x => x.gameCharacterId === currentChapter.gameCharacterId))
+		}
+
+		return rankingPastHour
+	}
+
+	private static async updateUserProfiles(snapshot: RankingSnapshot) {
+		const users: Record<string, PlayerRanking> = {}
+
+		populateUsersMap(users, snapshot.rankings)
+		if(snapshot.userWorldBloomChapterRankings?.length > 0) {
+			snapshot.userWorldBloomChapterRankings.forEach(x => populateUsersMap(users, x.rankings))
+		}
+
+		await EventProfileModel.bulkWrite(Object.values(users).map(user => {
+			return {
+				updateOne: {
+					filter: {userId: user.userId, eventId: snapshot.eventId},
+					update: {
+						$set: user
+					},
+					upsert: true
+				}
+			}
+		}))
+	}
+
 	private static async updateLeaderboard() {
 		console.log("[EventTracker] Updating leaderboard...")
 
@@ -47,9 +81,9 @@ export default class EventTracker {
 			console.log("[EventTracker] No current event")
 			return
 		}
+		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
 
-		const currentChapter = currentEvent.eventType === SekaiEventType.WORLD_BLOOM && SekaiMasterDB.getCurrentWorldBloomChapter()
-
+		// Save current leaderboard snapshot
 		const ranking = await this.client.getRankingTop100(currentEvent.id) as SekaiRanking
 		ranking.rankings.forEach(user => user.userId = user.userId.toString())
 
@@ -58,39 +92,22 @@ export default class EventTracker {
 			eventId: currentEvent.id,
 			createdAt: now
 		}
-		const snapshotDoc = new RankingSnapshotModel(snapshot)
-		if(now < new Date(currentEvent.rankingAnnounceAt.getTime() + 3 * 60 * 1000)) {
-			await snapshotDoc.save()
 
-			const users: Record<string, PlayerRanking> = {}
-			populateUsersMap(users, snapshot.rankings)
-			if(currentChapter) {
-				snapshot.userWorldBloomChapterRankings.forEach(x => populateUsersMap(users, x.rankings))
-			}
-
-			await EventProfileModel.bulkWrite(Object.values(users).map(user => {
-				return {
-					updateOne: {
-						filter: {userId: user.userId, eventId: currentEvent.id},
-						update: {
-							$set: user
-						},
-						upsert: true
-					}
-				}
-			}))
+		const eventInProgress = now < new Date(currentEvent.rankingAnnounceAt.getTime() + 3 * 60 * 1000)
+		if(eventInProgress) {
+			await RankingSnapshotModel.create(snapshot)
+			await this.updateUserProfiles(snapshot)
 		}
 
-		const pastHour = new Date(now.getTime() - 3600 * 1000)
-		let rankingPastHour: {rankings: PlayerRanking[], userWorldBloomChapterRankings?: RankingSnapshot["userWorldBloomChapterRankings"]}[] = await RankingSnapshotModel.find({createdAt: {$gte: pastHour}}).lean()
-		let currentRanking = snapshotDoc.toObject().rankings
+		// Update data sent to frontend
+		const rankingPastHour = await this.getPastHourRanking()
+		let currentRanking = ranking.rankings
 		if(currentChapter != null) {
-			currentRanking = snapshotDoc.toObject().userWorldBloomChapterRankings.find(x => x.gameCharacterId === currentChapter.gameCharacterId).rankings
-			rankingPastHour = rankingPastHour.map(x => x.userWorldBloomChapterRankings.find(x => x.gameCharacterId === currentChapter.gameCharacterId))
+			currentRanking = ranking.userWorldBloomChapterRankings.find(x => x.gameCharacterId === currentChapter.gameCharacterId).rankings
 		}
 
 		const currentLb = currentRanking.map(user => {
-			const hash = crypto.createHash("sha256").update(user.userId + "_" + currentEvent.assetbundleName).digest("hex")
+			const hash = sha256(user.userId + "_" + currentEvent.assetbundleName)
 
 			let earliest = user.score
 			for(const entry of rankingPastHour) {
@@ -131,7 +148,7 @@ export default class EventTracker {
 			},
 			rankings: currentLb
 		}
-		if(currentEvent.eventType === SekaiEventType.WORLD_BLOOM && currentChapter != null) {
+		if(currentChapter != null) {
 			this.leaderboard.event.chapter_character = currentChapter.gameCharacterId
 			this.leaderboard.event.ends_at = currentChapter.aggregateAt
 		}

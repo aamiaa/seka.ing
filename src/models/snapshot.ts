@@ -20,7 +20,7 @@ export const PlayerRankingSchema = new mongoose.Schema<PlayerRanking>({
 		teamChangeCount: {type: Number},
 		registerAt: {type: Number}
 	}
-})
+}, {_id: false})
 
 export const RankingSnapshotSchema = new mongoose.Schema<IRankingSnapshotModel, IRankingSnapshotModelStatic>({
 	eventId: {type: Number, required: true},

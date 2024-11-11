@@ -10,7 +10,7 @@ import { RankingSnapshotModel } from "../models/snapshot";
 import { PipelineStage } from "mongoose";
 import { predict } from "../util/math";
 import { EventProfileModel } from "../models/event_profile";
-import crypto from "crypto"
+import { sha256 } from "../util/hash";
 
 class ExpressServer {
 	public express: express.Application;
@@ -126,7 +126,7 @@ class ExpressServer {
 
 			const userIds = (await EventProfileModel.find({}, {userId: 1})).map(x => x.userId)
 			const userId = userIds.find(x => 
-				hash === crypto.createHash("sha256").update(x + "_" + currentEvent.assetbundleName).digest("hex")
+				hash === sha256(x + "_" + currentEvent.assetbundleName)
 			)
 			if(!userId) {
 				return res.status(400).json({error: "Unable to find user for the hash"})
