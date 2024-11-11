@@ -16,9 +16,6 @@ export default class EventController {
 	public static async getPrediction(req: Request, res: Response, next: NextFunction) {
 		const rank = parseInt(req.query.rank as string)
 		const checkWorldlink = req.query.worldlink
-		if(isNaN(rank) || !(rank >= 1 && rank <= 100)) {
-			return res.status(400).json({error: "Invalid rank"})
-		}
 
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
 		if(!currentEvent || Date.now() > currentEvent.aggregateAt.getTime()) {
@@ -76,9 +73,6 @@ export default class EventController {
 	public static async getUserMatchesCount(req: Request, res: Response, next: NextFunction) {
 		const hash = req.query.hash
 		const checkWorldlink = req.query.worldlink
-		if(!hash) {
-			return res.status(400).json({error: "Invalid hash"})
-		}
 
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
 		if(!currentEvent || Date.now() > currentEvent.aggregateAt.getTime()) {
