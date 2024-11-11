@@ -86,6 +86,9 @@ export default class EventTracker {
 		// Save current leaderboard snapshot
 		const ranking = await this.client.getRankingTop100(currentEvent.id) as SekaiRanking
 		ranking.rankings.forEach(user => user.userId = user.userId.toString())
+		if(ranking.userWorldBloomChapterRankings?.length > 0) {
+			ranking.userWorldBloomChapterRankings.forEach(x => x.rankings.forEach(user => user.userId = user.userId.toString()))
+		}
 
 		const snapshot: RankingSnapshot = {
 			...ranking,
