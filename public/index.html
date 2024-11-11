@@ -436,7 +436,7 @@
 				}
 				return
 			}
-			lastUpdatedAt = data.updated_at
+			lastUpdatedAt = data.updated_at && new Date(data.updated_at)
 			
 			toggleFailureMessage(false)
 			if(data.update_error || (lastUpdatedAt && (Date.now() - lastUpdatedAt.getTime() > 3 * 60 * 1000))) {
