@@ -16,6 +16,10 @@
 </head>
 <body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
 	<script src="/assets/flipdown.min.js"></script>
+
+	<div id="issuesBanner" style="display: none;" class="sticky-top w-100 py-3 bg-danger text-center rounded-bottom">
+		<span>We're experiencing issues. The leaderboard might not be up to date!</span>
+	</div>
 	
 	<div class="my-3">
 		<img id="eventLogo" width="300">
@@ -79,6 +83,16 @@
 			const errorMsg = document.getElementById("errorMsg")
 
 			const data = await getLeaderboard()
+			if(!data) {
+				document.getElementById("issuesBanner").style.display = ""
+				return
+			}
+			
+			if(data.update_error) {
+				document.getElementById("issuesBanner").style.display = ""
+			} else {
+				document.getElementById("issuesBanner").style.display = "none"
+			}
 			
 			const eventData = data.event
 			document.getElementById("eventLogo").setAttribute("src", `assets/${eventData.name_key}.png`)

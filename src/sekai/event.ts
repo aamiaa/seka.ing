@@ -84,7 +84,16 @@ export default class EventTracker {
 		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
 
 		// Save current leaderboard snapshot
-		const ranking = await this.client.getRankingTop100(currentEvent.id) as SekaiRanking
+		let ranking: SekaiRanking
+		try {
+			ranking = await this.client.getRankingTop100(currentEvent.id) as SekaiRanking
+		} catch(ex) {
+			this.leaderboard.update_error = true
+
+			console.error("[EventTracker] Update failed:", ex)
+			return
+		}
+
 		ranking.rankings.forEach(user => user.userId = user.userId.toString())
 		if(ranking.userWorldBloomChapterRankings?.length > 0) {
 			ranking.userWorldBloomChapterRankings.forEach(x => x.rankings.forEach(user => user.userId = user.userId.toString()))
