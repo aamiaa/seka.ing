@@ -19,7 +19,7 @@
 	<script src="/assets/flipdown.min.js"></script>
 
 	<div id="issuesBanner" style="display: none;" class="sticky-top w-100 py-3 bg-danger text-center rounded-bottom">
-		<span>We're experiencing issues. The leaderboard might not be up to date!</span>
+		<span id="issuesBannerLabel"></span>
 	</div>
 	
 	<div id="logoContainer" class="my-3 d-flex justify-content-center align-items-center gap-1">
@@ -368,8 +368,25 @@
 			return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 		}
 
-		function toggleIssuesBanner(toggled) {
-			document.getElementById("issuesBanner").style.display = toggled ? "" : "none"
+		let lastUpdatedAt
+		function toggleIssuesBanner(toggled, errorType) {
+			const banner = document.getElementById("issuesBanner")
+			const label = document.getElementById("issuesBannerLabel")
+
+			if(toggled) {
+				switch(errorType) {
+					case "backend":
+						label.innerText = `We're experiencing issues. The leaderboard might not be up to date!\nLast update: ${lastUpdatedAt?.toLocaleTimeString() ?? "N/A"}`
+						break
+					case "network":
+						label.innerText = `Your network is offline. The leaderboard cannot update!\nLast update: ${lastUpdatedAt?.toLocaleTimeString() ?? "N/A"}`
+						break
+				}
+
+				banner.style.display = ""
+			} else {
+				banner.style.display = "none"
+			}
 		}
 
 		function toggleFailureMessage(toggled) {
@@ -394,14 +411,14 @@
 				const res = await fetch("/api/leaderboard")
 				if(!res.ok) {
 					console.error("getLeaderboard() failed (1):", res.status)
-					return null
+					return {errorType: "backend"}
 				}
 
 				const json = await res.json()
-				return json
+				return {data: json}
 			} catch(ex) {
 				console.error("getLeaderboard() failed (2):", ex)
-				return null
+				return {errorType: "network"}
 			}
 		}
 
@@ -410,19 +427,20 @@
 		async function updateLeaderboard() {
 			const table = document.getElementById("eventTable")
 
-			const data = await getLeaderboard()
+			const {data, errorType} = await getLeaderboard()
 			if(!data) {
 				if(!timerStarted) {
 					toggleFailureMessage(true)
 				} else {
-					toggleIssuesBanner(true)
+					toggleIssuesBanner(true, errorType)
 				}
 				return
 			}
+			lastUpdatedAt = data.updated_at
 			
 			toggleFailureMessage(false)
-			if(data.update_error) {
-				toggleIssuesBanner(true)
+			if(data.update_error || (lastUpdatedAt && (Date.now() - lastUpdatedAt.getTime() > 3 * 60 * 1000))) {
+				toggleIssuesBanner(true, "backend")
 			} else {
 				toggleIssuesBanner(false)
 			}

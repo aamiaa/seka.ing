@@ -15,7 +15,11 @@ function populateUsersMap(map: Record<string, PlayerRanking>, users: PlayerRanki
 
 export default class EventTracker {
 	private static client: SekaiApiClient
-	public static leaderboard: any = {}
+	public static leaderboard: any = {
+		event: {},
+		rankings: [],
+		updated_at: null
+	}
 
 	public static async init() {
 		const httpsAgent = HttpsProxyAgent({
@@ -76,7 +80,8 @@ export default class EventTracker {
 		if(!currentEvent) {
 			this.leaderboard = {
 				event: {},
-				rankings: []
+				rankings: [],
+				updated_at: now
 			}
 			console.log("[EventTracker] No current event")
 			return
@@ -158,7 +163,8 @@ export default class EventTracker {
 				name_key: currentEvent.assetbundleName,
 				ends_at: currentEvent.aggregateAt
 			},
-			rankings: currentLb
+			rankings: currentLb,
+			updated_at: now
 		}
 		if(currentChapter != null) {
 			this.leaderboard.event.chapter_character = currentChapter.gameCharacterId
