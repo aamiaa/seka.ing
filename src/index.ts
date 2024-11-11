@@ -14,7 +14,7 @@ async function main() {
 
 	await SekaiMasterDB.init()
 	await Database.init()
-	//EventLeaderboard.init()
+	EventLeaderboard.init()
 	ExpressServer.init()
 }
 main()
