@@ -13,6 +13,13 @@
 			--bs-table-bg: #ffc0cb;
 			--bs-table-hover-bg: #efafbb;
 		}
+
+		.username-label {
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			max-width: 19ch;
+		}
 	</style>
 </head>
 <body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
@@ -499,6 +506,7 @@
 					nameCellDiv.appendChild(teamImg)
 				}
 				const nameLabel = document.createElement("span")
+				nameLabel.setAttribute("class", "username-label")
 				nameLabel.innerText = slot.name
 				nameCellDiv.appendChild(nameLabel)
 				nameCell.appendChild(nameCellDiv)
