@@ -6,6 +6,7 @@ import PlayerRanking from "../interface/models/ranking"
 import { EventProfileModel } from "../models/event_profile"
 import RankingSnapshot, { SekaiRanking } from "../interface/models/snapshot"
 import { sha256 } from "../util/hash"
+import { SekaiEvent } from "../interface/event"
 
 function populateUsersMap(map: Record<string, PlayerRanking>, users: PlayerRanking[]) {
 	for(const user of users) {
@@ -40,15 +41,47 @@ export default class EventTracker {
 	public static async getPastHourRanking() {
 		const now = new Date()
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
-		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
 
 		const pastHour = new Date(now.getTime() - 3600 * 1000)
-		let rankingPastHour: {rankings: PlayerRanking[], userWorldBloomChapterRankings?: RankingSnapshot["userWorldBloomChapterRankings"]}[] = await RankingSnapshotModel.find({eventId: currentEvent.id, createdAt: {$gte: pastHour}}).lean()
-		if(currentChapter != null) {
-			rankingPastHour = rankingPastHour.map(x => x.userWorldBloomChapterRankings.find(x => x.gameCharacterId === currentChapter.gameCharacterId))
-		}
+		let rankingPastHour = await RankingSnapshotModel.find({eventId: currentEvent.id, createdAt: {$gte: pastHour}}).lean()
 
 		return rankingPastHour
+	}
+
+	private static processRankingDifference(event: SekaiEvent, currentRanking: PlayerRanking[], pastRankings: PlayerRanking[][]) {
+		return currentRanking.map(user => {
+			const hash = sha256(user.userId + "_" + event.assetbundleName)
+
+			let earliest = user.score
+			for(const entry of pastRankings) {
+				const currentUserSlot = entry.find(x => x.userId === user.userId)
+				if(currentUserSlot) {
+					earliest = currentUserSlot.score
+					break
+				}
+			}
+
+			const differentValues = new Set<number>()
+			for(const entry of pastRankings) {
+				const currentUserSlot = entry.find(x => x.userId === user.userId)
+				if(currentUserSlot) {
+					differentValues.add(currentUserSlot.score)
+				}
+			}
+
+			const count = differentValues.size - 1
+			const average = (user.score - earliest)/count
+			return {
+				name: user.name,
+				team: user.userCheerfulCarnival?.cheerfulCarnivalTeamId,
+				score: user.score,
+				rank: user.rank,
+				hash,
+				delta: user.score - earliest,
+				average,
+				count
+			}
+		})
 	}
 
 	private static async updateUserProfiles(snapshot: RankingSnapshot) {
@@ -118,45 +151,9 @@ export default class EventTracker {
 
 		// Update data sent to frontend
 		const rankingPastHour = await this.getPastHourRanking()
-		let currentRanking = ranking.rankings
-		if(currentChapter != null) {
-			currentRanking = ranking.userWorldBloomChapterRankings.find(x => x.gameCharacterId === currentChapter.gameCharacterId).rankings
-		}
+		const currentRanking = ranking.rankings
 
-		const currentLb = currentRanking.map(user => {
-			const hash = sha256(user.userId + "_" + currentEvent.assetbundleName)
-
-			let earliest = user.score
-			for(const entry of rankingPastHour) {
-				const currentUserSlot = entry.rankings.find(x => x.userId === user.userId)
-				if(currentUserSlot) {
-					earliest = currentUserSlot.score
-					break
-				}
-			}
-
-			const differentValues = new Set<number>()
-			for(const entry of rankingPastHour) {
-				const currentUserSlot = entry.rankings.find(x => x.userId === user.userId)
-				if(currentUserSlot) {
-					differentValues.add(currentUserSlot.score)
-				}
-			}
-
-			const count = differentValues.size - 1
-			const average = (user.score - earliest)/count
-			return {
-				name: user.name,
-				team: user.userCheerfulCarnival?.cheerfulCarnivalTeamId,
-				score: user.score,
-				rank: user.rank,
-				hash,
-				delta: user.score - earliest,
-				average,
-				count
-			}
-		})
-
+		const currentLb = this.processRankingDifference(currentEvent, currentRanking, rankingPastHour.map(x => x.rankings))
 		this.leaderboard = {
 			event: {
 				name: currentEvent.name,
@@ -166,9 +163,28 @@ export default class EventTracker {
 			rankings: currentLb,
 			updated_at: now
 		}
+
 		if(currentChapter != null) {
+			const chapters = SekaiMasterDB.getWorldBloomChapters(currentChapter.id)
+				.filter(x => now >= x.chapterStartAt)
+				.map(x => ({
+					title: SekaiMasterDB.getGameCharacter(x.gameCharacterId).givenName,
+					num: x.chapterNo,
+					color: SekaiMasterDB.getCharacterColor(x.gameCharacterId)
+				}))
+			this.leaderboard.event.chapters = chapters
+				
+			this.leaderboard.event.chapter_num = currentChapter.chapterNo
 			this.leaderboard.event.chapter_character = currentChapter.gameCharacterId
 			this.leaderboard.event.ends_at = currentChapter.aggregateAt
+
+			this.leaderboard.chapter_rankings = chapters.map(chapter => 
+				this.processRankingDifference(
+					currentEvent,
+					ranking.userWorldBloomChapterRankings[chapter.num - 1].rankings,
+					rankingPastHour.map(x => x.userWorldBloomChapterRankings[chapter.num - 1].rankings)
+				)
+			)
 		}
 
 		console.log("[EventTracker] Updated!")
