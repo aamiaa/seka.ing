@@ -52,7 +52,7 @@
 		<div class="col-auto">
 			<ul class="nav nav-tabs border-bottom-0" id="chapterTabs" role="tablist" data-bs-theme="light" style="display: none;">
 				<li class="nav-item" role="presentation">
-					<button class="nav-link active" id="global-tab" data-bs-toggle="tab" data-bs-target="#global-tab-pane" type="button" role="tab" aria-controls="global-tab-pane" aria-selected="true" style="--bs-nav-tabs-link-active-bg: white;">Global</button>
+					<button class="nav-link active" id="overall-tab" data-bs-toggle="tab" data-bs-target="#overall-tab-pane" type="button" role="tab" aria-controls="overall-tab-pane" aria-selected="true" style="--bs-nav-tabs-link-active-bg: white;">Overall</button>
 				</li>
 				<li class="nav-item" role="presentation">
 					<button class="nav-link" id="chapter-1-tab" data-bs-toggle="tab" data-bs-target="#chapter-1-tab-pane" type="button" role="tab" aria-controls="chapter-1-tab-pane" aria-selected="false"></button>
@@ -70,8 +70,8 @@
 			<div id="eventTableCard" class="card" style="background-color: white;">
 				<div class="card-body">
 					<div class="tab-content">
-						<div class="tab-pane fade show active" id="global-tab-pane" role="tabpanel" aria-labelledby="global-tab" tabindex="0">
-							<table id="eventTableGlobal" class="table table-hover table-light" style="--bs-table-bg: white;">
+						<div class="tab-pane fade show active" id="overall-tab-pane" role="tabpanel" aria-labelledby="overall-tab" tabindex="0">
+							<table id="eventTableOverall" class="table table-hover table-light" style="--bs-table-bg: white;">
 								<thead>
 									<tr>
 										<th scope="col">#</th>
@@ -81,7 +81,7 @@
 										<th scope="col">Per game</th>
 									</tr>
 								</thead>
-								<tbody id="eventTableGlobalBody" class="table-group-divider">
+								<tbody id="eventTableOverallBody" class="table-group-divider">
 									<tr>
 										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
 									</tr>
@@ -605,7 +605,7 @@
 				flipdown.start()
 			}
 
-			updateLeaderboard(document.getElementById("eventTableGlobal"), data.rankings)
+			updateLeaderboard(document.getElementById("eventTableOverall"), data.rankings)
 
 			if(data.chapter_rankings) {
 				document.getElementById("chapterTabs").style.removeProperty("display")
