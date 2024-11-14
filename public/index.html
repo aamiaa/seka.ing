@@ -20,9 +20,15 @@
 			text-overflow: ellipsis;
 			max-width: 19ch;
 		}
+
+		.nav-link {
+			--bs-nav-link-color: white;
+			--bs-nav-link-hover-color: #d1d1d1;
+		}
 	</style>
 </head>
 <body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 	<script src="/assets/flipdown.min.js"></script>
 
 	<div id="issuesBanner" style="display: none;" class="sticky-top w-100 py-3 bg-danger text-center rounded-bottom">
@@ -44,321 +50,398 @@
 
 	<div id="rankingContainer" class="row w-100 justify-content-center">
 		<div class="col-auto">
-			<div class="card bg-white">
+			<ul class="nav nav-tabs border-bottom-0" id="chapterTabs" role="tablist" data-bs-theme="light" style="display: none;">
+				<li class="nav-item" role="presentation">
+					<button class="nav-link active" id="global-tab" data-bs-toggle="tab" data-bs-target="#global-tab-pane" type="button" role="tab" aria-controls="global-tab-pane" aria-selected="true" style="--bs-nav-tabs-link-active-bg: white;">Global</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="chapter-1-tab" data-bs-toggle="tab" data-bs-target="#chapter-1-tab-pane" type="button" role="tab" aria-controls="chapter-1-tab-pane" aria-selected="false"></button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="chapter-2-tab" data-bs-toggle="tab" data-bs-target="#chapter-2-tab-pane" type="button" role="tab" aria-controls="chapter-2-tab-pane" aria-selected="false"></button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="chapter-3-tab" data-bs-toggle="tab" data-bs-target="#chapter-3-tab-pane" type="button" role="tab" aria-controls="chapter-3-tab-pane" aria-selected="false"></button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="chapter-4-tab" data-bs-toggle="tab" data-bs-target="#chapter-4-tab-pane" type="button" role="tab" aria-controls="chapter-4-tab-pane" aria-selected="false"></button>
+				</li>
+			</ul>
+			<div id="eventTableCard" class="card" style="background-color: white;">
 				<div class="card-body">
-					<table id="eventTable" class="table table-hover table-light" style="--bs-table-bg: white;">
-						<thead>
-							<tr>
-								<th scope="col">#</th>
-								<th scope="col">Name</th>
-								<th scope="col">Points</th>
-								<th scope="col">Past hour</th>
-								<th scope="col">Per game</th>
-							</tr>
-						</thead>
-						<tbody id="eventTableBody" class="table-group-divider">
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
-							</tr>
-							<tr>
-								<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
-							</tr>
-						</tbody>
-					</table>
+					<div class="tab-content">
+						<div class="tab-pane fade show active" id="global-tab-pane" role="tabpanel" aria-labelledby="global-tab" tabindex="0">
+							<table id="eventTableGlobal" class="table table-hover table-light" style="--bs-table-bg: white;">
+								<thead>
+									<tr>
+										<th scope="col">#</th>
+										<th scope="col">Name</th>
+										<th scope="col">Points</th>
+										<th scope="col">Past hour</th>
+										<th scope="col">Per game</th>
+									</tr>
+								</thead>
+								<tbody id="eventTableGlobalBody" class="table-group-divider">
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-8"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-4"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-6"></span></td>
+									</tr>
+									<tr>
+										<td class="placeholder-glow" colspan="5"><span class="placeholder col-10"></span></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="tab-pane fade" id="chapter-1-tab-pane" role="tabpanel" aria-labelledby="chapter-1-tab" tabindex="0">
+							<table id="eventTableChapter1" class="table table-hover table-light" style="--bs-table-bg: white;">
+								<thead>
+									<tr>
+										<th scope="col">#</th>
+										<th scope="col">Name</th>
+										<th scope="col">Points</th>
+										<th scope="col">Past hour</th>
+										<th scope="col">Per game</th>
+									</tr>
+								</thead>
+								<tbody id="eventTableChapter1Body" class="table-group-divider"></tbody>
+							</table>
+						</div>
+						<div class="tab-pane fade" id="chapter-2-tab-pane" role="tabpanel" aria-labelledby="chapter-2-tab" tabindex="0">
+							<table id="eventTableChapter2" class="table table-hover table-light" style="--bs-table-bg: white;">
+								<thead>
+									<tr>
+										<th scope="col">#</th>
+										<th scope="col">Name</th>
+										<th scope="col">Points</th>
+										<th scope="col">Past hour</th>
+										<th scope="col">Per game</th>
+									</tr>
+								</thead>
+								<tbody id="eventTableChapter2Body" class="table-group-divider"></tbody>
+							</table>
+						</div>
+						<div class="tab-pane fade" id="chapter-3-tab-pane" role="tabpanel" aria-labelledby="chapter-3-tab" tabindex="0">
+							<table id="eventTableChapter3" class="table table-hover table-light" style="--bs-table-bg: white;">
+								<thead>
+									<tr>
+										<th scope="col">#</th>
+										<th scope="col">Name</th>
+										<th scope="col">Points</th>
+										<th scope="col">Past hour</th>
+										<th scope="col">Per game</th>
+									</tr>
+								</thead>
+								<tbody id="eventTableChapter3Body" class="table-group-divider"></tbody>
+							</table>
+						</div>
+						<div class="tab-pane fade" id="chapter-4-tab-pane" role="tabpanel" aria-labelledby="chapter-4-tab" tabindex="0">
+							<table id="eventTableChapter4" class="table table-hover table-light" style="--bs-table-bg: white;">
+								<thead>
+									<tr>
+										<th scope="col">#</th>
+										<th scope="col">Name</th>
+										<th scope="col">Points</th>
+										<th scope="col">Past hour</th>
+										<th scope="col">Per game</th>
+									</tr>
+								</thead>
+								<tbody id="eventTableChapter4Body" class="table-group-divider"></tbody>
+							</table>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -371,6 +454,55 @@
 	</footer>
 
 	<script>
+		function switchTab(idx) {
+			const button = document.querySelector(`#chapterTabs .nav-item:nth-child(${idx + 1}) button`)
+			const eventTableCard = document.getElementById("eventTableCard")
+
+			bootstrap.Tab.getInstance(button).show()
+			eventTableCard.style.setProperty("background-color", button.style.getPropertyValue("--bs-nav-tabs-link-active-bg"))
+
+			if(idx === 0) {
+				eventTableCard.style.setProperty("border-top-left-radius", "0")
+			} else {
+				eventTableCard.style.removeProperty("border-top-left-radius")
+			}
+
+			localStorage.setItem("tabIdx", idx.toString())
+		}
+
+		document.querySelectorAll("#chapterTabs button").forEach((x, idx) => {
+			const tabTrigger = new bootstrap.Tab(x)
+			x.addEventListener("click", event => {
+				event.preventDefault()
+				switchTab(idx)
+			})
+		})
+
+		const pSBC=(p,c0,c1,l)=>{
+			let r,g,b,P,f,t,h,i=parseInt,m=Math.round,a=typeof(c1)=="string";
+			if(typeof(p)!="number"||p<-1||p>1||typeof(c0)!="string"||(c0[0]!='r'&&c0[0]!='#')||(c1&&!a))return null;
+			if(!this.pSBCr)this.pSBCr=(d)=>{
+				let n=d.length,x={};
+				if(n>9){
+					[r,g,b,a]=d=d.split(","),n=d.length;
+					if(n<3||n>4)return null;
+					x.r=i(r[3]=="a"?r.slice(5):r.slice(4)),x.g=i(g),x.b=i(b),x.a=a?parseFloat(a):-1
+				}else{
+					if(n==8||n==6||n<4)return null;
+					if(n<6)d="#"+d[1]+d[1]+d[2]+d[2]+d[3]+d[3]+(n>4?d[4]+d[4]:"");
+					d=i(d.slice(1),16);
+					if(n==9||n==5)x.r=d>>24&255,x.g=d>>16&255,x.b=d>>8&255,x.a=m((d&255)/0.255)/1000;
+					else x.r=d>>16,x.g=d>>8&255,x.b=d&255,x.a=-1
+				}return x};
+			h=c0.length>9,h=a?c1.length>9?true:c1=="c"?!h:false:h,f=this.pSBCr(c0),P=p<0,t=c1&&c1!="c"?this.pSBCr(c1):P?{r:0,g:0,b:0,a:-1}:{r:255,g:255,b:255,a:-1},p=P?p*-1:p,P=1-p;
+			if(!f||!t)return null;
+			if(l)r=m(P*f.r+p*t.r),g=m(P*f.g+p*t.g),b=m(P*f.b+p*t.b);
+			else r=m((P*f.r**2+p*t.r**2)**0.5),g=m((P*f.g**2+p*t.g**2)**0.5),b=m((P*f.b**2+p*t.b**2)**0.5);
+			a=f.a,t=t.a,f=a>=0||t>=0,a=f?a<0?t:t<0?a:a*P+t*p:0;
+			if(h)return"rgb"+(f?"a(":"(")+r+","+g+","+b+(f?","+m(a*1000)/1000:"")+")";
+			else return"#"+(4294967296+r*16777216+g*65536+b*256+(f?m(a*255):0)).toString(16).slice(1,f?undefined:-2)
+		}
+
 		function formatNumber(num) {
 			return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 		}
@@ -430,13 +562,13 @@
 		}
 
 		let timerStarted = false
+		let lbFetched = false
 		let trackHash = localStorage.getItem("trackHash")
-		async function updateLeaderboard() {
-			const table = document.getElementById("eventTable")
 
+		async function doUpdate() {
 			const {data, errorType} = await getLeaderboard()
 			if(!data) {
-				if(!timerStarted) {
+				if(!lbFetched) {
 					toggleFailureMessage(true)
 				} else {
 					toggleIssuesBanner(true, errorType)
@@ -473,13 +605,43 @@
 				flipdown.start()
 			}
 
-			const tableBody = document.getElementById("eventTableBody")
+			updateLeaderboard(document.getElementById("eventTableGlobal"), data.rankings)
+
+			if(data.chapter_rankings) {
+				document.getElementById("chapterTabs").style.removeProperty("display")
+				document.getElementById("eventTableCard").style.setProperty("border-top-left-radius", "0")
+				
+				for(const chapter of data.event.chapters) {
+					const color = pSBC(0.7, chapter.color)
+					const button = document.getElementById(`chapter-${chapter.num}-tab`)
+					button.innerText = chapter.title
+					button.style.setProperty("--bs-nav-tabs-link-active-bg", color)
+					document.getElementById("eventTableChapter" + chapter.num).style.setProperty("--bs-table-bg", color)
+				}
+				
+				for(const [idx, rankings] of data.chapter_rankings.entries()) {
+					updateLeaderboard(document.getElementById("eventTableChapter" + (idx + 1)), rankings)
+				}
+
+				if(!lbFetched) {
+					const idx = localStorage.getItem("tabIdx") ?? data.event.chapters.find(x => x.current)?.num
+					if(idx) {
+						switchTab(+idx)
+					}
+				}
+			}
+
+			lbFetched = true
+		}
+
+		function updateLeaderboard(table, rankings) {
+			const tableBody = table.querySelector("tbody")
 			while(tableBody.firstChild) {
 				tableBody.removeChild(tableBody.lastChild)
 			}
 
 			let scrollTo
-			for(const slot of data.rankings) {
+			for(const slot of rankings) {
 				const tableRow = document.createElement("tr")
 
 				const rankCell = document.createElement("td")
@@ -567,8 +729,8 @@
 			}
 		}
 
-		updateLeaderboard()
-		setInterval(updateLeaderboard, 30 * 1000)
+		doUpdate()
+		setInterval(doUpdate, 30 * 1000)
 	</script>
 </body>
 </html>
