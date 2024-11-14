@@ -1,11 +1,12 @@
 import axios from "axios";
 import { SekaiEvent, SekaiEventType, SekaiWorldBloom } from "../interface/event";
-import SekaiGameCharacter from "../interface/character";
+import SekaiGameCharacter, { SekaiPenlightColor } from "../interface/character";
 
 export default class SekaiMasterDB {
 	private static events: SekaiEvent[] = []
 	private static worldBlooms: SekaiWorldBloom[] = []
 	private static gameCharacters: SekaiGameCharacter[] = []
+	private static penlightColors: SekaiPenlightColor[] = []
 
 	public static async init() {
 		await this.refreshData()
@@ -27,11 +28,18 @@ export default class SekaiMasterDB {
 
 		const gameCharactersRes = await axios.get<SekaiGameCharacter[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/gameCharacters.json")
 		this.gameCharacters = gameCharactersRes.data
+
+		const penlightColorsRes = await axios.get<SekaiPenlightColor[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/penlightColors.json")
+		this.penlightColors = penlightColorsRes.data
 	}
 
 	public static getCurrentEvent() {
 		const now = new Date()
 		return this.events.find(x => now < x.closedAt && now >= x.startAt)
+	}
+
+	public static getWorldBloomChapters(id: number) {
+		return this.worldBlooms.filter(x => x.eventId === id)
 	}
 
 	public static getCurrentWorldBloomChapter() {
@@ -46,5 +54,9 @@ export default class SekaiMasterDB {
 
 	public static getGameCharacter(id: number) {
 		return this.gameCharacters.find(x => x.id === id)
+	}
+
+	public static getCharacterColor(id: number) {
+		return this.penlightColors.find(x => x.characterId === id)?.colorCode
 	}
 }
