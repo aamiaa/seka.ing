@@ -165,7 +165,7 @@ export default class EventTracker {
 		}
 
 		if(currentChapter != null) {
-			const chapters = SekaiMasterDB.getWorldBloomChapters(currentChapter.id)
+			const chapters = SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
 				.filter(x => now >= x.chapterStartAt)
 				.map(x => ({
 					title: SekaiMasterDB.getGameCharacter(x.gameCharacterId).givenName,
