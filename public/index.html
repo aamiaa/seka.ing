@@ -55,16 +55,16 @@
 					<button class="nav-link active" id="overall-tab" data-bs-toggle="tab" data-bs-target="#overall-tab-pane" type="button" role="tab" aria-controls="overall-tab-pane" aria-selected="true" style="--bs-nav-tabs-link-active-bg: white;">Overall</button>
 				</li>
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="chapter-1-tab" data-bs-toggle="tab" data-bs-target="#chapter-1-tab-pane" type="button" role="tab" aria-controls="chapter-1-tab-pane" aria-selected="false"></button>
+					<button style="display: none;" class="nav-link" id="chapter-1-tab" data-bs-toggle="tab" data-bs-target="#chapter-1-tab-pane" type="button" role="tab" aria-controls="chapter-1-tab-pane" aria-selected="false"></button>
 				</li>
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="chapter-2-tab" data-bs-toggle="tab" data-bs-target="#chapter-2-tab-pane" type="button" role="tab" aria-controls="chapter-2-tab-pane" aria-selected="false"></button>
+					<button style="display: none;" class="nav-link" id="chapter-2-tab" data-bs-toggle="tab" data-bs-target="#chapter-2-tab-pane" type="button" role="tab" aria-controls="chapter-2-tab-pane" aria-selected="false"></button>
 				</li>
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="chapter-3-tab" data-bs-toggle="tab" data-bs-target="#chapter-3-tab-pane" type="button" role="tab" aria-controls="chapter-3-tab-pane" aria-selected="false"></button>
+					<button style="display: none;" class="nav-link" id="chapter-3-tab" data-bs-toggle="tab" data-bs-target="#chapter-3-tab-pane" type="button" role="tab" aria-controls="chapter-3-tab-pane" aria-selected="false"></button>
 				</li>
 				<li class="nav-item" role="presentation">
-					<button class="nav-link" id="chapter-4-tab" data-bs-toggle="tab" data-bs-target="#chapter-4-tab-pane" type="button" role="tab" aria-controls="chapter-4-tab-pane" aria-selected="false"></button>
+					<button style="display: none;" class="nav-link" id="chapter-4-tab" data-bs-toggle="tab" data-bs-target="#chapter-4-tab-pane" type="button" role="tab" aria-controls="chapter-4-tab-pane" aria-selected="false"></button>
 				</li>
 			</ul>
 			<div id="eventTableCard" class="card" style="background-color: white;">
@@ -618,6 +618,7 @@
 					const button = document.getElementById(`chapter-${chapter.num}-tab`)
 					button.innerText = chapter.title
 					button.style.setProperty("--bs-nav-tabs-link-active-bg", color)
+					button.style.display = ""
 					
 					const tbl = document.getElementById("eventTableChapter" + chapter.num)
 					tbl.style.setProperty("--bs-table-bg", color)
