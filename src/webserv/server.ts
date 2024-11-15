@@ -20,7 +20,7 @@ class ExpressServer {
 		this.express.use("/api", apiRouter)
 
 		this.express.all("*", (req, res) => {
-			return res.redirect("/")
+			return res.status(404).sendFile("404.html", {root: "public"})
 		})
 		this.express.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 			console.error("[Express Error]", req.path, err)
