@@ -22,7 +22,7 @@ export default class SekaiMasterDB {
 
 		const worldBloomsRes = await axios.get<SekaiWorldBloom[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/worldBlooms.json")
 		worldBloomsRes.data.forEach(event => 
-			["startAt", "aggregateAt", "chapterEndAt"].forEach(field => event[field] = new Date(event[field]))
+			["chapterStartAt", "aggregateAt", "chapterEndAt"].forEach(field => event[field] = new Date(event[field]))
 		)
 		this.worldBlooms = worldBloomsRes.data
 
