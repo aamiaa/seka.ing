@@ -614,7 +614,7 @@
 				
 				for(const chapter of data.event.chapters) {
 					const color = pSBC(0.7, chapter.color)
-					const hoverColor = pSBC(0.6, chapter.color)
+					const hoverColor = pSBC(0.5, chapter.color)
 					const button = document.getElementById(`chapter-${chapter.num}-tab`)
 					button.innerText = chapter.title
 					button.style.setProperty("--bs-nav-tabs-link-active-bg", color)
