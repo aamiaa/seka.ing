@@ -188,13 +188,13 @@ export default class EventTracker {
 
 			this.leaderboard.chapter_rankings = chapters.map(chapter => {
 				if(!ranking.userWorldBloomChapterRankings[chapter.num - 1].isWorldBloomChapterAggregate) {
-					this.processRankingDifference(
+					return this.processRankingDifference(
 						currentEvent,
 						ranking.userWorldBloomChapterRankings[chapter.num - 1].rankings,
 						rankingPastHour.map(x => x.userWorldBloomChapterRankings[chapter.num - 1].rankings)
 					)
 				}
-		})
+			}).filter(x => x != null)
 		}
 
 		console.log("[EventTracker] Updated!")
