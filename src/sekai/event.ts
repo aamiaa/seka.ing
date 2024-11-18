@@ -186,13 +186,15 @@ export default class EventTracker {
 			this.leaderboard.event.chapter_character = currentChapter.gameCharacterId
 			this.leaderboard.event.ends_at = currentChapter.aggregateAt
 
-			this.leaderboard.chapter_rankings = chapters.map(chapter => 
-				this.processRankingDifference(
-					currentEvent,
-					ranking.userWorldBloomChapterRankings[chapter.num - 1].rankings,
-					rankingPastHour.map(x => x.userWorldBloomChapterRankings[chapter.num - 1].rankings)
-				)
-			)
+			this.leaderboard.chapter_rankings = chapters.map(chapter => {
+				if(!ranking.userWorldBloomChapterRankings[chapter.num - 1].isWorldBloomChapterAggregate) {
+					this.processRankingDifference(
+						currentEvent,
+						ranking.userWorldBloomChapterRankings[chapter.num - 1].rankings,
+						rankingPastHour.map(x => x.userWorldBloomChapterRankings[chapter.num - 1].rankings)
+					)
+				}
+		})
 		}
 
 		console.log("[EventTracker] Updated!")
