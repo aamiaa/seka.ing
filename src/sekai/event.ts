@@ -89,7 +89,11 @@ export default class EventTracker {
 
 		populateUsersMap(users, snapshot.rankings)
 		if(snapshot.userWorldBloomChapterRankings?.length > 0) {
-			snapshot.userWorldBloomChapterRankings.forEach(x => populateUsersMap(users, x.rankings))
+			snapshot.userWorldBloomChapterRankings.forEach(x => {
+				if(!x.isWorldBloomChapterAggregate) {
+					populateUsersMap(users, x.rankings)
+				}
+			})
 		}
 
 		await EventProfileModel.bulkWrite(Object.values(users).map(user => {
@@ -134,7 +138,11 @@ export default class EventTracker {
 
 		ranking.rankings.forEach(user => user.userId = user.userId.toString())
 		if(ranking.userWorldBloomChapterRankings?.length > 0) {
-			ranking.userWorldBloomChapterRankings.forEach(x => x.rankings.forEach(user => user.userId = user.userId.toString()))
+			ranking.userWorldBloomChapterRankings.forEach(x => {
+				if(!x.isWorldBloomChapterAggregate) {
+					x.rankings.forEach(user => user.userId = user.userId.toString())
+				}
+			})
 		}
 
 		const snapshot: RankingSnapshot = {
