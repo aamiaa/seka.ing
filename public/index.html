@@ -563,13 +563,17 @@
 		}
 
 		let timerStarted = false
-		let lbFetched = false
+		let lastLbUpdate
 		let trackHash = localStorage.getItem("trackHash")
 
 		async function doUpdate() {
+			if(lastLbUpdate && document.visibilityState === "hidden") {
+				return
+			}
+
 			const {data, errorType} = await getLeaderboard()
 			if(!data) {
-				if(!lbFetched) {
+				if(!lastLbUpdate) {
 					toggleFailureMessage(true)
 				} else {
 					toggleIssuesBanner(true, errorType)
@@ -629,7 +633,7 @@
 					updateLeaderboard(document.getElementById("eventTableChapter" + (idx + 1)), rankings)
 				}
 
-				if(!lbFetched) {
+				if(!lastLbUpdate) {
 					const idx = localStorage.getItem("tabIdx") ?? data.event.chapters.find(x => x.current)?.num
 					if(idx) {
 						switchTab(+idx)
@@ -637,7 +641,7 @@
 				}
 			}
 
-			lbFetched = true
+			lastLbUpdate = new Date()
 		}
 
 		function updateLeaderboard(table, rankings) {
@@ -737,6 +741,15 @@
 
 		doUpdate()
 		setInterval(doUpdate, 30 * 1000)
+
+		document.addEventListener("visibilitychange", async function() {
+			if(!lastLbUpdate) return
+
+			const secondsDiff = (Date.now() - lastLbUpdate.getTime())/1000
+			if(document.visibilityState === "visible" && secondsDiff >= 20) {
+				await doUpdate()
+			}
+		})
 	</script>
 </body>
 </html>
