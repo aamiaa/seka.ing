@@ -35,7 +35,7 @@ export default class SekaiMasterDB {
 
 	public static getCurrentEvent() {
 		const now = new Date()
-		return this.events.find(x => now < x.closedAt && now >= x.startAt)
+		return this.events.find(x => now <= x.closedAt && now >= x.startAt)
 	}
 
 	public static getWorldBloomChapters(id: number) {
@@ -49,7 +49,7 @@ export default class SekaiMasterDB {
 		}
 		
 		const now = new Date()
-		return this.worldBlooms.find(x => now < x.chapterEndAt && now >= x.chapterStartAt)
+		return this.worldBlooms.find(x => now <= x.chapterEndAt && now >= x.chapterStartAt)
 	}
 
 	public static getGameCharacter(id: number) {
