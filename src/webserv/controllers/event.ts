@@ -7,11 +7,12 @@ import { RankingSnapshotModel } from "../../models/snapshot";
 import { predict } from "../../util/math";
 import { EventProfileModel } from "../../models/event_profile";
 import { sha256 } from "../../util/hash";
+import CacheStore from "../cache";
 
 export default class EventController {
 	public static async getLeaderboard(req: Request, res: Response, next: NextFunction) {
 		res.set("Cache-Control", "no-store")
-		return res.json(EventTracker.leaderboard)
+		return res.json(CacheStore.get("leaderboard"))
 	}
 
 	public static async getPrediction(req: Request, res: Response, next: NextFunction) {

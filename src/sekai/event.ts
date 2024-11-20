@@ -7,6 +7,36 @@ import { EventProfileModel } from "../models/event_profile"
 import RankingSnapshot, { SekaiRanking } from "../interface/models/snapshot"
 import { sha256 } from "../util/hash"
 import { SekaiEvent } from "../interface/event"
+import CacheStore from "../webserv/cache"
+
+interface PartialPlayerRanking {
+	name: string,
+	score: number,
+	rank: number,
+	hash: string,
+	delta?: number,
+	count?: number,
+	average?: number
+}
+
+interface LeaderboardCache {
+	event: {
+		name?: string,
+		name_key?: string,
+		ends_at?: Date,
+		chapters?: {
+			title: string,
+			num: number,
+			color: string
+		}[],
+		chapter_num?: number,
+		chapter_character?: number
+	},
+	rankings: PartialPlayerRanking[],
+	chapter_rankings?: PartialPlayerRanking[][]
+	updated_at?: Date,
+	update_error?: boolean
+}
 
 function populateUsersMap(map: Record<string, PlayerRanking>, users: PlayerRanking[]) {
 	for(const user of users) {
@@ -16,13 +46,14 @@ function populateUsersMap(map: Record<string, PlayerRanking>, users: PlayerRanki
 
 export default class EventTracker {
 	private static client: SekaiApiClient
-	public static leaderboard: any = {
-		event: {},
-		rankings: [],
-		updated_at: null
-	}
 
 	public static async init() {
+		CacheStore.set("leaderboard", {
+			event: {},
+			rankings: [],
+			updated_at: null
+		})
+
 		const httpsAgent = HttpsProxyAgent({
 			host: process.env.ProxyHost,
 			port: parseInt(process.env.ProxyPort) + 2,
@@ -115,11 +146,11 @@ export default class EventTracker {
 		const now = new Date()
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
 		if(!currentEvent) {
-			this.leaderboard = {
+			CacheStore.set("leaderboard", {
 				event: {},
 				rankings: [],
 				updated_at: now
-			}
+			})
 			console.log("[EventTracker] No current event")
 			return
 		}
@@ -130,7 +161,7 @@ export default class EventTracker {
 		try {
 			ranking = await this.client.getRankingTop100(currentEvent.id) as SekaiRanking
 		} catch(ex) {
-			this.leaderboard.update_error = true
+			CacheStore.get<LeaderboardCache>("leaderboard").update_error = true
 
 			console.error("[EventTracker] Update failed:", ex)
 			return
@@ -162,7 +193,7 @@ export default class EventTracker {
 		const currentRanking = ranking.rankings
 
 		const currentLb = this.processRankingDifference(currentEvent, currentRanking, rankingPastHour.map(x => x.rankings))
-		this.leaderboard = {
+		CacheStore.set("leaderboard", {
 			event: {
 				name: currentEvent.name,
 				name_key: currentEvent.assetbundleName,
@@ -170,7 +201,7 @@ export default class EventTracker {
 			},
 			rankings: currentLb,
 			updated_at: now
-		}
+		})
 
 		if(currentChapter != null) {
 			const chapters = SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
@@ -180,13 +211,15 @@ export default class EventTracker {
 					num: x.chapterNo,
 					color: SekaiMasterDB.getCharacterColor(x.gameCharacterId)
 				}))
-			this.leaderboard.event.chapters = chapters
-				
-			this.leaderboard.event.chapter_num = currentChapter.chapterNo
-			this.leaderboard.event.chapter_character = currentChapter.gameCharacterId
-			this.leaderboard.event.ends_at = currentChapter.aggregateAt
 
-			this.leaderboard.chapter_rankings = chapters.map(chapter => {
+			const cachedLb = CacheStore.get<LeaderboardCache>("leaderboard")
+			cachedLb.event.chapters = chapters
+				
+			cachedLb.event.chapter_num = currentChapter.chapterNo
+			cachedLb.event.chapter_character = currentChapter.gameCharacterId
+			cachedLb.event.ends_at = currentChapter.aggregateAt
+
+			cachedLb.chapter_rankings = chapters.map(chapter => {
 				if(!ranking.userWorldBloomChapterRankings[chapter.num - 1].isWorldBloomChapterAggregate) {
 					return this.processRankingDifference(
 						currentEvent,
