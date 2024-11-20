@@ -10,6 +10,7 @@ import { sha256 } from "../../util/hash";
 
 export default class EventController {
 	public static async getLeaderboard(req: Request, res: Response, next: NextFunction) {
+		res.set("Cache-Control", "no-store")
 		return res.json(EventTracker.leaderboard)
 	}
 
