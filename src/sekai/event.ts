@@ -6,7 +6,7 @@ import PlayerRanking from "../interface/models/ranking"
 import { EventProfileModel } from "../models/event_profile"
 import RankingSnapshot, { SekaiRanking } from "../interface/models/snapshot"
 import { sha256 } from "../util/hash"
-import { SekaiEvent } from "../interface/event"
+import { SekaiEvent, SekaiEventType } from "../interface/event"
 import CacheStore from "../webserv/cache"
 
 interface PartialPlayerRanking {
@@ -203,7 +203,7 @@ export default class EventTracker {
 			updated_at: now
 		})
 
-		if(currentChapter != null) {
+		if(currentEvent.eventType === SekaiEventType.WORLD_BLOOM) {
 			const chapters = SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
 				.filter(x => now >= x.chapterStartAt)
 				.map(x => ({
@@ -214,10 +214,12 @@ export default class EventTracker {
 
 			const cachedLb = CacheStore.get<LeaderboardCache>("leaderboard")
 			cachedLb.event.chapters = chapters
-				
-			cachedLb.event.chapter_num = currentChapter.chapterNo
-			cachedLb.event.chapter_character = currentChapter.gameCharacterId
-			cachedLb.event.ends_at = currentChapter.aggregateAt
+			
+			if(currentChapter != null) {
+				cachedLb.event.chapter_num = currentChapter.chapterNo
+				cachedLb.event.chapter_character = currentChapter.gameCharacterId
+				cachedLb.event.ends_at = currentChapter.aggregateAt
+			}
 
 			cachedLb.chapter_rankings = chapters.map(chapter => {
 				if(!ranking.userWorldBloomChapterRankings[chapter.num - 1].isWorldBloomChapterAggregate) {
