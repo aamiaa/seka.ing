@@ -237,7 +237,7 @@ export default class EventTracker {
 			}).filter(x => x != null)
 		}
 
-		if(nextEvent && (Date.now() - nextEvent.startAt.getTime()) <= 86400 * 1000) {
+		if(nextEvent && (nextEvent.startAt.getTime() - Date.now()) <= 86400 * 1000) {
 			lbCache.next_event = {
 				name: nextEvent.name,
 				name_key: nextEvent.assetbundleName,
