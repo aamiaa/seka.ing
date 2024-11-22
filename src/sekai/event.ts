@@ -19,19 +19,23 @@ interface PartialPlayerRanking {
 	average?: number
 }
 
+interface LeaderboardCacheEvent {
+	name?: string,
+	name_key?: string,
+	starts_at?: Date,
+	ends_at?: Date,
+	chapters?: {
+		title: string,
+		num: number,
+		color: string
+	}[],
+	chapter_num?: number,
+	chapter_character?: number
+}
+
 interface LeaderboardCache {
-	event: {
-		name?: string,
-		name_key?: string,
-		ends_at?: Date,
-		chapters?: {
-			title: string,
-			num: number,
-			color: string
-		}[],
-		chapter_num?: number,
-		chapter_character?: number
-	},
+	event: LeaderboardCacheEvent,
+	next_event?: LeaderboardCacheEvent,
 	rankings: PartialPlayerRanking[],
 	chapter_rankings?: PartialPlayerRanking[][]
 	updated_at?: Date,
@@ -145,6 +149,7 @@ export default class EventTracker {
 
 		const now = new Date()
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
+		const nextEvent = SekaiMasterDB.getNextEvent()
 		if(!currentEvent) {
 			CacheStore.set("leaderboard", {
 				event: {},
@@ -193,7 +198,7 @@ export default class EventTracker {
 		const currentRanking = ranking.rankings
 
 		const currentLb = this.processRankingDifference(currentEvent, currentRanking, rankingPastHour.map(x => x.rankings))
-		CacheStore.set("leaderboard", {
+		const lbCache: LeaderboardCache = {
 			event: {
 				name: currentEvent.name,
 				name_key: currentEvent.assetbundleName,
@@ -201,7 +206,8 @@ export default class EventTracker {
 			},
 			rankings: currentLb,
 			updated_at: now
-		})
+		}
+		CacheStore.set("leaderboard", lbCache)
 
 		if(currentEvent.eventType === SekaiEventType.WORLD_BLOOM) {
 			const chapters = SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
@@ -212,16 +218,15 @@ export default class EventTracker {
 					color: SekaiMasterDB.getCharacterColor(x.gameCharacterId)
 				}))
 
-			const cachedLb = CacheStore.get<LeaderboardCache>("leaderboard")
-			cachedLb.event.chapters = chapters
+			lbCache.event.chapters = chapters
 			
 			if(currentChapter != null) {
-				cachedLb.event.chapter_num = currentChapter.chapterNo
-				cachedLb.event.chapter_character = currentChapter.gameCharacterId
-				cachedLb.event.ends_at = currentChapter.aggregateAt
+				lbCache.event.chapter_num = currentChapter.chapterNo
+				lbCache.event.chapter_character = currentChapter.gameCharacterId
+				lbCache.event.ends_at = currentChapter.aggregateAt
 			}
 
-			cachedLb.chapter_rankings = chapters.map(chapter => {
+			lbCache.chapter_rankings = chapters.map(chapter => {
 				if(!ranking.userWorldBloomChapterRankings[chapter.num - 1].isWorldBloomChapterAggregate) {
 					return this.processRankingDifference(
 						currentEvent,
@@ -230,6 +235,14 @@ export default class EventTracker {
 					)
 				}
 			}).filter(x => x != null)
+		}
+
+		if(nextEvent && (Date.now() - nextEvent.startAt.getTime()) <= 86400 * 1000) {
+			lbCache.next_event = {
+				name: nextEvent.name,
+				name_key: nextEvent.assetbundleName,
+				starts_at: nextEvent.startAt
+			}
 		}
 
 		console.log("[EventTracker] Updated!")

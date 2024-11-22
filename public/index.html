@@ -34,6 +34,15 @@
 	<div id="issuesBanner" style="display: none;" class="sticky-top w-100 py-3 bg-danger text-center rounded-bottom">
 		<span id="issuesBannerLabel"></span>
 	</div>
+
+	<div id="nextLogoContainer" class="my-3 d-flex justify-content-center align-items-center gap-1 d-none">
+		<img id="nextEventLogo" alt="Next event logo" width="300" height="128" src="/assets/event_supporting_2023.png">
+		<img style="display: none;" id="nextEventChapterCharacter" alt="Worldlink chapter character" width="90" height="90">
+	</div>
+
+	<div id="nextEventCountdown" class="flipdown mb-3 d-none"></div>
+
+	<hr id="eventSeparator" class="w-100 d-none">
 	
 	<div id="logoContainer" class="my-3 d-flex justify-content-center align-items-center gap-1">
 		<span id="eventLogoPlaceholder" class="placeholder-glow" style="width: 300px; height: 128px;">
@@ -563,6 +572,7 @@
 		}
 
 		let timerStarted = false
+		let nextTimerStarted = false
 		let lastLbUpdate
 		let trackHash = localStorage.getItem("trackHash")
 
@@ -608,6 +618,32 @@
 				const eventEndsAt = new Date(eventData.ends_at)
 				const flipdown = new FlipDown(Math.floor(eventEndsAt.getTime()/1000), "eventCountdown", {theme: "light"})
 				flipdown.start()
+			}
+
+			const nextEventData = data.next_event
+			if(nextEventData) {
+				document.getElementById("nextLogoContainer").classList.remove("d-none")
+				document.getElementById("nextEventLogo").setAttribute("src", `assets/${nextEventData.name_key}.png`)
+
+				if(nextEventData.chapter_character) {
+					document.getElementById("nextEventChapterCharacter").style.display = ""
+					document.getElementById("nextEventChapterCharacter").setAttribute("src", `assets/character_${nextEventData.chapter_character}.png`)
+				}
+
+				if(nextEventData.starts_at && !nextTimerStarted) {
+					nextTimerStarted = true
+					document.getElementById("nextEventCountdown").classList.remove("d-none")
+					
+					const eventStartsAt = new Date(nextEventData.starts_at)
+					const flipdown = new FlipDown(Math.floor(eventStartsAt.getTime()/1000), "nextEventCountdown", {theme: "light"})
+					flipdown.start()
+				}
+
+				document.getElementById("eventSeparator").classList.remove("d-none")
+			} else {
+				document.getElementById("nextLogoContainer").classList.add("d-none")
+				document.getElementById("nextEventCountdown").classList.add("d-none")
+				document.getElementById("eventSeparator").classList.add("d-none")
 			}
 
 			updateLeaderboard(document.getElementById("eventTableOverall"), data.rankings)

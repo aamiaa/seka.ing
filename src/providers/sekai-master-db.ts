@@ -38,6 +38,11 @@ export default class SekaiMasterDB {
 		return this.events.find(x => now <= x.closedAt && now >= x.startAt)
 	}
 
+	public static getNextEvent() {
+		const now = new Date()
+		return this.events.find(x => x.startAt > now)
+	}
+
 	public static getWorldBloomChapters(id: number) {
 		return this.worldBlooms.filter(x => x.eventId === id)
 	}
