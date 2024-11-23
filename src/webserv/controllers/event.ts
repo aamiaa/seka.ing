@@ -137,6 +137,9 @@ export default class EventController {
 		}
 
 		const result = await RankingSnapshotModel.aggregate(pipeline)
+		if(result.length === 0) {
+			return res.json({matches: 0})
+		}
 		return res.json(result[0])
 	}
 }
