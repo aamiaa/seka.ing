@@ -172,6 +172,13 @@ export default class EventTracker {
 			return
 		}
 
+		if(ranking.isEventAggregate) {
+			console.warn("[EventTracker] Event is aggregating")
+			
+			CacheStore.get<LeaderboardCache>("leaderboard").updated_at = now
+			return
+		}
+
 		ranking.rankings.forEach(user => user.userId = user.userId.toString())
 		if(ranking.userWorldBloomChapterRankings?.length > 0) {
 			ranking.userWorldBloomChapterRankings.forEach(x => {
