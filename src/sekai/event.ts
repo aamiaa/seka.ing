@@ -39,7 +39,8 @@ interface LeaderboardCache {
 	rankings: PartialPlayerRanking[],
 	chapter_rankings?: PartialPlayerRanking[][]
 	updated_at?: Date,
-	update_error?: boolean
+	update_error?: boolean,
+	aggregate_until?: Date
 }
 
 function populateUsersMap(map: Record<string, PlayerRanking>, users: PlayerRanking[]) {
@@ -174,8 +175,8 @@ export default class EventTracker {
 
 		if(ranking.isEventAggregate) {
 			console.warn("[EventTracker] Event is aggregating")
-			
-			CacheStore.get<LeaderboardCache>("leaderboard").updated_at = now
+
+			CacheStore.get<LeaderboardCache>("leaderboard").aggregate_until = currentEvent.rankingAnnounceAt
 			return
 		}
 

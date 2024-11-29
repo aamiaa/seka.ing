@@ -518,7 +518,7 @@
 		}
 
 		let lastUpdatedAt
-		function toggleIssuesBanner(toggled, errorType) {
+		function toggleIssuesBanner(toggled, errorType, aggregateUntil) {
 			const banner = document.getElementById("issuesBanner")
 			const label = document.getElementById("issuesBannerLabel")
 
@@ -529,6 +529,9 @@
 						break
 					case "network":
 						label.innerText = `Your network is offline. The leaderboard cannot update!\nLast update: ${lastUpdatedAt?.toLocaleTimeString() ?? "N/A"}`
+						break
+					case "aggregate":
+						label.innerText = `The leaderboard is being aggregated until ${aggregateUntil.toLocaleTimeString()}!\nLast update: ${lastUpdatedAt?.toLocaleTimeString() ?? "N/A"}`
 						break
 				}
 
@@ -595,6 +598,8 @@
 			toggleFailureMessage(false)
 			if(data.update_error || (lastUpdatedAt && (Date.now() - lastUpdatedAt.getTime() > 3 * 60 * 1000))) {
 				toggleIssuesBanner(true, "backend")
+			} else if(data.aggregate_until) {
+				toggleIssuesBanner(true, "aggregate", data.aggregate_until)
 			} else {
 				toggleIssuesBanner(false)
 			}
