@@ -18,6 +18,9 @@
 			overflow: hidden;
 			white-space: nowrap;
 			text-overflow: ellipsis;
+		}
+
+		.username-cell {
 			max-width: 19ch;
 		}
 
@@ -709,7 +712,7 @@
 					rankCell.innerText = slot.rank
 				}
 
-				nameCellDiv.setAttribute("class", "d-flex align-items-center gap-1")
+				nameCellDiv.setAttribute("class", "d-flex align-items-center gap-1 username-cell")
 				if(slot.team != null) {
 					const teamImg = document.createElement("img")
 					teamImg.setAttribute("src", `/assets/team_${slot.team}.png`)
