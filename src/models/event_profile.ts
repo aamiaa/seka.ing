@@ -34,6 +34,11 @@ export const EventProfileSchema = new mongoose.Schema<IEventProfileModel, IEvent
 		bondsHonorViewType: {type: String},
 		bondsHonorWorldId: {type: Number}
 	}],
+	userCheerfulCarnival: {
+		cheerfulCarnivalTeamId: {type: Number},
+		teamChangeCount: {type: Number},
+		registerAt: {type: Date}
+	},
 	userHonorMissions: [{
 		honorMissionType: {type: String, required: true},
 		progress: {type: Number, required: true}
