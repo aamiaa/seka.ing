@@ -180,7 +180,12 @@ export default class EventTracker {
 			return
 		}
 
-		ranking.rankings.forEach(user => user.userId = user.userId.toString())
+		ranking.rankings.forEach(user => {
+			user.userId = user.userId.toString()
+			if(user.userCheerfulCarnival?.registerAt) {
+				user.userCheerfulCarnival.registerAt = new Date(parseInt(user.userCheerfulCarnival.registerAt.toString()))
+			}
+		})
 		if(ranking.userWorldBloomChapterRankings?.length > 0) {
 			ranking.userWorldBloomChapterRankings.forEach(x => {
 				if(!x.isWorldBloomChapterAggregate) {
