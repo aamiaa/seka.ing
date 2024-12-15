@@ -10,7 +10,7 @@ process.on("unhandledRejection", (reason: Error|any) => {
 });
 
 async function main() {
-	console.log("Starting...")
+	console.log("Starting... env:", process.env.NODE_ENV)
 
 	await SekaiMasterDB.init()
 	await Database.init()
