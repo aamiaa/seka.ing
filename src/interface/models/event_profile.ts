@@ -1,5 +1,5 @@
-import PlayerRanking from "./ranking";
+import { UserRanking } from "sekai-api";
 
-export default interface PlayerEventProfile extends PlayerRanking {
+export default interface PlayerEventProfile extends UserRanking {
 	eventId: number
 }

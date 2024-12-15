@@ -1,12 +1,6 @@
-import PlayerRanking from "./ranking";
+import { EventRankingPage } from "sekai-api";
 
-export interface SekaiRanking {
-	rankings: PlayerRanking[],
-	isEventAggregate?: boolean,
-	userWorldBloomChapterRankings: {gameCharacterId: number, isWorldBloomChapterAggregate: boolean, rankings: PlayerRanking[]}[],
-}
-
-export default interface RankingSnapshot extends SekaiRanking {
+export default interface RankingSnapshot extends EventRankingPage {
 	eventId: number,
 	createdAt: Date
 }

@@ -2,14 +2,14 @@ import SekaiApiClient from "sekai-api"
 import HttpsProxyAgent from "https-proxy-agent"
 import { RankingSnapshotModel } from "../models/snapshot"
 import SekaiMasterDB from "../providers/sekai-master-db"
-import PlayerRanking from "../interface/models/ranking"
 import { EventProfileModel } from "../models/event_profile"
-import RankingSnapshot, { SekaiRanking } from "../interface/models/snapshot"
+import RankingSnapshot from "../interface/models/snapshot"
 import { sha256 } from "../util/hash"
 import { SekaiEvent, SekaiEventType } from "../interface/event"
 import CacheStore from "../webserv/cache"
+import { EventRankingPage, UserRanking } from "sekai-api"
 
-interface PartialPlayerRanking {
+interface PartialUserRanking {
 	name: string,
 	score: number,
 	rank: number,
@@ -36,14 +36,14 @@ interface LeaderboardCacheEvent {
 interface LeaderboardCache {
 	event: LeaderboardCacheEvent,
 	next_event?: LeaderboardCacheEvent,
-	rankings: PartialPlayerRanking[],
-	chapter_rankings?: PartialPlayerRanking[][]
+	rankings: PartialUserRanking[],
+	chapter_rankings?: PartialUserRanking[][]
 	updated_at?: Date,
 	update_error?: boolean,
 	aggregate_until?: Date
 }
 
-function populateUsersMap(map: Record<string, PlayerRanking>, users: PlayerRanking[]) {
+function populateUsersMap(map: Record<string, UserRanking>, users: UserRanking[]) {
 	for(const user of users) {
 		map[user.userId] = user
 	}
@@ -84,7 +84,7 @@ export default class EventTracker {
 		return rankingPastHour
 	}
 
-	private static processRankingDifference(event: SekaiEvent, currentRanking: PlayerRanking[], pastRankings: PlayerRanking[][]) {
+	private static processRankingDifference(event: SekaiEvent, currentRanking: UserRanking[], pastRankings: UserRanking[][]) {
 		return currentRanking.map(user => {
 			const hash = sha256(user.userId + "_" + event.assetbundleName)
 
@@ -121,7 +121,7 @@ export default class EventTracker {
 	}
 
 	private static async updateUserProfiles(snapshot: RankingSnapshot) {
-		const users: Record<string, PlayerRanking> = {}
+		const users: Record<string, UserRanking> = {}
 
 		populateUsersMap(users, snapshot.rankings)
 		if(snapshot.userWorldBloomChapterRankings?.length > 0) {
@@ -163,9 +163,9 @@ export default class EventTracker {
 		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
 
 		// Save current leaderboard snapshot
-		let ranking: SekaiRanking
+		let ranking: EventRankingPage
 		try {
-			ranking = await this.client.getRankingTop100(currentEvent.id) as SekaiRanking
+			ranking = await this.client.getRankingTop100(currentEvent.id)
 		} catch(ex) {
 			CacheStore.get<LeaderboardCache>("leaderboard").update_error = true
 
@@ -178,20 +178,6 @@ export default class EventTracker {
 
 			CacheStore.get<LeaderboardCache>("leaderboard").aggregate_until = currentEvent.rankingAnnounceAt
 			return
-		}
-
-		ranking.rankings.forEach(user => {
-			user.userId = user.userId.toString()
-			if(user.userCheerfulCarnival?.registerAt) {
-				user.userCheerfulCarnival.registerAt = new Date(parseInt(user.userCheerfulCarnival.registerAt.toString()))
-			}
-		})
-		if(ranking.userWorldBloomChapterRankings?.length > 0) {
-			ranking.userWorldBloomChapterRankings.forEach(x => {
-				if(!x.isWorldBloomChapterAggregate) {
-					x.rankings.forEach(user => user.userId = user.userId.toString())
-				}
-			})
 		}
 
 		const snapshot: RankingSnapshot = {
