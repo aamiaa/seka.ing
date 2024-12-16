@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import PlayerEventProfile from "../interface/models/event_profile";
-import { PlayerCardSpecialTrainingStatus, PlayerCardDefaultImage } from "../interface/models/ranking";
+import { UserCardDefaultImage, UserCardSpecialTrainingStatus } from "sekai-api";
 
 export interface IEventProfileModel extends PlayerEventProfile, mongoose.Document {
 	// Methods and fields which need the model type go here
@@ -18,8 +18,8 @@ export const EventProfileSchema = new mongoose.Schema<IEventProfileModel, IEvent
 		cardId: {type: Number, required: true},
 		level: {type: Number, required: true},
 		masterRank: {type: Number, required: true},
-		specialTrainingStatus: {type: String, required: true, enum: PlayerCardSpecialTrainingStatus},
-		defaultImage: {type: String, required: true, enum: PlayerCardDefaultImage}
+		specialTrainingStatus: {type: String, required: true, enum: UserCardSpecialTrainingStatus},
+		defaultImage: {type: String, required: true, enum: UserCardDefaultImage}
 	},
 	userProfile: {
 		word: {type: String},
