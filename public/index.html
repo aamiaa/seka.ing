@@ -35,6 +35,7 @@
 <body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 	<script src="/assets/flipdown.min.js"></script>
+	<script src="/assets/countdown.min.js"></script>
 
 	<div id="issuesBanner" style="display: none;" class="sticky-top w-100 py-3 bg-danger text-center rounded-bottom">
 		<span id="issuesBannerLabel"></span>
@@ -628,6 +629,12 @@
 				const eventEndsAt = new Date(eventData.ends_at)
 				const flipdown = new FlipDown(Math.floor(eventEndsAt.getTime()/1000), "eventCountdown", {theme: "light"})
 				flipdown.start()
+			}
+			if(eventData.titles_at && new Date(eventData.ends_at).getTime() < Date.now()) {
+				document.getElementById("eventInfoMsg").style.display = ""
+				document.getElementById("eventInfoMsg").innerText = `Event titles will be distributed in ${countdown(null, new Date(eventData.titles_at), countdown.HOURS | countdown.MINUTES).toString()}`
+			} else {
+				document.getElementById("eventInfoMsg").style.display = "none"
 			}
 
 			const nextEventData = data.next_event

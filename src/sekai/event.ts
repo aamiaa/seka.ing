@@ -24,6 +24,7 @@ interface LeaderboardCacheEvent {
 	name_key?: string,
 	starts_at?: Date,
 	ends_at?: Date,
+	titles_at?: Date,
 	chapters?: {
 		title: string,
 		num: number,
@@ -201,7 +202,8 @@ export default class EventTracker {
 			event: {
 				name: currentEvent.name,
 				name_key: currentEvent.assetbundleName,
-				ends_at: currentEvent.aggregateAt
+				ends_at: currentEvent.aggregateAt,
+				titles_at: currentEvent.distributionStartAt
 			},
 			rankings: currentLb,
 			updated_at: now
