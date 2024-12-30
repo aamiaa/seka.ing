@@ -604,10 +604,10 @@
 			lastUpdatedAt = data.updated_at && new Date(data.updated_at)
 			
 			toggleFailureMessage(false)
-			if(data.update_error || (lastUpdatedAt && (Date.now() - lastUpdatedAt.getTime() > 3 * 60 * 1000))) {
-				toggleIssuesBanner(true, "backend")
-			} else if(data.aggregate_until) {
+			if(data.aggregate_until) {
 				toggleIssuesBanner(true, "aggregate", new Date(data.aggregate_until))
+			} else if(data.update_error || (lastUpdatedAt && (Date.now() - lastUpdatedAt.getTime() > 3 * 60 * 1000))) {
+				toggleIssuesBanner(true, "backend")
 			} else {
 				toggleIssuesBanner(false)
 			}
