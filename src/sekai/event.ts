@@ -67,7 +67,11 @@ export default class EventTracker {
 		})
 		this.client = new SekaiApiClient({httpsAgent})
 		await this.client.init()
-		await this.client.authenticate(process.env.SEKAI_AUTH)
+		await this.client.authenticate({
+			credential: process.env.SEKAI_AUTH,
+			deviceId: process.env.SEKAI_DEVICE_ID,
+			installId: process.env.SEKAI_INSTALL_ID
+		})
 
 		await this.updateLeaderboard()
 		setInterval(this.updateLeaderboard.bind(this), 60 * 1000)
