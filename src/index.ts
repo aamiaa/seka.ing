@@ -1,7 +1,7 @@
 import "dotenv/config"
 import "express-async-errors"
 import ExpressServer from "./webserv/server"
-import EventLeaderboard from "./sekai/event";
+import LeaderboardTracker from "./sekai/event/leaderboard";
 import SekaiMasterDB from "./providers/sekai-master-db";
 import { Database } from "./providers/database";
 
@@ -14,7 +14,7 @@ async function main() {
 
 	await SekaiMasterDB.init()
 	await Database.init()
-	EventLeaderboard.init()
+	LeaderboardTracker.init()
 	ExpressServer.init()
 }
 main()

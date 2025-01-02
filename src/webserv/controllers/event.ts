@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import EventTracker from "../../sekai/event";
 import SekaiMasterDB from "../../providers/sekai-master-db";
 import { PipelineStage } from "mongoose";
 import { SekaiEventType } from "../../interface/event";

@@ -1,12 +1,12 @@
 import SekaiApiClient from "sekai-api"
 import HttpsProxyAgent from "https-proxy-agent"
-import { RankingSnapshotModel } from "../models/snapshot"
-import SekaiMasterDB from "../providers/sekai-master-db"
-import { EventProfileModel } from "../models/event_profile"
-import RankingSnapshot from "../interface/models/snapshot"
-import { sha256 } from "../util/hash"
-import { SekaiEvent, SekaiEventType } from "../interface/event"
-import CacheStore from "../webserv/cache"
+import { RankingSnapshotModel } from "../../models/snapshot"
+import SekaiMasterDB from "../../providers/sekai-master-db"
+import { EventProfileModel } from "../../models/event_profile"
+import RankingSnapshot from "../../interface/models/snapshot"
+import { sha256 } from "../../util/hash"
+import { SekaiEvent, SekaiEventType } from "../../interface/event"
+import CacheStore from "../../webserv/cache"
 import { EventRankingPage, UserRanking } from "sekai-api"
 
 interface PartialUserRanking {
@@ -50,7 +50,7 @@ function populateUsersMap(map: Record<string, UserRanking>, users: UserRanking[]
 	}
 }
 
-export default class EventTracker {
+export default class LeaderboardTracker {
 	private static client: SekaiApiClient
 
 	public static async init() {
