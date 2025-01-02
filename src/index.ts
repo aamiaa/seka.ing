@@ -3,6 +3,7 @@ import "express-async-errors"
 import ExpressServer from "./webserv/server"
 import LeaderboardTracker from "./sekai/event/leaderboard";
 import SekaiMasterDB from "./providers/sekai-master-db";
+import ApiClient from "./sekai/api"
 import { Database } from "./providers/database";
 
 process.on("unhandledRejection", (reason: Error|any) => {
@@ -14,6 +15,14 @@ async function main() {
 
 	await SekaiMasterDB.init()
 	await Database.init()
+
+	await ApiClient.init()
+	await ApiClient.authenticate({
+		credential: process.env.SEKAI_AUTH,
+		deviceId: process.env.SEKAI_DEVICE_ID,
+		installId: process.env.SEKAI_INSTALL_ID
+	})
+
 	LeaderboardTracker.init()
 	ExpressServer.init()
 }

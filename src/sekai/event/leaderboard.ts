@@ -1,5 +1,3 @@
-import SekaiApiClient from "sekai-api"
-import HttpsProxyAgent from "https-proxy-agent"
 import { RankingSnapshotModel } from "../../models/snapshot"
 import SekaiMasterDB from "../../providers/sekai-master-db"
 import { EventProfileModel } from "../../models/event_profile"
@@ -8,6 +6,7 @@ import { sha256 } from "../../util/hash"
 import { SekaiEvent, SekaiEventType } from "../../interface/event"
 import CacheStore from "../../webserv/cache"
 import { EventRankingPage, UserRanking } from "sekai-api"
+import ApiClient from "../api"
 
 interface PartialUserRanking {
 	name: string,
@@ -51,26 +50,11 @@ function populateUsersMap(map: Record<string, UserRanking>, users: UserRanking[]
 }
 
 export default class LeaderboardTracker {
-	private static client: SekaiApiClient
-
 	public static async init() {
 		CacheStore.set("leaderboard", {
 			event: {},
 			rankings: [],
 			updated_at: null
-		})
-
-		const httpsAgent = HttpsProxyAgent({
-			host: process.env.ProxyHost,
-			port: parseInt(process.env.ProxyPort) + 2,
-			auth: `${process.env.ProxyUsername}:${process.env.ProxyPassword}`,
-		})
-		this.client = new SekaiApiClient({httpsAgent})
-		await this.client.init()
-		await this.client.authenticate({
-			credential: process.env.SEKAI_AUTH,
-			deviceId: process.env.SEKAI_DEVICE_ID,
-			installId: process.env.SEKAI_INSTALL_ID
 		})
 
 		await this.updateLeaderboard()
@@ -170,7 +154,7 @@ export default class LeaderboardTracker {
 		// Save current leaderboard snapshot
 		let ranking: EventRankingPage
 		try {
-			ranking = await this.client.getRankingTop100(currentEvent.id)
+			ranking = await ApiClient.getRankingTop100(currentEvent.id)
 		} catch(ex) {
 			CacheStore.get<LeaderboardCache>("leaderboard").update_error = true
 
