@@ -76,7 +76,11 @@ export default class CheerfulCarnivalTracker {
 			this.lastAnnounceCheckAt = new Date(i + 60000)
 		}
 
-		const lastAnnouncements = await CheerfulCarnivalAnnouncementModel.find({eventId: event.id, to: this.lastAnnounceCheckAt}, {message: 1})
+		const lastAnnouncements = await CheerfulCarnivalAnnouncementModel.find({
+			eventId: event.id,
+			to: this.lastAnnounceCheckAt,
+			cheerfulCarnivalAnnounceType: {$ne: "stopped_consecutive_wins"} // dedupe the two messages
+		}, {message: 1})
 		CacheStore.set("cc_announce", {
 			announcements: lastAnnouncements.map(x => x.message),
 			updated_at: this.lastAnnounceCheckAt
