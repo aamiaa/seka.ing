@@ -71,6 +71,20 @@
 				transform: translateX(-100%);
 			}
 		}
+
+		.form-check-input:checked {
+			background-color: rgb(0, 204, 187);
+			border-color: rgb(0, 204, 187);
+		}
+
+		.form-switch .form-check-input:focus:not(:checked) {
+			--bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%236cfff3'/%3e%3c/svg%3e");
+		}
+
+		.form-check-input:focus {
+			border-color: #6cfff3;
+			box-shadow: 0 0 0 .25rem rgb(23 255 236 / 25%);
+		}
 	</style>
 </head>
 <body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
@@ -514,6 +528,13 @@
 	
 	<p id="errorMsg" style="display: none;">Failed to fetch updated leaderboard. Try again later.</p>
 
+	<div class="mt-3">
+		<div class="form-check form-switch">
+			<input class="form-check-input" type="checkbox" role="switch" id="showCCAnnounceCb" checked>
+			<label class="form-check-label" for="showCCAnnounceCb">Show Cheerful Carnival announcements</label>
+		</div>
+	</div>
+
 	<footer class="py-3">
 		<span>Contact: neo@seka.ing</span>
 	</footer>
@@ -792,7 +813,7 @@
 				}
 			}
 
-			if(eventData.type === "cheerful_carnival") {
+			if(eventData.type === "cheerful_carnival" && document.getElementById("showCCAnnounceCb").checked) {
 				try {
 					const res = await getAnnouncements()
 					if(res.announcements.length > 0 && res.updated_at !== localStorage.getItem("lastCCAnnounce")) {
@@ -904,6 +925,13 @@
 				scrollTo.scrollIntoView({behavior: "smooth", block: "center"})
 			}
 		}
+
+		if(localStorage.getItem("showCCAnnounce") === "false") {
+			document.getElementById("showCCAnnounceCb").checked = false
+		}
+		document.getElementById("showCCAnnounceCb").addEventListener("change", function(event) {
+			localStorage.setItem("showCCAnnounce", this.checked.toString())
+		})
 
 		doUpdate()
 		setInterval(doUpdate, 30 * 1000)
