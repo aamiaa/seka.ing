@@ -19,4 +19,7 @@ export const CheerfulCarnivalAnnouncementSchema = new mongoose.Schema<ICheerfulC
 	value: {type: Number}
 })
 
+CheerfulCarnivalAnnouncementSchema.index({eventId: 1})
+CheerfulCarnivalAnnouncementSchema.index({eventId: 1, to: 1, cheerfulCarnivalAnnounceType: 1})
+
 export const CheerfulCarnivalAnnouncementModel = mongoose.model<ICheerfulCarnivalAnnouncementModel, ICheerfulCarnivalAnnouncementModelStatic>("cc_announces", CheerfulCarnivalAnnouncementSchema)
