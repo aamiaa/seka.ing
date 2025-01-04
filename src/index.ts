@@ -5,6 +5,7 @@ import LeaderboardTracker from "./sekai/event/leaderboard";
 import SekaiMasterDB from "./providers/sekai-master-db";
 import ApiClient from "./sekai/api"
 import { Database } from "./providers/database";
+import CheerfulCarnivalTracker from "./sekai/event/cheerful_carnival";
 
 process.on("unhandledRejection", (reason: Error|any) => {
 	console.log("Unhandled Rejection at:", reason.stack || reason)
@@ -24,6 +25,7 @@ async function main() {
 	})
 
 	LeaderboardTracker.init()
+	CheerfulCarnivalTracker.init()
 	ExpressServer.init()
 }
 main()
