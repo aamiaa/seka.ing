@@ -14,6 +14,11 @@ export default class EventController {
 		return res.json(CacheStore.get("leaderboard"))
 	}
 
+	public static async getAnnouncements(req: Request, res: Response, next: NextFunction) {
+		res.set("Cache-Control", "no-store")
+		return res.json(CacheStore.get("cc_announce"))
+	}
+
 	public static async getPrediction(req: Request, res: Response, next: NextFunction) {
 		const rank = parseInt(req.query.rank as string)
 		const checkWorldlink = req.query.worldlink
