@@ -1,13 +1,12 @@
-import SekaiApiClient from "sekai-api"
-import HttpsProxyAgent from "https-proxy-agent"
-import { RankingSnapshotModel } from "../models/snapshot"
-import SekaiMasterDB from "../providers/sekai-master-db"
-import { EventProfileModel } from "../models/event_profile"
-import RankingSnapshot from "../interface/models/snapshot"
-import { sha256 } from "../util/hash"
-import { SekaiEvent, SekaiEventType } from "../interface/event"
-import CacheStore from "../webserv/cache"
+import { RankingSnapshotModel } from "../../models/snapshot"
+import SekaiMasterDB from "../../providers/sekai-master-db"
+import { EventProfileModel } from "../../models/event_profile"
+import RankingSnapshot from "../../interface/models/snapshot"
+import { sha256 } from "../../util/hash"
+import { SekaiEvent, SekaiEventType } from "../../interface/event"
+import CacheStore from "../../webserv/cache"
 import { EventRankingPage, UserRanking } from "sekai-api"
+import ApiClient from "../api"
 
 interface PartialUserRanking {
 	name: string,
@@ -22,6 +21,7 @@ interface PartialUserRanking {
 interface LeaderboardCacheEvent {
 	name?: string,
 	name_key?: string,
+	type?: string,
 	starts_at?: Date,
 	ends_at?: Date,
 	titles_at?: Date,
@@ -50,9 +50,7 @@ function populateUsersMap(map: Record<string, UserRanking>, users: UserRanking[]
 	}
 }
 
-export default class EventTracker {
-	private static client: SekaiApiClient
-
+export default class LeaderboardTracker {
 	public static async init() {
 		CacheStore.set("leaderboard", {
 			event: {},
@@ -60,23 +58,10 @@ export default class EventTracker {
 			updated_at: null
 		})
 
-		const httpsAgent = HttpsProxyAgent({
-			host: process.env.ProxyHost,
-			port: parseInt(process.env.ProxyPort) + 2,
-			auth: `${process.env.ProxyUsername}:${process.env.ProxyPassword}`,
-		})
-		this.client = new SekaiApiClient({httpsAgent})
-		await this.client.init()
-		await this.client.authenticate({
-			credential: process.env.SEKAI_AUTH,
-			deviceId: process.env.SEKAI_DEVICE_ID,
-			installId: process.env.SEKAI_INSTALL_ID
-		})
-
 		await this.updateLeaderboard()
 		setInterval(this.updateLeaderboard.bind(this), 60 * 1000)
 		
-		console.log("[EventTracker] Started!")
+		console.log("[LeaderboardTracker] Started!")
 	}
 
 	public static async getPastHourRanking() {
@@ -151,7 +136,7 @@ export default class EventTracker {
 	}
 
 	private static async updateLeaderboard() {
-		console.log("[EventTracker] Updating leaderboard...")
+		console.log("[LeaderboardTracker] Updating leaderboard...")
 
 		const now = new Date()
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
@@ -162,7 +147,7 @@ export default class EventTracker {
 				rankings: [],
 				updated_at: now
 			})
-			console.log("[EventTracker] No current event")
+			console.log("[LeaderboardTracker] No current event")
 			return
 		}
 		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
@@ -170,16 +155,16 @@ export default class EventTracker {
 		// Save current leaderboard snapshot
 		let ranking: EventRankingPage
 		try {
-			ranking = await this.client.getRankingTop100(currentEvent.id)
+			ranking = await ApiClient.getRankingTop100(currentEvent.id)
 		} catch(ex) {
 			CacheStore.get<LeaderboardCache>("leaderboard").update_error = true
 
-			console.error("[EventTracker] Update failed:", ex)
+			console.error("[LeaderboardTracker] Update failed:", ex)
 			return
 		}
 
 		if(ranking.isEventAggregate) {
-			console.warn("[EventTracker] Event is aggregating")
+			console.warn("[LeaderboardTracker] Event is aggregating")
 
 			CacheStore.get<LeaderboardCache>("leaderboard").aggregate_until = currentEvent.rankingAnnounceAt
 			return
@@ -206,6 +191,7 @@ export default class EventTracker {
 			event: {
 				name: currentEvent.name,
 				name_key: currentEvent.assetbundleName,
+				type: currentEvent.eventType,
 				ends_at: currentEvent.aggregateAt,
 				titles_at: currentEvent.distributionStartAt
 			},
@@ -250,6 +236,6 @@ export default class EventTracker {
 			}
 		}
 
-		console.log("[EventTracker] Updated!")
+		console.log("[LeaderboardTracker] Updated!")
 	}
 }

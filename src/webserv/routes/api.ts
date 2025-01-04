@@ -7,6 +7,8 @@ const apiRouter = Router()
 
 apiRouter.get("/leaderboard", EventController.getLeaderboard)
 
+apiRouter.get("/cc-announcements", EventController.getAnnouncements)
+
 apiRouter.get("/prediction",
 	query("rank").isInt({min: 1, max: 100}),
 	query("worldlink").optional().isBoolean(),
