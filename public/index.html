@@ -37,7 +37,11 @@
 			opacity: 0.9;
 		}
 
-		.scrolling-text-container {
+		.slide-parent {
+			container-type: inline-size; /* https://stackoverflow.com/a/75443310 */
+		}
+
+		.slide-child {
 			animation: scroll-anim 15s linear 1;
 		}
 
@@ -61,7 +65,7 @@
 
 		@keyframes scroll-anim {
 			0% {
-				transform: translateX(100%);
+				transform: translateX(100cqw);
 			}
 			100% {
 				transform: translateX(-100%);
@@ -75,9 +79,9 @@
 	<script src="/assets/countdown.min.js"></script>
 
 	<div class="sticky-top w-100">
-		<div id="announcementBanner" style="display: none; animation: fade-in-anim 1s linear 1;" class="announcement-banner py-1 text-center overflow-hidden">
-			<div id="announcementMessageContainer" class="scrolling-text-container">
-				<span id="announcementMessage" class="scrolling-text text-white text-nowrap">The Osechi group's Team Class Leader has won in the x10 special match!</span>
+		<div id="announcementBanner" style="display: none; animation: fade-in-anim 0.5s linear 1;" class="announcement-banner slide-parent py-1 overflow-hidden">
+			<div id="announcementMessageContainer" class="slide-child d-inline-block">
+				<span id="announcementMessage" class="text-white text-nowrap">The Osechi group's Team Class Leader has won in the x10 special match!</span>
 			</div>
 		</div>
 		<div id="issuesBanner" style="display: none;" class="py-3 bg-danger text-center rounded-bottom">
