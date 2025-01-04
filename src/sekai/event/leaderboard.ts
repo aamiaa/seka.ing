@@ -21,6 +21,7 @@ interface PartialUserRanking {
 interface LeaderboardCacheEvent {
 	name?: string,
 	name_key?: string,
+	type?: string,
 	starts_at?: Date,
 	ends_at?: Date,
 	titles_at?: Date,
@@ -190,6 +191,7 @@ export default class LeaderboardTracker {
 			event: {
 				name: currentEvent.name,
 				name_key: currentEvent.assetbundleName,
+				type: currentEvent.eventType,
 				ends_at: currentEvent.aggregateAt,
 				titles_at: currentEvent.distributionStartAt
 			},
