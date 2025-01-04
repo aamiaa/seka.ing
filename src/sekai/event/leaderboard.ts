@@ -60,7 +60,7 @@ export default class LeaderboardTracker {
 		await this.updateLeaderboard()
 		setInterval(this.updateLeaderboard.bind(this), 60 * 1000)
 		
-		console.log("[EventTracker] Started!")
+		console.log("[LeaderboardTracker] Started!")
 	}
 
 	public static async getPastHourRanking() {
@@ -135,7 +135,7 @@ export default class LeaderboardTracker {
 	}
 
 	private static async updateLeaderboard() {
-		console.log("[EventTracker] Updating leaderboard...")
+		console.log("[LeaderboardTracker] Updating leaderboard...")
 
 		const now = new Date()
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
@@ -146,7 +146,7 @@ export default class LeaderboardTracker {
 				rankings: [],
 				updated_at: now
 			})
-			console.log("[EventTracker] No current event")
+			console.log("[LeaderboardTracker] No current event")
 			return
 		}
 		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
@@ -158,12 +158,12 @@ export default class LeaderboardTracker {
 		} catch(ex) {
 			CacheStore.get<LeaderboardCache>("leaderboard").update_error = true
 
-			console.error("[EventTracker] Update failed:", ex)
+			console.error("[LeaderboardTracker] Update failed:", ex)
 			return
 		}
 
 		if(ranking.isEventAggregate) {
-			console.warn("[EventTracker] Event is aggregating")
+			console.warn("[LeaderboardTracker] Event is aggregating")
 
 			CacheStore.get<LeaderboardCache>("leaderboard").aggregate_until = currentEvent.rankingAnnounceAt
 			return
@@ -234,6 +234,6 @@ export default class LeaderboardTracker {
 			}
 		}
 
-		console.log("[EventTracker] Updated!")
+		console.log("[LeaderboardTracker] Updated!")
 	}
 }
