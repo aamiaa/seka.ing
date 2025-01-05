@@ -2,12 +2,15 @@ import { Router } from "express"
 import { query } from "express-validator";
 import EventController from "../controllers/event"
 import ValidationMiddleware from "../middleware/validation";
+import TimeController from "../controllers/time";
 
 const apiRouter = Router()
 
 apiRouter.get("/leaderboard", EventController.getLeaderboard)
 
 apiRouter.get("/cc-announcements", EventController.getAnnouncements)
+
+apiRouter.get("/time", TimeController.getServerTime)
 
 apiRouter.get("/prediction",
 	query("rank").isInt({min: 1, max: 100}),

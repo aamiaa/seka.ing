@@ -635,6 +635,16 @@
 			}
 		}
 
+		async function getServerTime() {
+			const res = await fetch("/api/time")
+			if(!res.ok) {
+				throw new Error("getServerTime() failed: " + res.status)
+			}
+
+			const json = await res.json()
+			return json.server_time
+		}
+
 		async function getLeaderboard() {
 			try {
 				const res = await fetch("/api/leaderboard")
@@ -703,6 +713,7 @@
 		let nextTimerStarted = false
 		let lastLbUpdate
 		let trackHash = localStorage.getItem("trackHash")
+		let clockOffset = 0
 
 		async function doUpdate() {
 			if(lastLbUpdate && document.visibilityState === "hidden") {
@@ -742,11 +753,19 @@
 			if(eventData.ends_at && !timerStarted) {
 				timerStarted = true
 
+				const reqStart = Date.now()
+				let serverTime = await getServerTime()
+				const reqEnd = Date.now()
+
+				serverTime = serverTime + (reqEnd - reqStart)
+				clockOffset = Date.now() - serverTime
+				console.log("Clock offset:", clockOffset)
+
 				document.getElementById("eventCountdownPlaceholder").style.display = "none"
 				document.getElementById("eventCountdown").style.display = ""
 				
 				const eventEndsAt = new Date(eventData.ends_at)
-				const flipdown = new FlipDown(Math.floor(eventEndsAt.getTime()/1000), "eventCountdown", {theme: "light"})
+				const flipdown = new FlipDown(Math.floor((eventEndsAt.getTime() + clockOffset)/1000), "eventCountdown", {theme: "light"})
 				flipdown.start()
 			}
 			if(eventData.titles_at && new Date(eventData.ends_at).getTime() < Date.now() && new Date(eventData.titles_at).getTime() > Date.now()) {
@@ -771,7 +790,7 @@
 					document.getElementById("nextEventCountdown").classList.remove("d-none")
 					
 					const eventStartsAt = new Date(nextEventData.starts_at)
-					const flipdown = new FlipDown(Math.floor(eventStartsAt.getTime()/1000), "nextEventCountdown", {theme: "light"})
+					const flipdown = new FlipDown(Math.floor((eventStartsAt.getTime() + clockOffset)/1000), "nextEventCountdown", {theme: "light"})
 					flipdown.start()
 				}
 
