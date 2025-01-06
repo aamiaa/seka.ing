@@ -33,8 +33,8 @@ export default class ImageGenController {
 		const honor = SekaiMasterDB.getHonor(resourceId)
 		const honorGroup = SekaiMasterDB.getHonorGroup(honor.groupId)
 
-		const backgroundImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honorGroup.backgroundAssetbundleName, "degree_main.png"))
-		const rankImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honor.assetbundleName, "rank_main.png"))
+		const backgroundImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honorGroup.backgroundAssetbundleName, "degree_main", "degree_main.png"))
+		const rankImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honor.assetbundleName, "rank_main", "rank_main.png"))
 
 		const image = await new EventHonorImage({
 			backgroundImage,
