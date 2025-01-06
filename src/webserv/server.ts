@@ -2,6 +2,7 @@ import express, {Request, Response, NextFunction} from "express";
 import { Server } from "http";
 import apiRouter from "./routes/api";
 import mainRouter from "./routes/root";
+import imageGenRouter from "./routes/imggen";
 
 class ExpressServer {
 	public express: express.Application;
@@ -18,6 +19,7 @@ class ExpressServer {
 
 		this.express.use("/", mainRouter)
 		this.express.use("/api", apiRouter)
+		this.express.use("/images", imageGenRouter)
 
 		this.express.all("*", (req, res) => {
 			return res.status(404).sendFile("404.html", {root: "public"})
