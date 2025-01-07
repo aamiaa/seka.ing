@@ -30,6 +30,10 @@ export default class ImageGenController {
 		}
 
 		const resourceId = SekaiMasterDB.getResourceBox(resourceBoxId, resourceBoxPurpose)?.details?.find(x => x.resourceType === "honor")?.resourceId
+		if(!resourceId) {
+			return res.status(400).json({error: "Specified rank doesn't exist"})
+		}
+
 		const honor = SekaiMasterDB.getHonor(resourceId)
 		const honorGroup = SekaiMasterDB.getHonorGroup(honor.groupId)
 

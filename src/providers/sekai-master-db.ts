@@ -51,6 +51,10 @@ export default class SekaiMasterDB {
 		this.worldBloomChapterRankingRewardRanges = worldBloomChapterRankingRewardRangesRes.data
 	}
 
+	public static getEvents() {
+		return this.events
+	}
+
 	public static getEvent(id: number) {
 		return this.events.find(x => x.id === id)
 	}
