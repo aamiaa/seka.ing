@@ -3,12 +3,13 @@ import SekaiMasterDB from "../../providers/sekai-master-db";
 import fs from "fs";
 import path from "path";
 import { SekaiEventType } from "../../interface/event";
-import { EventHonorImage } from "sekai-images"
+import { EventHonorImage, EventHonorSubImage } from "sekai-images"
 
 export default class ImageGenController {
 	public static async generateHonor(req: Request, res: Response, next: NextFunction) {
 		const eventId = parseInt(req.params.eventId as string)
 		const rank = parseInt(req.params.rank as string)
+		const sub = req.query.sub === "true"
 		const chapter = req.query.chapter ? parseInt(req.query.chapter as string) : null
 
 		const event = SekaiMasterDB.getEvent(eventId)
@@ -37,10 +38,10 @@ export default class ImageGenController {
 		const honor = SekaiMasterDB.getHonor(resourceId)
 		const honorGroup = SekaiMasterDB.getHonorGroup(honor.groupId)
 
-		const backgroundImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honorGroup.backgroundAssetbundleName, "degree_main", "degree_main.png"))
-		const rankImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honor.assetbundleName, "rank_main", "rank_main.png"))
+		const backgroundImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honorGroup.backgroundAssetbundleName, sub ? "degree_sub/degree_sub.png" : "degree_main/degree_main.png"))
+		const rankImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honor.assetbundleName, sub ? "rank_sub/rank_sub.png" : "rank_main/rank_main.png"))
 
-		const image = await new EventHonorImage({
+		const image = await new (sub ? EventHonorSubImage : EventHonorImage)({
 			backgroundImage,
 			rankImage,
 			honorRarity: honor.honorRarity,
