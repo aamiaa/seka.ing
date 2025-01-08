@@ -47,6 +47,9 @@ export default class CheerfulCarnivalTracker {
 		if(!event || event.eventType !== SekaiEventType.CHEERFUL_CARNIVAL) {
 			return
 		}
+		if(Date.now() > event.aggregateAt.getTime()) {
+			return
+		}
 
 		console.log("[CheerfulCarnivalTracker] Updating announcements...")
 
