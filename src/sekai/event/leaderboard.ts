@@ -28,7 +28,8 @@ interface LeaderboardCacheEvent {
 	chapters?: {
 		title: string,
 		num: number,
-		color: string
+		color: string,
+		starts_at: Date
 	}[],
 	chapter_num?: number,
 	chapter_character?: number
@@ -202,11 +203,11 @@ export default class LeaderboardTracker {
 
 		if(currentEvent.eventType === SekaiEventType.WORLD_BLOOM) {
 			const chapters = SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
-				.filter(x => now >= x.chapterStartAt)
 				.map(x => ({
 					title: SekaiMasterDB.getGameCharacter(x.gameCharacterId).givenName,
 					num: x.chapterNo,
-					color: SekaiMasterDB.getCharacterColor(x.gameCharacterId)
+					color: SekaiMasterDB.getCharacterColor(x.gameCharacterId),
+					starts_at: new Date(x.chapterStartAt)
 				}))
 
 			lbCache.event.chapters = chapters

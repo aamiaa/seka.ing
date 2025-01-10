@@ -465,6 +465,10 @@
 								</thead>
 								<tbody id="eventTableChapter1Body" class="table-group-divider"></tbody>
 							</table>
+							<div id="eventTableChapter1Countdown" style="display: none;" class="p-4">
+								<h4 class="text-dark text-center">Chapter starts at:</h4>
+								<h3 id="eventTableChapter1CountdownLabel" class="text-dark text-center"></h3>
+							</div>
 						</div>
 						<div class="tab-pane fade" id="chapter-2-tab-pane" role="tabpanel" aria-labelledby="chapter-2-tab" tabindex="0">
 							<table id="eventTableChapter2" class="table table-hover table-light" style="--bs-table-bg: white;">
@@ -479,6 +483,10 @@
 								</thead>
 								<tbody id="eventTableChapter2Body" class="table-group-divider"></tbody>
 							</table>
+							<div id="eventTableChapter2Countdown" style="display: none;" class="p-4">
+								<h4 class="text-dark text-center">Chapter starts at:</h4>
+								<h3 id="eventTableChapter2CountdownLabel" class="text-dark text-center"></h3>
+							</div>
 						</div>
 						<div class="tab-pane fade" id="chapter-3-tab-pane" role="tabpanel" aria-labelledby="chapter-3-tab" tabindex="0">
 							<table id="eventTableChapter3" class="table table-hover table-light" style="--bs-table-bg: white;">
@@ -493,6 +501,10 @@
 								</thead>
 								<tbody id="eventTableChapter3Body" class="table-group-divider"></tbody>
 							</table>
+							<div id="eventTableChapter3Countdown" style="display: none;" class="p-4">
+								<h4 class="text-dark text-center">Chapter starts at:</h4>
+								<h3 id="eventTableChapter3CountdownLabel" class="text-dark text-center"></h3>
+							</div>
 						</div>
 						<div class="tab-pane fade" id="chapter-4-tab-pane" role="tabpanel" aria-labelledby="chapter-4-tab" tabindex="0">
 							<table id="eventTableChapter4" class="table table-hover table-light" style="--bs-table-bg: white;">
@@ -507,6 +519,10 @@
 								</thead>
 								<tbody id="eventTableChapter4Body" class="table-group-divider"></tbody>
 							</table>
+							<div id="eventTableChapter4Countdown" style="display: none;" class="p-4">
+								<h4 class="text-dark text-center">Chapter starts at:</h4>
+								<h3 id="eventTableChapter4CountdownLabel" class="text-dark text-center"></h3>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -806,6 +822,15 @@
 					const tbl = document.getElementById("eventTableChapter" + chapter.num)
 					tbl.style.setProperty("--bs-table-bg", color)
 					tbl.style.setProperty("--bs-table-hover-bg", hoverColor)
+
+					const chapterStart = new Date(chapter.starts_at)
+					if(chapterStart.getTime() > Date.now()) {
+						tbl.style.display = "none"
+						document.getElementById(`eventTableChapter${chapter.num}Countdown`).style.display = ""
+						document.getElementById(`eventTableChapter${chapter.num}CountdownLabel`).innerText = chapterStart.toLocaleString()
+					} else {
+						tbl.style.display = ""
+					}
 				}
 				
 				for(const [idx, rankings] of data.chapter_rankings.entries()) {
