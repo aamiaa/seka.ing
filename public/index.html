@@ -654,6 +654,10 @@
 				const res = await fetch("/api/leaderboard")
 				if(!res.ok) {
 					console.error("getLeaderboard() failed (1):", res.status)
+
+					if(res.headers.get("cf-mitigated") === "challenge") {
+						return {errorType: "challenge"}
+					}
 					return {errorType: "backend"}
 				}
 
@@ -726,6 +730,10 @@
 
 			const {data, errorType} = await getLeaderboard()
 			if(!data) {
+				if(errorType === "challenge") {
+					return document.location.reload()
+				}
+
 				if(!lastLbUpdate) {
 					toggleFailureMessage(true)
 				} else {
