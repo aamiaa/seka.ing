@@ -5,7 +5,7 @@ import ValidationMiddleware from "../middleware/validation";
 
 const imageGenRouter = Router()
 
-imageGenRouter.get("/honor/:eventId/:rank.png",
+imageGenRouter.get("/honor/event/:eventId/:rank.png",
 	param("eventId").isInt({min: 1}),
 	param("rank").isInt(),
 	query("sub").optional().isBoolean(),

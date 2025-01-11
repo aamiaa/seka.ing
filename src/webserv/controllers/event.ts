@@ -15,7 +15,7 @@ export default class EventController {
 				SekaiMasterDB.getResourceBox(x.eventRankingRewards[0].resourceBoxId, "event_ranking_reward")?.details?.find(x => x.resourceType === "honor")
 			).map(range => ({
 				rank: range.toRank,
-				image: `/images/honor/${event.id}/${range.toRank}.png`
+				image: `/images/honor/event/${event.id}/${range.toRank}.png`
 			}))
 			
 			if(event.eventType === SekaiEventType.WORLD_BLOOM) {
