@@ -21,18 +21,26 @@
 		</div>
 	</div>
 
-	<div class="w-75">
-		<div class="input-group mb-2" style="width: 300px;">
-			<input id="minTb" type="number" step="100" min="0" class="form-control" placeholder="Min">
-			<input id="maxTb" type="number" step="100" min="0" class="form-control" placeholder="Max">
-			<button id="filterBtn" class="btn btn-primary">Filter</button>
+	<div class="row w-100 justify-content-around gap-4 gap-md-0">
+		<div class="col-auto">
+			<div class="input-group mb-2" style="width: 300px;">
+				<input id="minTb" type="number" step="100" min="0" class="form-control" placeholder="Min">
+				<input id="maxTb" type="number" step="100" min="0" class="form-control" placeholder="Max">
+				<button id="filterBtn" class="btn btn-primary">Filter</button>
+			</div>
+			<button id="nowBtn" class="btn btn-primary">Now</button>
+			<button id="clearBtn" class="btn btn-primary">Clear</button>
 		</div>
-		<button id="nowBtn" class="btn btn-primary">Now</button>
-		<button id="clearBtn" class="btn btn-primary">Clear</button>
+		<div class="col-auto">
+			<div class="form-check form-switch">
+				<input class="form-check-input" type="checkbox" role="switch" id="showAllCb">
+				<label class="form-check-label" for="showAllCb">Show all worldlinks</label>
+			</div>
+		</div>
 	</div>
 
 	<script type="module">
-		const {points, colors, now} = await fetch("/api/wl-graph").then(res => res.json())
+		const {points, colors, now} = await fetch(`/api/wl-graph?all=${localStorage.getItem("chartShowAllWorldlinks") === "true"}`).then(res => res.json())
 		document.getElementById("loadingSpinner").style.display = "none"
 		const ctx = document.getElementById("mainChart")
 
@@ -126,5 +134,11 @@
 		})
 
 		document.getElementById("nowBtn").click()
+
+		document.getElementById("showAllCb").checked = localStorage.getItem("chartShowAllWorldlinks") === "true"
+		document.getElementById("showAllCb").addEventListener("change", function(event) {
+			localStorage.setItem("chartShowAllWorldlinks", this.checked.toString())
+			document.location.reload()
+		})
 	</script>
 </body>

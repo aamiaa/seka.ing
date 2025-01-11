@@ -178,11 +178,14 @@ export default class EventController {
 	}
 
 	public static async getWorldlinkGraph(req: Request, res: Response, next: NextFunction) {
+		const includeAll = req.query.all === "true"
+
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
-		if(!currentEvent) {
-			return res.status(400).json({error: "No event in progress"})
+		if(!includeAll && currentEvent?.eventType !== SekaiEventType.WORLD_BLOOM) {
+			return res.status(400).json({error: "No worldlink in progress"})
 		}
-		const chapters = SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
+		
+		const chapters = includeAll ? SekaiMasterDB.getAllWorldBloomChapters() : SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
 		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
 
 		const colors: Record<string, string> = {}

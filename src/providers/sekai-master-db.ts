@@ -69,6 +69,10 @@ export default class SekaiMasterDB {
 		return this.events.find(x => x.startAt > now)
 	}
 
+	public static getAllWorldBloomChapters() {
+		return this.worldBlooms
+	}
+
 	public static getWorldBloomChapters(id: number) {
 		return this.worldBlooms.filter(x => x.eventId === id)
 	}

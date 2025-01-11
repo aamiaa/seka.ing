@@ -9,7 +9,10 @@ const apiRouter = Router()
 apiRouter.get("/events", EventController.getEvents)
 apiRouter.get("/leaderboard", EventController.getLeaderboard)
 apiRouter.get("/cc-announcements", EventController.getAnnouncements)
-apiRouter.get("/wl-graph", EventController.getWorldlinkGraph)
+apiRouter.get("/wl-graph",
+	query("all").optional().isBoolean(),
+	EventController.getWorldlinkGraph
+)
 
 apiRouter.get("/time", TimeController.getServerTime)
 
