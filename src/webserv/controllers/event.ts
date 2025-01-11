@@ -176,4 +176,101 @@ export default class EventController {
 		}
 		return res.json(result[0])
 	}
+
+	public static async getWorldlinkGraph(req: Request, res: Response, next: NextFunction) {
+		const currentEvent = SekaiMasterDB.getCurrentEvent()
+		if(!currentEvent) {
+			return res.status(400).json({error: "No event in progress"})
+		}
+		const chapters = SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
+		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
+
+		const colors: Record<string, string> = {}
+		const query: PipelineStage.Facet["$facet"] = {}
+		chapters.forEach(chapter => {
+			const name = SekaiMasterDB.getGameCharacter(chapter.gameCharacterId).givenName
+			colors[name] = SekaiMasterDB.getCharacterColor(chapter.gameCharacterId)
+			query[name] = [
+				{
+					$match: {
+						createdAt: {
+							$gte: chapter.chapterStartAt,
+							$lte: chapter.aggregateAt
+						}
+					}
+				},
+				{
+					$project: {
+						_id: 0,
+						points: {
+							$getField: {
+								field: "score",
+								input: {
+									$arrayElemAt: [
+										{
+											$arrayElemAt: [
+												"$userWorldBloomChapterRankings.rankings",
+												chapter.chapterNo - 1
+											]
+										},
+										99
+									]
+								}
+							}
+						},
+						createdAt: 1
+					}
+				},
+				{
+					$group: {
+						_id: {
+							$dateTrunc: {
+								date: "$createdAt",
+								unit: "minute",
+								binSize: 1
+							}
+						},
+						points: {
+							$first: "$points"
+						}
+					}
+				},
+				{
+					$sort: {_id: 1}
+				},
+				{
+					$project: {
+						_id: 0,
+						y: "$points",
+						x: {
+							$dateDiff: {
+								startDate: chapter.chapterStartAt,
+								endDate: "$_id",
+								unit: "minute"
+							}
+						}
+					}
+				}
+			]
+		})
+
+		const results = await RankingSnapshotModel.aggregate([
+			{
+				$facet: query
+			}
+		])
+
+		let now: number
+		if(currentChapter) {
+		    now = Math.floor((Date.now() - currentChapter.chapterStartAt.getTime())/60000)
+		    now = Math.round(now/100)*100
+		} else {
+		    now = 4100
+		}
+		return res.json({
+			points: results[0],
+			colors,
+			now
+		})
+	}
 }

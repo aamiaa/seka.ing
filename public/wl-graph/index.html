@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light" class="h-100">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>seka.ing - Event Graph</title>
+
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+
+	<div id="loadingSpinner" class="spinner-border" style="width: 6rem; height: 6rem;" role="status">
+		<span class="visually-hidden">Loading...</span>
+	</div>
+
+	<div class="row w-100 justify-content-center">
+		<div class="col-12 col-md-10">
+			<canvas id="mainChart"></canvas>
+		</div>
+	</div>
+
+	<div class="w-75">
+		<div class="input-group mb-2" style="width: 300px;">
+			<input id="minTb" type="number" step="100" min="0" class="form-control" placeholder="Min">
+			<input id="maxTb" type="number" step="100" min="0" class="form-control" placeholder="Max">
+			<button id="filterBtn" class="btn btn-primary">Filter</button>
+		</div>
+		<button id="nowBtn" class="btn btn-primary">Now</button>
+		<button id="clearBtn" class="btn btn-primary">Clear</button>
+	</div>
+
+	<script type="module">
+		const {points, colors, now} = await fetch("/api/wl-graph").then(res => res.json())
+		document.getElementById("loadingSpinner").style.display = "none"
+		const ctx = document.getElementById("mainChart")
+
+		for(const [key, val] of Object.entries(points)) {
+			if(val.length === 0) {
+				delete points[key]
+			}
+		}
+
+		const min = Math.min(...Object.values(points).map(x => x[0].x))
+		const max = Math.max(...Object.values(points).map(x => x.at(-1).x))
+		const step = 1
+
+		const labels = []
+		for(let i=min;i<=max;i+=step) {
+			labels.push(i)
+		}
+
+		Object.values(points).forEach(points => {
+			for(const [idx, val] of labels.entries()) {
+				if(!points[idx] || points[idx].x !== val) {
+					points.splice(idx, 0, {x: val, y: null})
+				}
+			}
+		})
+
+		const chart = new Chart(ctx, {
+			type: "line",
+			data: {
+				labels: labels,
+				datasets: Object.entries(points).map(arr => ({
+					label: arr[0],
+					data: arr[1].map(x => x.y),
+					spanGaps: true,
+					pointRadius: 0,
+					pointHitRadius: 10,
+					backgroundColor: colors[arr[0]],
+					borderColor: colors[arr[0]]
+				}))
+			},
+			options: {
+				aspectRatio: Math.max(1, window.screen.availWidth/window.screen.availHeight),
+				scales: {
+					x: {
+						title: {
+							display: true,
+							text: "Minutes"
+						}
+					},
+					y: {
+						title: {
+							display: true,
+							text: "T100 Cutoff"
+						},
+						ticks: {
+							callback: function(value, index, values) {
+								return value / 1e6 + "M"
+							}
+						}
+					}
+				}
+			}
+		})
+
+		function updateFilter() {
+			let newMin = document.getElementById("minTb").valueAsNumber || min
+			let newMax = document.getElementById("maxTb").valueAsNumber || max
+
+			let newLabels = []
+			for(let i=newMin;i<=newMax;i+=step) {
+				newLabels.push(i)
+			}
+
+			chart.data.labels = newLabels
+			chart.data.datasets.forEach(dataset => {
+				dataset.data = points[dataset.label].filter(x => x.x >= newMin && x.x <= newMax).map(x => x.y)
+			})
+			chart.update()
+		}
+
+		document.getElementById("filterBtn").addEventListener("click", updateFilter)
+		document.getElementById("nowBtn").addEventListener("click", function() {
+			document.getElementById("minTb").value = Math.min(max - 400, Math.max(0, now - 200))
+			document.getElementById("maxTb").value = Math.min(max, now + 200)
+			updateFilter()
+		})
+		document.getElementById("clearBtn").addEventListener("click", function() {
+			document.getElementById("minTb").value = ""
+			document.getElementById("maxTb").value = ""
+			updateFilter()
+		})
+
+		document.getElementById("nowBtn").click()
+	</script>
+</body>
