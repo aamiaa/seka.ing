@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { SekaiEventType } from "../../interface/event";
 import { EventHonorImage, EventHonorSubImage } from "sekai-images"
+import { writePNGSignature } from "../../util/img_signature";
 
 export default class ImageGenController {
 	public static async generateHonor(req: Request, res: Response, next: NextFunction) {
@@ -47,6 +48,7 @@ export default class ImageGenController {
 			honorRarity: honor.honorRarity,
 			frameName: honorGroup.frameName
 		}).create()
-		return res.set("Content-Type", "image/png").send(image)
+		const withSig = writePNGSignature(image, "sekaing")
+		return res.set("Content-Type", "image/png").send(withSig)
 	}
 }
