@@ -184,7 +184,7 @@ export default class EventController {
 		if(!includeAll && currentEvent?.eventType !== SekaiEventType.WORLD_BLOOM) {
 			return res.status(400).json({error: "No worldlink in progress"})
 		}
-		
+
 		const chapters = includeAll ? SekaiMasterDB.getAllWorldBloomChapters() : SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
 		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
 
@@ -258,6 +258,13 @@ export default class EventController {
 		})
 
 		const results = await RankingSnapshotModel.aggregate([
+			{
+				$match: {
+					eventId: includeAll ? {
+						$in: SekaiMasterDB.getEvents().filter(x => x.eventType === SekaiEventType.WORLD_BLOOM).map(x => x.id)
+					} : currentEvent.id
+				}
+			},
 			{
 				$facet: query
 			}
