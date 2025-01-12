@@ -23,7 +23,7 @@ export default class EventController {
 					honors = honors.concat(
 						SekaiMasterDB.getWorldBloomChapterRankingRewardRanges(event.id, chapter.gameCharacterId).map(range => ({
 							rank: range.toRank,
-							image: `/images/event/honor/${event.id}/${range.toRank}.png?chapter=${chapter.chapterNo}`
+							image: `/images/honor/event/${event.id}/${range.toRank}.png?chapter=${chapter.chapterNo}`
 						}))
 					)
 				})
