@@ -780,7 +780,7 @@
 				const flipdown = new FlipDown(Math.floor((eventEndsAt.getTime() + clockOffset)/1000), "eventCountdown", {theme: "light"})
 				flipdown.start()
 			}
-			if(eventData.titles_at && new Date(eventData.ends_at).getTime() < Date.now() && new Date(eventData.titles_at).getTime() > Date.now()) {
+			if(eventData.titles_at && !eventData.chapter_num && new Date(eventData.ends_at).getTime() < Date.now() && new Date(eventData.titles_at).getTime() > Date.now()) {
 				document.getElementById("eventInfoMsg").style.display = ""
 				document.getElementById("eventInfoMsg").innerText = `Event titles will be distributed in ${countdown(null, new Date(eventData.titles_at), countdown.HOURS | countdown.MINUTES).toString()}`
 			} else {
