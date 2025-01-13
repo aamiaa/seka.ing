@@ -188,73 +188,82 @@ export default class EventController {
 		const chapters = includeAll ? SekaiMasterDB.getAllWorldBloomChapters() : SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
 		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
 
+		const points: Record<string, any[]> = {}
 		const colors: Record<string, string> = {}
 		const query: PipelineStage.Facet["$facet"] = {}
 		chapters.forEach(chapter => {
 			const name = SekaiMasterDB.getGameCharacter(chapter.gameCharacterId).givenName
 			colors[name] = SekaiMasterDB.getCharacterColor(chapter.gameCharacterId)
-			query[name] = [
-				{
-					$match: {
-						createdAt: {
-							$gte: chapter.chapterStartAt,
-							$lte: chapter.aggregateAt
+
+			const isPastChapter = chapter.eventId !== currentEvent.id || chapter.chapterNo < currentChapter.chapterNo
+			const isFutureChapter = !isPastChapter && chapter.chapterNo > currentChapter.chapterNo
+			const graphCache = CacheStore.get<any>(`wl_graph_${name}`)
+			if(isPastChapter && graphCache) {
+				points[name] = graphCache
+			} else if(!isFutureChapter) {
+				query[name] = [
+					{
+						$match: {
+							createdAt: {
+								$gte: chapter.chapterStartAt,
+								$lte: chapter.aggregateAt
+							}
 						}
-					}
-				},
-				{
-					$project: {
-						_id: 0,
-						points: {
-							$getField: {
-								field: "score",
-								input: {
-									$arrayElemAt: [
-										{
-											$arrayElemAt: [
-												"$userWorldBloomChapterRankings.rankings",
-												chapter.chapterNo - 1
-											]
-										},
-										99
-									]
+					},
+					{
+						$project: {
+							_id: 0,
+							points: {
+								$getField: {
+									field: "score",
+									input: {
+										$arrayElemAt: [
+											{
+												$arrayElemAt: [
+													"$userWorldBloomChapterRankings.rankings",
+													chapter.chapterNo - 1
+												]
+											},
+											99
+										]
+									}
+								}
+							},
+							createdAt: 1
+						}
+					},
+					{
+						$group: {
+							_id: {
+								$dateTrunc: {
+									date: "$createdAt",
+									unit: "minute",
+									binSize: 1
+								}
+							},
+							points: {
+								$first: "$points"
+							}
+						}
+					},
+					{
+						$sort: {_id: 1}
+					},
+					{
+						$project: {
+							_id: 0,
+							y: "$points",
+							x: {
+								$dateDiff: {
+									startDate: chapter.chapterStartAt,
+									endDate: "$_id",
+									unit: "minute"
 								}
 							}
-						},
-						createdAt: 1
-					}
-				},
-				{
-					$group: {
-						_id: {
-							$dateTrunc: {
-								date: "$createdAt",
-								unit: "minute",
-								binSize: 1
-							}
-						},
-						points: {
-							$first: "$points"
 						}
 					}
-				},
-				{
-					$sort: {_id: 1}
-				},
-				{
-					$project: {
-						_id: 0,
-						y: "$points",
-						x: {
-							$dateDiff: {
-								startDate: chapter.chapterStartAt,
-								endDate: "$_id",
-								unit: "minute"
-							}
-						}
-					}
-				}
-			]
+				]
+			}
 		})
 
 		const results = await RankingSnapshotModel.aggregate([
@@ -270,6 +279,11 @@ export default class EventController {
 			}
 		])
 
+		for(const [name, vals] of Object.entries(results[0])) {
+			points[name] = (vals as any)
+			CacheStore.set(`wl_graph_${name}`, vals)
+		}
+
 		let now: number
 		if(currentChapter) {
 		    now = Math.floor((Date.now() - currentChapter.chapterStartAt.getTime())/60000)
@@ -278,7 +292,7 @@ export default class EventController {
 		    now = 4100
 		}
 		return res.json({
-			points: results[0],
+			points,
 			colors,
 			now
 		})
