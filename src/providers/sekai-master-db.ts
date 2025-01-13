@@ -88,7 +88,7 @@ export default class SekaiMasterDB {
 		}
 		
 		const now = new Date()
-		return this.worldBlooms.find(x => now <= x.chapterEndAt && now >= x.chapterStartAt)
+		return this.worldBlooms.find(x => now <= x.aggregateAt && now >= x.chapterStartAt)
 	}
 
 	public static getWorldBloomChapterRankingRewardRanges(id: number, gameCharacterId: number) {
