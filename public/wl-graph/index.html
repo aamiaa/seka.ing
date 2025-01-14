@@ -90,7 +90,23 @@
 					x: {
 						title: {
 							display: true,
-							text: "Chapter Minutes"
+							text: "Chapter Time"
+						},
+						ticks: {
+							callback: function(value, index, values) {
+								const val = parseInt(this.getLabelForValue(value))
+								if(val % 60 === 0) {
+									if(val % 1440 === 0 && val > 0) {
+										return `${val/1440}d`
+									} else if(val >= 1440) {
+										const days = Math.floor(val/1440)
+										const minutes = val%1440
+										return `${days}d ${minutes/60}h`
+									} else {
+										return `${val/60}h`
+									}
+								}
+							}
 						}
 					},
 					y: {
@@ -101,6 +117,33 @@
 						ticks: {
 							callback: function(value, index, values) {
 								return value / 1e6 + "M"
+							}
+						}
+					}
+				},
+				plugins: {
+					tooltip: {
+						callbacks: {
+							title: function(tooltipItem, data) {
+								let val = parseInt(tooltipItem[0].label)
+								const days = Math.floor(val/1440)
+								val %= 1440
+								const hours = Math.floor(val/60)
+								val %= 60
+								const minutes = val
+
+								const parts = []
+								if(days) {
+									parts.push(`${days} days`)
+								}
+								if(hours) {
+									parts.push(`${hours} hours`)
+								}
+								if(minutes) {
+									parts.push(`${minutes} minutes`)
+								}
+								
+								return parts.join(", ")
 							}
 						}
 					}
