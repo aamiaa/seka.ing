@@ -15,21 +15,22 @@
 		<span class="visually-hidden">Loading...</span>
 	</div>
 
-	<div class="row w-100 justify-content-center">
+	<div class="row px-0 px-md-5 w-100 justify-content-center">
 		<div class="col-12 col-md-10">
 			<canvas id="mainChart"></canvas>
 		</div>
 	</div>
 
-	<div class="row w-100 justify-content-around gap-4 gap-md-0">
+	<div class="row w-100 justify-content-around gap-4 gap-md-0 mt-3 mt-md-0">
 		<div class="col-auto">
+			<p class="text-center mb-0">Zoom range controls (min, max)</p>
 			<div class="input-group mb-2" style="width: 300px;">
 				<input id="minTb" type="number" step="100" min="0" class="form-control" placeholder="Min">
 				<input id="maxTb" type="number" step="100" min="0" class="form-control" placeholder="Max">
-				<button id="filterBtn" class="btn btn-primary">Filter</button>
+				<button id="filterBtn" class="btn btn-primary">Apply</button>
 			</div>
-			<button id="nowBtn" class="btn btn-primary">Now</button>
-			<button id="clearBtn" class="btn btn-primary">Clear</button>
+			<button id="nowBtn" class="btn btn-primary">Zoom to current moment</button>
+			<button id="clearBtn" class="btn btn-primary">Reset zoom</button>
 		</div>
 		<div class="col-auto">
 			<div class="form-check form-switch">
@@ -40,6 +41,8 @@
 	</div>
 
 	<script type="module">
+		document.getElementById("showAllCb").checked = localStorage.getItem("chartShowAllWorldlinks") === "true"
+		
 		const {points, colors, now} = await fetch(`/api/wl-graph?all=${localStorage.getItem("chartShowAllWorldlinks") === "true"}`).then(res => res.json())
 		document.getElementById("loadingSpinner").style.display = "none"
 		const ctx = document.getElementById("mainChart")
@@ -87,7 +90,7 @@
 					x: {
 						title: {
 							display: true,
-							text: "Minutes"
+							text: "Chapter Minutes"
 						}
 					},
 					y: {
@@ -133,9 +136,8 @@
 			updateFilter()
 		})
 
-		document.getElementById("nowBtn").click()
+		//document.getElementById("nowBtn").click()
 
-		document.getElementById("showAllCb").checked = localStorage.getItem("chartShowAllWorldlinks") === "true"
 		document.getElementById("showAllCb").addEventListener("change", function(event) {
 			localStorage.setItem("chartShowAllWorldlinks", this.checked.toString())
 			document.location.reload()
