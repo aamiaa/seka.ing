@@ -11,7 +11,7 @@
     "express-async-errors": "^3.1.1",
     "express-validator": "^7.2.0",
     "https-proxy-agent": "^5.0.1",
-    "mongoose": "^8.8.4",
+    "mongoose": "^8.9.5",
     "sekai-api": "github:aamiaa/sekai-api",
     "sekai-images": "github:aamiaa/sekai-images"
   }
