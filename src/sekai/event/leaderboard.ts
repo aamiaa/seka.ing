@@ -155,12 +155,16 @@ export default class LeaderboardTracker {
 
 		// Save current leaderboard snapshot
 		let ranking: EventRankingPage
-		try {
-			ranking = await ApiClient.getRankingTop100(currentEvent.id)
-		} catch(ex) {
+		for(let i=0;i<3;i++) {
+			try {
+				ranking = await ApiClient.getRankingTop100(currentEvent.id)
+				break
+			} catch(ex) {
+				console.error("[LeaderboardTracker] Update failed:", ex)
+			}
+		}
+		if(!ranking) {
 			CacheStore.get<LeaderboardCache>("leaderboard").update_error = true
-
-			console.error("[LeaderboardTracker] Update failed:", ex)
 			return
 		}
 
