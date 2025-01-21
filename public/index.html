@@ -81,37 +81,41 @@
 	<script src="/assets/countdown.min.js"></script>
 
 	<div class="sticky-top w-100">
-		<div id="announcementBanner" style="display: none; animation: fade-in-anim 0.5s linear 1;" class="announcement-banner slide-parent py-1 overflow-hidden">
+		<div id="announcementBanner" role="marquee" style="display: none; animation: fade-in-anim 0.5s linear 1;" class="announcement-banner slide-parent py-1 overflow-hidden">
 			<div id="announcementMessageContainer" class="slide-child d-inline-block">
 				<span id="announcementMessage" class="text-white text-nowrap">The Osechi group's Team Class Leader has won in the x10 special match!</span>
 			</div>
 		</div>
-		<div id="issuesBanner" style="display: none;" class="py-3 bg-danger text-center rounded-bottom">
+		<div id="issuesBanner" role="alert" style="display: none;" class="py-3 bg-danger text-center rounded-bottom">
 			<span id="issuesBannerLabel"></span>
 		</div>
 	</div>
 
-	<div id="nextLogoContainer" class="my-3 d-flex justify-content-center align-items-center gap-1 d-none">
+	<header id="nextLogoContainer" class="my-3 d-flex justify-content-center align-items-center gap-1 d-none">
 		<img id="nextEventLogo" alt="Next event logo" width="300" height="128" src="/assets/event_supporting_2023.png">
 		<img style="display: none;" id="nextEventChapterCharacter" alt="Worldlink chapter character" width="90" height="90">
+	</header>
+
+	<div id="nextEventCountdown" aria-label="Next event countdown" role="timer" class="mb-3 d-none">
+		<div id="nextEventCountdownClock" aria-hidden="true" class="flipdown"></div>
 	</div>
 
-	<div id="nextEventCountdown" class="flipdown mb-3 d-none"></div>
-
-	<hr id="eventSeparator" class="w-100 d-none">
+	<hr id="eventSeparator" role="none" class="w-100 d-none">
 	
-	<div id="logoContainer" class="my-3 d-flex justify-content-center align-items-center gap-1">
-		<span id="eventLogoPlaceholder" class="placeholder-glow" style="width: 300px; height: 128px;">
+	<header id="logoContainer" class="my-3 d-flex justify-content-center align-items-center gap-1">
+		<span id="eventLogoPlaceholder" aria-hidden="true" class="placeholder-glow" style="width: 300px; height: 128px;">
 			<span class="placeholder rounded-4 w-100 h-100"></span>
 		</span>
 		<img style="display: none;" id="eventLogo" alt="Event logo" width="300" height="128">
 		<img style="display: none;" id="eventChapterCharacter" alt="Worldlink chapter character" width="90" height="90">
-	</div>
+	</header>
 
-	<div id="eventCountdownPlaceholder" class="flipdown mb-3 placeholder-glow">
+	<div id="eventCountdownPlaceholder" aria-hidden="true" class="flipdown mb-3 placeholder-glow">
 		<span class="placeholder rounded-4 w-100 h-100"></span>
 	</div>
-	<div style="display: none;" id="eventCountdown" class="flipdown mb-3"></div>
+	<div style="display: none;" id="eventCountdown" aria-label="Event countdown" role="timer" class="mb-3">
+		<div id="eventCountdownClock" aria-hidden="true" class="flipdown"></div>
+	</div>
 
 	<p id="eventInfoMsg" style="display:none;" class="text-center mb-0"></p>
 
@@ -755,6 +759,7 @@
 			const eventData = data.event
 			document.getElementById("eventLogoPlaceholder").style.display = "none"
 			document.getElementById("eventLogo").src = `assets/${eventData.name_key}.png`
+			document.getElementById("eventLogo").alt = `${eventData.name} event logo`
 			document.getElementById("eventLogo").style.display = ""
 			if(eventData.chapter_character) {
 				document.getElementById("eventChapterCharacter").style.display = ""
@@ -777,7 +782,7 @@
 				document.getElementById("eventCountdown").style.display = ""
 				
 				const eventEndsAt = new Date(eventData.ends_at)
-				const flipdown = new FlipDown(Math.floor((eventEndsAt.getTime() + clockOffset)/1000), "eventCountdown", {theme: "light"})
+				const flipdown = new FlipDown(Math.floor((eventEndsAt.getTime() + clockOffset)/1000), "eventCountdownClock", {theme: "light"})
 				flipdown.start()
 			}
 			if(eventData.titles_at && !eventData.chapter_num && new Date(eventData.ends_at).getTime() < Date.now() && new Date(eventData.titles_at).getTime() > Date.now()) {
@@ -791,6 +796,7 @@
 			if(nextEventData) {
 				document.getElementById("nextLogoContainer").classList.remove("d-none")
 				document.getElementById("nextEventLogo").src = `assets/${nextEventData.name_key}.png`
+				document.getElementById("nextEventLogo").alt = `${nextEventData.name} event logo`
 
 				if(nextEventData.chapter_character) {
 					document.getElementById("nextEventChapterCharacter").style.display = ""
@@ -802,7 +808,7 @@
 					document.getElementById("nextEventCountdown").classList.remove("d-none")
 					
 					const eventStartsAt = new Date(nextEventData.starts_at)
-					const flipdown = new FlipDown(Math.floor((eventStartsAt.getTime() + clockOffset)/1000), "nextEventCountdown", {theme: "light"})
+					const flipdown = new FlipDown(Math.floor((eventStartsAt.getTime() + clockOffset)/1000), "nextEventCountdownClock", {theme: "light"})
 					flipdown.start()
 				}
 
@@ -891,6 +897,7 @@
 				rankCell.setAttribute("scope", "row")
 				if([1,2,3].includes(slot.rank)) {
 					rankCell.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crown w-6 h-6 text-yellow-400"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"></path><path d="M5 21h14"></path></svg>`
+					rankCell.ariaLabel = slot.rank.toString()
 				} else {
 					rankCell.innerText = slot.rank
 				}
