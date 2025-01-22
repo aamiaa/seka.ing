@@ -178,11 +178,11 @@ export default class EventController {
 	}
 
 	public static async getWorldlinkGraph(req: Request, res: Response, next: NextFunction) {
-		const includeAll = req.query.all === "true"
+		let includeAll = req.query.all === "true"
 
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
 		if(!includeAll && currentEvent?.eventType !== SekaiEventType.WORLD_BLOOM) {
-			return res.status(400).json({error: "No worldlink in progress"})
+			includeAll = true
 		}
 
 		const chapters = includeAll ? SekaiMasterDB.getAllWorldBloomChapters() : SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
@@ -195,8 +195,8 @@ export default class EventController {
 			const name = SekaiMasterDB.getGameCharacter(chapter.gameCharacterId).givenName
 			colors[name] = SekaiMasterDB.getCharacterColor(chapter.gameCharacterId)
 
-			const isPastChapter = chapter.eventId !== currentEvent.id || chapter.chapterNo < currentChapter.chapterNo
-			const isFutureChapter = !isPastChapter && chapter.chapterNo > currentChapter.chapterNo
+			const isPastChapter = currentChapter == null || chapter.eventId !== currentEvent.id || chapter.chapterNo < currentChapter.chapterNo
+			const isFutureChapter = currentChapter != null && !isPastChapter && chapter.chapterNo > currentChapter.chapterNo
 			const graphCache = CacheStore.get<any>(`wl_graph_${name}`)
 			if(isPastChapter && graphCache) {
 				points[name] = graphCache
@@ -266,22 +266,26 @@ export default class EventController {
 			}
 		})
 
-		const results = await RankingSnapshotModel.aggregate([
-			{
-				$match: {
-					eventId: includeAll ? {
-						$in: SekaiMasterDB.getEvents().filter(x => x.eventType === SekaiEventType.WORLD_BLOOM).map(x => x.id)
-					} : currentEvent.id
+		// Length will be 0 if all chapters are cached (i.e. no ongoing chapter)
+		// in which case don't query the db
+		if(Object.keys(query).length > 0) {
+			const results = await RankingSnapshotModel.aggregate([
+				{
+					$match: {
+						eventId: includeAll ? {
+							$in: SekaiMasterDB.getEvents().filter(x => x.eventType === SekaiEventType.WORLD_BLOOM).map(x => x.id)
+						} : currentEvent.id
+					}
+				},
+				{
+					$facet: query
 				}
-			},
-			{
-				$facet: query
-			}
-		])
+			])
 
-		for(const [name, vals] of Object.entries(results[0])) {
-			points[name] = (vals as any)
-			CacheStore.set(`wl_graph_${name}`, vals)
+			for(const [name, vals] of Object.entries(results[0])) {
+				points[name] = (vals as any)
+				CacheStore.set(`wl_graph_${name}`, vals)
+			}
 		}
 
 		let now: number
