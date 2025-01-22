@@ -41,7 +41,6 @@ interface LeaderboardCache {
 	rankings: PartialUserRanking[],
 	chapter_rankings?: PartialUserRanking[][]
 	updated_at?: Date,
-	update_error?: boolean,
 	aggregate_until?: Date
 }
 
@@ -164,7 +163,6 @@ export default class LeaderboardTracker {
 			}
 		}
 		if(!ranking) {
-			CacheStore.get<LeaderboardCache>("leaderboard").update_error = true
 			return
 		}
 
