@@ -1,11 +1,11 @@
-import { RankingSnapshotModel } from "../../models/snapshot"
+import { BorderSnapshotModel, RankingSnapshotModel } from "../../models/snapshot/model"
 import SekaiMasterDB from "../../providers/sekai-master-db"
 import { EventProfileModel } from "../../models/event_profile"
-import RankingSnapshot from "../../interface/models/snapshot"
+import { RankingSnapshot } from "../../interface/models/snapshot"
 import { sha256 } from "../../util/hash"
 import { SekaiEvent, SekaiEventType } from "../../interface/event"
 import CacheStore from "../../webserv/cache"
-import { EventRankingPage, UserRanking } from "sekai-api"
+import { EventRankingBorderPage, EventRankingPage, UserRanking } from "sekai-api"
 import ApiClient from "../api"
 
 interface PartialUserRanking {
@@ -39,7 +39,9 @@ interface LeaderboardCache {
 	event: LeaderboardCacheEvent,
 	next_event?: LeaderboardCacheEvent,
 	rankings: PartialUserRanking[],
-	chapter_rankings?: PartialUserRanking[][]
+	borders: PartialUserRanking[],
+	chapter_rankings?: PartialUserRanking[][],
+	chapter_borders?: PartialUserRanking[][],
 	updated_at?: Date,
 	aggregate_until?: Date
 }
@@ -69,7 +71,7 @@ export default class LeaderboardTracker {
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
 
 		const pastHour = new Date(now.getTime() - 3600 * 1000)
-		let rankingPastHour = await RankingSnapshotModel.find({eventId: currentEvent.id, createdAt: {$gte: pastHour}}).lean()
+		const rankingPastHour = await RankingSnapshotModel.find({eventId: currentEvent.id, createdAt: {$gte: pastHour}}).lean()
 
 		return rankingPastHour
 	}
@@ -154,15 +156,19 @@ export default class LeaderboardTracker {
 
 		// Save current leaderboard snapshot
 		let ranking: EventRankingPage
+		let border: EventRankingBorderPage
 		for(let i=0;i<3;i++) {
 			try {
-				ranking = await ApiClient.getRankingTop100(currentEvent.id)
+				if(!ranking)
+					ranking = await ApiClient.getRankingTop100(currentEvent.id)
+				if(!border)
+					border = await ApiClient.getRankingBorder(currentEvent.id)
 				break
 			} catch(ex) {
 				console.error("[LeaderboardTracker] Update failed:", ex)
 			}
 		}
-		if(!ranking) {
+		if(!ranking || !border) {
 			return
 		}
 
@@ -173,21 +179,35 @@ export default class LeaderboardTracker {
 			return
 		}
 
-		const snapshot: RankingSnapshot = {
+		const rankingSnapshot: RankingSnapshot = {
 			...ranking,
+			eventId: currentEvent.id,
+			createdAt: now
+		}
+		const borderSnapshot = {
+			...border,
 			eventId: currentEvent.id,
 			createdAt: now
 		}
 
 		const eventInProgress = now < new Date(currentEvent.rankingAnnounceAt.getTime() + 3 * 60 * 1000)
 		if(eventInProgress) {
-			await RankingSnapshotModel.create(snapshot)
-			await this.updateUserProfiles(snapshot)
+			// Save ranking snapshot
+			await RankingSnapshotModel.create(rankingSnapshot)
+			await this.updateUserProfiles(rankingSnapshot)
+
+			// Check if borders have changed
+			const borderEntry = new BorderSnapshotModel(borderSnapshot)
+			const lastBorderEntry = await BorderSnapshotModel.findOne({eventId: currentEvent.id}, null, {sort: {createdAt: -1}})
+			if(!lastBorderEntry || lastBorderEntry.getHash() !== borderEntry.getHash()) {
+				await borderEntry.save()
+			}
 		}
 
 		// Update data sent to frontend
 		const rankingPastHour = await this.getPastHourRanking()
 		const currentRanking = ranking.rankings
+		const currentBorder = border.borderRankings
 
 		const currentLb = this.processRankingDifference(currentEvent, currentRanking, rankingPastHour.map(x => x.rankings))
 		const lbCache: LeaderboardCache = {
@@ -199,6 +219,7 @@ export default class LeaderboardTracker {
 				titles_at: currentEvent.distributionStartAt
 			},
 			rankings: currentLb,
+			borders: this.processRankingDifference(currentEvent, currentBorder, []),
 			updated_at: now
 		}
 		CacheStore.set("leaderboard", lbCache)
@@ -226,6 +247,15 @@ export default class LeaderboardTracker {
 						currentEvent,
 						ranking.userWorldBloomChapterRankings[chapter.num - 1].rankings,
 						rankingPastHour.map(x => x.userWorldBloomChapterRankings[chapter.num - 1].rankings)
+					)
+				}
+			}).filter(x => x != null)
+			lbCache.chapter_borders = chapters.map(chapter => {
+				if(!ranking.userWorldBloomChapterRankings[chapter.num - 1].isWorldBloomChapterAggregate) {
+					return this.processRankingDifference(
+						currentEvent,
+						border.userWorldBloomChapterRankingBorders[chapter.num - 1].borderRankings,
+						[]
 					)
 				}
 			}).filter(x => x != null)
