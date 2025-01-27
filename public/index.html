@@ -538,6 +538,10 @@
 
 	<div class="mt-3">
 		<div class="form-check form-switch">
+			<input class="form-check-input" type="checkbox" role="switch" id="showBordersCb">
+			<label class="form-check-label" for="showBordersCb">Show Highlights</label>
+		</div>
+		<div class="form-check form-switch">
 			<input class="form-check-input" type="checkbox" role="switch" id="showCCAnnounceCb" checked>
 			<label class="form-check-label" for="showCCAnnounceCb">Show Cheerful Carnival sliding messages</label>
 		</div>
@@ -819,7 +823,8 @@
 				document.getElementById("eventSeparator").classList.add("d-none")
 			}
 
-			updateLeaderboard(document.getElementById("eventTableOverall"), data.rankings)
+			const showHighlights = document.getElementById("showBordersCb").checked
+			updateLeaderboard(document.getElementById("eventTableOverall"), showHighlights ? data.borders : data.rankings)
 
 			if(data.chapter_rankings) {
 				document.getElementById("chapterTabs").style.removeProperty("display")
@@ -847,7 +852,7 @@
 					}
 				}
 				
-				for(const [idx, rankings] of data.chapter_rankings.entries()) {
+				for(const [idx, rankings] of (showHighlights ? data.chapter_highlights : data.chapter_rankings).entries()) {
 					updateLeaderboard(document.getElementById("eventTableChapter" + (idx + 1)), rankings)
 				}
 
@@ -979,6 +984,14 @@
 		}
 		document.getElementById("showCCAnnounceCb").addEventListener("change", function(event) {
 			localStorage.setItem("showCCAnnounce", this.checked.toString())
+		})
+
+		if(localStorage.getItem("showBordersCb") === "true") {
+			document.getElementById("showBordersCb").checked = true
+		}
+		document.getElementById("showBordersCb").addEventListener("change", function(event) {
+			localStorage.setItem("showBorders", this.checked.toString())
+			doUpdate()
 		})
 
 		doUpdate()
