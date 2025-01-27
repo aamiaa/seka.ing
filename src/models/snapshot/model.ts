@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
-import { RankingSnapshot, BorderSnapshot } from "../interface/models/snapshot";
+import { RankingSnapshot, BorderSnapshot } from "../../interface/models/snapshot";
 import { UserRanking } from "sekai-api";
+import { BorderSnapshotMethods } from "./methods";
 
 export interface IRankingSnapshotModel extends RankingSnapshot, mongoose.Document {
 	// Methods and fields which need the model type go here
@@ -12,6 +13,7 @@ export interface IRankingSnapshotModelStatic extends mongoose.Model<IRankingSnap
 
 export interface IBorderSnapshotModel extends BorderSnapshot, mongoose.Document {
 	// Methods and fields which need the model type go here
+	getHash(): string
 }
 
 export interface IBorderSnapshotModelStatic extends mongoose.Model<IBorderSnapshotModel> {
@@ -54,6 +56,8 @@ export const BorderSnapshotSchema = new mongoose.Schema<IBorderSnapshotModel, IB
 		borderRankings: [UserRankingSchema]
 	}],
 	createdAt: {type: Date, required: true}
+}, {
+	methods: BorderSnapshotMethods
 })
 
 export const RankingSnapshotModel = mongoose.model<IRankingSnapshotModel, IRankingSnapshotModelStatic>("snapshots", RankingSnapshotSchema)

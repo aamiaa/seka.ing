@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import SekaiMasterDB from "../../providers/sekai-master-db";
 import { PipelineStage } from "mongoose";
 import { SekaiEventType } from "../../interface/event";
-import { RankingSnapshotModel } from "../../models/snapshot";
+import { RankingSnapshotModel } from "../../models/snapshot/model";
 import { predict } from "../../util/math";
 import { EventProfileModel } from "../../models/event_profile";
 import { sha256 } from "../../util/hash";
