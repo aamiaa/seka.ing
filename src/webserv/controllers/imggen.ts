@@ -66,7 +66,7 @@ export default class ImageGenController {
 
 		const event = SekaiMasterDB.getEventByKey(eventKey)
 		if(event) {
-			return res.redirect(`/images/honor/event/${event.id}/${rank}.png${parseurl(req).search}`)
+			return res.redirect(`/images/honor/event/${event.id}/${rank}.png${parseurl(req).search ?? ""}`)
 		}
 
 		const backgroundImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", `honor_bg_${eventKeyPart}${chapter ? `_cp${chapter}` : ""}`, sub ? "degree_sub/degree_sub.png" : "degree_main/degree_main.png")
@@ -76,7 +76,7 @@ export default class ImageGenController {
 			return res.status(400).json({error: "Specified event doesn't exist"})
 		}
 
-		const assetbundleName = "honor_top_" + "0".repeat(6 - rank.toString().length) + rank + (chapter ? `_${eventKeyPart}_cp${chapter}` : "")
+		const assetbundleName = "honor_top_" + "0".repeat(6 - rank.toString().length) + rank + (rank === 10 ? "_v2" : "") + (chapter ? `_${eventKeyPart}_cp${chapter}` : "")
 		const rankImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", assetbundleName, sub ? "rank_sub/rank_sub.png" : "rank_main/rank_main.png")
 		try {
 			await fs.promises.stat(rankImagePath)
