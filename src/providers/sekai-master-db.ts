@@ -59,6 +59,10 @@ export default class SekaiMasterDB {
 		return this.events.find(x => x.id === id)
 	}
 
+	public static getEventByKey(key: string) {
+		return this.events.find(x => x.assetbundleName === key)
+	}
+
 	public static getCurrentEvent() {
 		const now = new Date()
 		return this.events.find(x => now <= x.closedAt && now >= x.startAt)

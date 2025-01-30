@@ -5,9 +5,10 @@ import path from "path";
 import { SekaiEventType } from "../../interface/event";
 import { EventHonorImage, EventHonorSubImage } from "sekai-images"
 import { writePNGSignature } from "../../util/img_signature";
+import parseurl from "parseurl"
 
 export default class ImageGenController {
-	public static async generateHonor(req: Request, res: Response, next: NextFunction) {
+	public static async generateHonorFromEventId(req: Request, res: Response, next: NextFunction) {
 		const eventId = parseInt(req.params.eventId as string)
 		const rank = parseInt(req.params.rank as string)
 		const sub = req.query.sub === "true"
@@ -47,6 +48,54 @@ export default class ImageGenController {
 			rankImage,
 			honorRarity: honor.honorRarity,
 			frameName: honorGroup.frameName
+		}).create()
+		const withSig = writePNGSignature(image, "sekaing")
+		return res.set("Content-Type", "image/png").send(withSig)
+	}
+
+	public static async generateHonorFromEventKey(req: Request, res: Response, next: NextFunction) {
+		const eventKey = req.params.eventKey as string
+		const rank = parseInt(req.params.rank as string)
+		const sub = req.query.sub === "true"
+		const chapter = req.query.chapter ? parseInt(req.query.chapter as string) : null
+
+		const eventKeyPart = eventKey.match(/^(event_\w+)_20\d{2}$/)?.[1]
+		if(!eventKeyPart) {
+			return res.status(400).json({error: "Specified event doesn't exist"})
+		}
+
+		const event = SekaiMasterDB.getEventByKey(eventKey)
+		if(event) {
+			return res.redirect(`/images/honor/event/${event.id}/${rank}.png${parseurl(req).search}`)
+		}
+
+		const backgroundImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", `honor_bg_${eventKeyPart}${chapter ? `_cp${chapter}` : ""}`, sub ? "degree_sub/degree_sub.png" : "degree_main/degree_main.png")
+		try {
+			await fs.promises.stat(backgroundImagePath)
+		} catch(ex) {
+			return res.status(400).json({error: "Specified event doesn't exist"})
+		}
+
+		const assetbundleName = "honor_top_" + "0".repeat(6 - rank.toString().length) + rank + (chapter ? `_${eventKeyPart}_cp${chapter}` : "")
+		const rankImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", assetbundleName, sub ? "rank_sub/rank_sub.png" : "rank_main/rank_main.png")
+		try {
+			await fs.promises.stat(rankImagePath)
+		} catch(ex) {
+			return res.status(400).json({error: "Specified rank doesn't exist"})
+		}
+
+		const backgroundImage = await fs.promises.readFile(backgroundImagePath)
+		const rankImage = await fs.promises.readFile(rankImagePath)
+		const rarity =
+			(rank >= 1 && rank <= 10) ? "highest" :
+			(rank > 10 && rank <= 1000) ? "high" :
+			(rank > 1000 && rank <= 10000) ? "middle" : "low"
+		
+		const image = await new (sub ? EventHonorSubImage : EventHonorImage)({
+			backgroundImage,
+			rankImage,
+			honorRarity: rarity,
+			frameName: chapter ? `${eventKeyPart}_cp${chapter}` : undefined
 		}).create()
 		const withSig = writePNGSignature(image, "sekaing")
 		return res.set("Content-Type", "image/png").send(withSig)
