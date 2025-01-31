@@ -1,7 +1,7 @@
 import { BorderSnapshotModel, RankingSnapshotModel } from "../../models/snapshot/model"
 import SekaiMasterDB from "../../providers/sekai-master-db"
 import { EventProfileModel } from "../../models/event_profile"
-import { RankingSnapshot } from "../../interface/models/snapshot"
+import { BorderSnapshot, RankingSnapshot } from "../../interface/models/snapshot"
 import { sha256 } from "../../util/hash"
 import { SekaiEvent, SekaiEventType } from "../../interface/event"
 import CacheStore from "../../webserv/cache"
@@ -146,14 +146,20 @@ export default class LeaderboardTracker {
 		})
 	}
 
-	private static async updateUserProfiles(snapshot: RankingSnapshot) {
+	private static async updateUserProfiles(rankingSnapshot: RankingSnapshot, borderSnapshot: BorderSnapshot) {
 		const users: Record<string, UserRanking> = {}
 
-		populateUsersMap(users, snapshot.rankings)
-		if(snapshot.userWorldBloomChapterRankings?.length > 0) {
-			snapshot.userWorldBloomChapterRankings.forEach(x => {
+		populateUsersMap(users, rankingSnapshot.rankings)
+		populateUsersMap(users, borderSnapshot.borderRankings)
+		if(rankingSnapshot.userWorldBloomChapterRankings?.length > 0) {
+			rankingSnapshot.userWorldBloomChapterRankings.forEach(x => {
 				if(!x.isWorldBloomChapterAggregate) {
 					populateUsersMap(users, x.rankings)
+				}
+			})
+			borderSnapshot.userWorldBloomChapterRankingBorders.forEach(x => {
+				if(!x.isWorldBloomChapterAggregate) {
+					populateUsersMap(users, x.borderRankings)
 				}
 			})
 		}
@@ -161,7 +167,7 @@ export default class LeaderboardTracker {
 		await EventProfileModel.bulkWrite(Object.values(users).map(user => {
 			return {
 				updateOne: {
-					filter: {userId: user.userId, eventId: snapshot.eventId},
+					filter: {userId: user.userId, eventId: rankingSnapshot.eventId},
 					update: {
 						$set: user
 					},
@@ -228,7 +234,7 @@ export default class LeaderboardTracker {
 		if(eventInProgress) {
 			// Save ranking snapshot
 			await RankingSnapshotModel.create(rankingSnapshot)
-			await this.updateUserProfiles(rankingSnapshot)
+			await this.updateUserProfiles(rankingSnapshot, borderSnapshot)
 
 			// Check if borders have changed
 			const borderEntry = new BorderSnapshotModel(borderSnapshot)
