@@ -8,6 +8,7 @@
 
 	<link rel="icon" type="image/x-icon" href="/favicon.ico">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 	<link href="/assets/flipdown.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="/assets/style.css">
 	<style>
@@ -76,6 +77,10 @@
 			100% {
 				transform: translateX(-100%);
 			}
+		}
+
+		.past-hour-by-rank-col {
+			white-space: nowrap;
 		}
 	</style>
 </head>
@@ -152,8 +157,9 @@
 										<th scope="col">#</th>
 										<th scope="col">Name</th>
 										<th scope="col">Points</th>
-										<th scope="col">Past hour</th>
-										<th scope="col">Per game</th>
+										<th scope="col" class="past-hour-col">Past hour</th>
+										<th scope="col" class="per-game-col">Per game</th>
+										<th scope="col" class="past-hour-by-rank-col" style="display: none;">Past hour <u>by tier</u></th>
 									</tr>
 								</thead>
 								<tbody id="eventTableOverallBody" class="table-group-divider">
@@ -467,8 +473,9 @@
 										<th scope="col">#</th>
 										<th scope="col">Name</th>
 										<th scope="col">Points</th>
-										<th scope="col">Past hour</th>
-										<th scope="col">Per game</th>
+										<th scope="col" class="past-hour-col">Past hour</th>
+										<th scope="col" class="per-game-col">Per game</th>
+										<th scope="col" class="past-hour-by-rank-col" style="display: none;">Past hour <u>by tier</u></th>
 									</tr>
 								</thead>
 								<tbody id="eventTableChapter1Body" class="table-group-divider"></tbody>
@@ -485,8 +492,9 @@
 										<th scope="col">#</th>
 										<th scope="col">Name</th>
 										<th scope="col">Points</th>
-										<th scope="col">Past hour</th>
-										<th scope="col">Per game</th>
+										<th scope="col" class="past-hour-col">Past hour</th>
+										<th scope="col" class="per-game-col">Per game</th>
+										<th scope="col" class="past-hour-by-rank-col" style="display: none;">Past hour <u>by tier</u></th>
 									</tr>
 								</thead>
 								<tbody id="eventTableChapter2Body" class="table-group-divider"></tbody>
@@ -503,8 +511,9 @@
 										<th scope="col">#</th>
 										<th scope="col">Name</th>
 										<th scope="col">Points</th>
-										<th scope="col">Past hour</th>
-										<th scope="col">Per game</th>
+										<th scope="col" class="past-hour-col">Past hour</th>
+										<th scope="col" class="per-game-col">Per game</th>
+										<th scope="col" class="past-hour-by-rank-col" style="display: none;">Past hour <u>by tier</u></th>
 									</tr>
 								</thead>
 								<tbody id="eventTableChapter3Body" class="table-group-divider"></tbody>
@@ -521,8 +530,9 @@
 										<th scope="col">#</th>
 										<th scope="col">Name</th>
 										<th scope="col">Points</th>
-										<th scope="col">Past hour</th>
-										<th scope="col">Per game</th>
+										<th scope="col" class="past-hour-col">Past hour</th>
+										<th scope="col" class="per-game-col">Per game</th>
+										<th scope="col" class="past-hour-by-rank-col" style="display: none;">Past hour <u>by tier</u></th>
 									</tr>
 								</thead>
 								<tbody id="eventTableChapter4Body" class="table-group-divider"></tbody>
@@ -828,6 +838,15 @@
 			}
 
 			const showHighlights = document.getElementById("showBordersCb").checked
+			if(showHighlights) {
+				document.querySelectorAll(".past-hour-col").forEach(x => x.style.display = "none")
+				document.querySelectorAll(".per-game-col").forEach(x => x.style.display = "none")
+				document.querySelectorAll(".past-hour-by-rank-col").forEach(x => x.style.display = "")
+			} else {
+				document.querySelectorAll(".past-hour-col").forEach(x => x.style.display = "")
+				document.querySelectorAll(".per-game-col").forEach(x => x.style.display = "")
+				document.querySelectorAll(".past-hour-by-rank-col").forEach(x => x.style.display = "none")
+			}
 			updateLeaderboard(document.getElementById("eventTableOverall"), showHighlights ? data.borders : data.rankings)
 
 			if(data.chapter_rankings) {
@@ -929,7 +948,11 @@
 				nameCell.appendChild(nameCellDiv)
 
 				pointsCell.innerText = formatNumber(slot.score)
-				deltaCell.innerText = !!slot.delta ? "+" + formatNumber(slot.delta) : "-"
+				if(isBordersView) {
+					deltaCell.innerText = !!slot.rank_delta ? "+" + formatNumber(slot.rank_delta) : "-"
+				} else {
+					deltaCell.innerText = !!slot.delta ? "+" + formatNumber(slot.delta) : "-"
+				}
 				avgCell.innerText = !!slot.average ? "+" + formatNumber(Math.floor(slot.average)) : "-"
 
 				if([3, 10, 50].includes(slot.rank - 1)) {
@@ -961,7 +984,9 @@
 				tableRow.appendChild(nameCell)
 				tableRow.appendChild(pointsCell)
 				tableRow.appendChild(deltaCell)
-				tableRow.appendChild(avgCell)
+				if(!isBordersView) {
+					tableRow.appendChild(avgCell)
+				}
 
 				tableBody.appendChild(tableRow)
 

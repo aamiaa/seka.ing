@@ -12,8 +12,9 @@ interface PartialUserRanking {
 	name: string,
 	score: number,
 	rank: number,
-	hash: string,
+	hash?: string,
 	delta?: number,
+	rank_delta?: number,
 	count?: number,
 	average?: number
 }
@@ -28,6 +29,7 @@ interface LeaderboardCacheEvent {
 	chapters?: {
 		title: string,
 		num: number,
+		character_id: number,
 		color: string,
 		starts_at: Date
 	}[],
@@ -76,6 +78,16 @@ export default class LeaderboardTracker {
 		return rankingPastHour
 	}
 
+	public static async getPastHourBorders() {
+		const now = new Date()
+		const currentEvent = SekaiMasterDB.getCurrentEvent()
+
+		const pastHour = new Date(now.getTime() - 3600 * 1000)
+		const bordersPastHour = await BorderSnapshotModel.find({eventId: currentEvent.id, createdAt: {$gte: pastHour}}).lean()
+
+		return bordersPastHour
+	}
+
 	private static processRankingDifference(event: SekaiEvent, currentRanking: UserRanking[], pastRankings: UserRanking[][]) {
 		return currentRanking.map(user => {
 			const hash = sha256(user.userId + "_" + event.assetbundleName)
@@ -108,6 +120,28 @@ export default class LeaderboardTracker {
 				delta: user.score - earliest,
 				average,
 				count
+			}
+		})
+	}
+
+	private static processBordersDifference(event: SekaiEvent, currentRanking: UserRanking[], pastRankings: UserRanking[][]) {
+		return currentRanking.map(user => {
+			// Doing it this way instead of pastRankings[0] since not all ranks will be immediately there (ex. t300k might take a while to appear)
+			let earliest = user.score
+			for(const entry of pastRankings) {
+				const currentRankSlot = entry.find(x => x.rank === user.rank)
+				if(currentRankSlot) {
+					earliest = currentRankSlot.score
+					break
+				}
+			}
+
+			return {
+				name: user.name,
+				team: user.userCheerfulCarnival?.cheerfulCarnivalTeamId,
+				score: user.score,
+				rank: user.rank,
+				rank_delta: user.score - earliest
 			}
 		})
 	}
@@ -207,10 +241,10 @@ export default class LeaderboardTracker {
 
 		// Update data sent to frontend
 		const rankingPastHour = await this.getPastHourRanking()
+		const bordersPastHour = await this.getPastHourBorders()
 		const currentRanking = ranking.rankings
-		const currentBorder = border.borderRankings
+		const currentBorders = border.borderRankings
 
-		const currentLb = this.processRankingDifference(currentEvent, currentRanking, rankingPastHour.map(x => x.rankings))
 		const lbCache: LeaderboardCache = {
 			event: {
 				name: currentEvent.name,
@@ -219,8 +253,8 @@ export default class LeaderboardTracker {
 				ends_at: currentEvent.aggregateAt,
 				titles_at: currentEvent.distributionStartAt
 			},
-			rankings: currentLb,
-			borders: this.processRankingDifference(currentEvent, currentBorder, []),
+			rankings: this.processRankingDifference(currentEvent, currentRanking, rankingPastHour.map(x => x.rankings)),
+			borders: this.processBordersDifference(currentEvent, currentBorders, bordersPastHour.map(x => x.borderRankings)),
 			updated_at: now
 		}
 		CacheStore.set("leaderboard", lbCache)
@@ -230,6 +264,7 @@ export default class LeaderboardTracker {
 				.map(x => ({
 					title: SekaiMasterDB.getGameCharacter(x.gameCharacterId).givenName,
 					num: x.chapterNo,
+					character_id: x.gameCharacterId,
 					color: SekaiMasterDB.getCharacterColor(x.gameCharacterId),
 					starts_at: new Date(x.chapterStartAt)
 				}))
@@ -253,10 +288,10 @@ export default class LeaderboardTracker {
 			}).filter(x => x != null)
 			lbCache.chapter_borders = chapters.map(chapter => {
 				if(!ranking.userWorldBloomChapterRankings[chapter.num - 1].isWorldBloomChapterAggregate) {
-					return this.processRankingDifference(
+					return this.processBordersDifference(
 						currentEvent,
-						border.userWorldBloomChapterRankingBorders[chapter.num - 1].borderRankings,
-						[]
+						border.userWorldBloomChapterRankingBorders.find(y => y.gameCharacterId === chapter.character_id).borderRankings,
+						bordersPastHour.map(x => x.userWorldBloomChapterRankingBorders.find(y => y.gameCharacterId === chapter.character_id).borderRankings)
 					)
 				}
 			}).filter(x => x != null)
