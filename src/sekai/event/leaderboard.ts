@@ -200,6 +200,7 @@ export default class LeaderboardTracker {
 			const borderEntry = new BorderSnapshotModel(borderSnapshot)
 			const lastBorderEntry = await BorderSnapshotModel.findOne({eventId: currentEvent.id}, null, {sort: {createdAt: -1}})
 			if(!lastBorderEntry || lastBorderEntry.getHash() !== borderEntry.getHash()) {
+				// FIXME: worldlink chapters aren't sorted in border api response
 				await borderEntry.save()
 			}
 		}
