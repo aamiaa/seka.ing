@@ -16,13 +16,17 @@
 			--bs-table-hover-bg: #efafbb;
 		}
 
-		@media (max-width: 768px) {
-			.username-label {
-				overflow: hidden;
-				white-space: nowrap;
-				text-overflow: ellipsis;
-			}
+		.username-label {
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+
+		.username-cell {
+			max-width: 20ch;
+		}
 			
+		@media (max-width: 768px) {
 			.username-cell {
 				max-width: 18ch;
 			}
