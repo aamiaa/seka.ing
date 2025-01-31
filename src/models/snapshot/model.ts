@@ -1,12 +1,22 @@
 import mongoose from "mongoose";
-import RankingSnapshot from "../interface/models/snapshot";
+import { RankingSnapshot, BorderSnapshot } from "../../interface/models/snapshot";
 import { UserRanking } from "sekai-api";
+import { BorderSnapshotMethods } from "./methods";
 
 export interface IRankingSnapshotModel extends RankingSnapshot, mongoose.Document {
 	// Methods and fields which need the model type go here
 }
 
 export interface IRankingSnapshotModelStatic extends mongoose.Model<IRankingSnapshotModel> {
+	// Static methods go here
+}
+
+export interface IBorderSnapshotModel extends BorderSnapshot, mongoose.Document {
+	// Methods and fields which need the model type go here
+	getHash(): string
+}
+
+export interface IBorderSnapshotModelStatic extends mongoose.Model<IBorderSnapshotModel> {
 	// Static methods go here
 }
 
@@ -36,4 +46,19 @@ export const RankingSnapshotSchema = new mongoose.Schema<IRankingSnapshotModel, 
 	createdAt: {type: Date, required: true}
 })
 
+export const BorderSnapshotSchema = new mongoose.Schema<IBorderSnapshotModel, IBorderSnapshotModelStatic>({
+	eventId: {type: Number, required: true},
+	borderRankings: [UserRankingSchema],
+	isEventAggregate: {type: Boolean},
+	userWorldBloomChapterRankingBorders: [{
+		gameCharacterId: {type: Number},
+		isWorldBloomChapterAggregate: {type: Boolean},
+		borderRankings: [UserRankingSchema]
+	}],
+	createdAt: {type: Date, required: true}
+}, {
+	methods: BorderSnapshotMethods
+})
+
 export const RankingSnapshotModel = mongoose.model<IRankingSnapshotModel, IRankingSnapshotModelStatic>("snapshots", RankingSnapshotSchema)
+export const BorderSnapshotModel = mongoose.model<IBorderSnapshotModel, IBorderSnapshotModelStatic>("border_snapshots", BorderSnapshotSchema)
