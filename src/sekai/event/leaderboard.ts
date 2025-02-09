@@ -212,7 +212,9 @@ export default class LeaderboardTracker {
 			return
 		}
 
-		if(ranking.isEventAggregate) {
+		// Edge case: ranking might be aggregate: false, while border might be aggregate: true in one go
+		// This is why we check both
+		if(ranking.isEventAggregate || border.isEventAggregate) {
 			console.warn("[LeaderboardTracker] Event is aggregating")
 
 			CacheStore.get<LeaderboardCache>("leaderboard").aggregate_until = currentEvent.rankingAnnounceAt
