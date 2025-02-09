@@ -230,7 +230,7 @@ export default class LeaderboardTracker {
 			createdAt: now
 		}
 
-		const eventInProgress = now < new Date(currentEvent.rankingAnnounceAt.getTime() + 3 * 60 * 1000)
+		const eventInProgress = now < new Date(currentEvent.rankingAnnounceAt.getTime())
 		if(eventInProgress) {
 			// Save ranking snapshot
 			await RankingSnapshotModel.create(rankingSnapshot)
@@ -241,6 +241,24 @@ export default class LeaderboardTracker {
 			const lastBorderEntry = await BorderSnapshotModel.findOne({eventId: currentEvent.id}, null, {sort: {createdAt: -1}})
 			if(!lastBorderEntry || lastBorderEntry.getHash() !== borderEntry.getHash()) {
 				// FIXME: worldlink chapters aren't sorted in border api response
+				await borderEntry.save()
+			}
+		} else {
+			// Save only a single "final" snapshot past event end, and repeat
+			// whenever the leaderboard changes (ex. due to account deletions)
+			const rankingEntry = new RankingSnapshotModel(rankingSnapshot)
+			rankingEntry.final = true
+			const finalRankingEntry = await RankingSnapshotModel.findOne({eventId: currentEvent.id, final: true})
+			if(!finalRankingEntry || finalRankingEntry.getHash() !== rankingEntry.getHash()) {
+				await RankingSnapshotModel.updateMany({eventId: currentEvent.id, final: true}, {$unset: {final: ""}})
+				await rankingEntry.save()
+			}
+
+			const borderEntry = new BorderSnapshotModel(borderSnapshot)
+			borderEntry.final = true
+			const finalBorderEntry = await BorderSnapshotModel.findOne({eventId: currentEvent.id, final: true})
+			if(!finalBorderEntry || finalBorderEntry.getHash() !== borderEntry.getHash()) {
+				await BorderSnapshotModel.updateMany({eventId: currentEvent.id, final: true}, {$unset: {final: ""}})
 				await borderEntry.save()
 			}
 		}
