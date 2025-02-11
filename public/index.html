@@ -671,9 +671,9 @@
 			return json.server_time
 		}
 
-		async function getLeaderboard() {
+		async function getLeaderboard(noCache) {
 			try {
-				const res = await fetch("/api/leaderboard")
+				const res = await fetch("/api/leaderboard" + (noCache ? "?nocache=true" : ""))
 				if(!res.ok) {
 					console.error("getLeaderboard() failed (1):", res.status)
 
@@ -750,7 +750,7 @@
 				return
 			}
 
-			const {data, errorType} = await getLeaderboard()
+			const {data, errorType} = await getLeaderboard(!timerStarted)
 			if(!data) {
 				if(errorType === "challenge") {
 					return document.location.reload()

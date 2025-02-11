@@ -40,7 +40,9 @@ export default class EventController {
 	}
 
 	public static async getLeaderboard(req: Request, res: Response, next: NextFunction) {
-		res.set("Cache-Control", "no-store")
+		if(req.query.nocache) {
+			res.set("Cache-Control", "no-store")
+		}
 		return res.json(CacheStore.get("leaderboard"))
 	}
 
