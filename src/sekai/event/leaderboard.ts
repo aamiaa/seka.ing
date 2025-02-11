@@ -233,6 +233,7 @@ export default class LeaderboardTracker {
 		}
 
 		const eventInProgress = now < new Date(currentEvent.rankingAnnounceAt.getTime())
+		const eventRanksDistributed = now >= new Date(currentEvent.distributionStartAt.getTime())
 		if(eventInProgress) {
 			// Save ranking snapshot
 			await RankingSnapshotModel.create(rankingSnapshot)
@@ -245,7 +246,7 @@ export default class LeaderboardTracker {
 				// FIXME: worldlink chapters aren't sorted in border api response
 				await borderEntry.save()
 			}
-		} else {
+		} else if(!eventRanksDistributed) {
 			// Save only a single "final" snapshot past event end, and repeat
 			// whenever the leaderboard changes (ex. due to account deletions)
 			const rankingEntry = new RankingSnapshotModel(rankingSnapshot)
