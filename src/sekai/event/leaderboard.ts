@@ -180,7 +180,7 @@ export default class LeaderboardTracker {
 	private static async updateLeaderboard() {
 		console.log("[LeaderboardTracker] Updating leaderboard...")
 
-		const now = new Date()
+		let now = new Date()
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
 		const nextEvent = SekaiMasterDB.getNextEvent()
 		if(!currentEvent) {
@@ -199,6 +199,7 @@ export default class LeaderboardTracker {
 		let border: EventRankingBorderPage
 		for(let i=0;i<3;i++) {
 			try {
+				now = new Date()
 				if(!ranking)
 					ranking = await ApiClient.getRankingTop100(currentEvent.id)
 				if(!border)
