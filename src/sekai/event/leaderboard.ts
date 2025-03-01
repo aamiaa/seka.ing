@@ -180,7 +180,7 @@ export default class LeaderboardTracker {
 	private static async updateLeaderboard() {
 		console.log("[LeaderboardTracker] Updating leaderboard...")
 
-		let now = new Date()
+		const now = new Date()
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
 		const nextEvent = SekaiMasterDB.getNextEvent()
 		if(!currentEvent) {
@@ -199,7 +199,6 @@ export default class LeaderboardTracker {
 		let border: EventRankingBorderPage
 		for(let i=0;i<3;i++) {
 			try {
-				now = new Date()
 				if(!ranking)
 					ranking = await ApiClient.getRankingTop100(currentEvent.id)
 				if(!border)
@@ -209,7 +208,7 @@ export default class LeaderboardTracker {
 				console.error("[LeaderboardTracker] Update failed:", ex)
 			}
 		}
-		if(!ranking || !border) {
+		if(!ranking || !border || (Date.now() - now.getTime()) >= 45 * 1000) {
 			return
 		}
 
@@ -225,12 +224,12 @@ export default class LeaderboardTracker {
 		const rankingSnapshot: RankingSnapshot = {
 			...ranking,
 			eventId: currentEvent.id,
-			createdAt: now
+			createdAt: ranking.responseTime
 		}
 		const borderSnapshot = {
 			...border,
 			eventId: currentEvent.id,
-			createdAt: now
+			createdAt: ranking.responseTime
 		}
 
 		const eventInProgress = now < new Date(currentEvent.rankingAnnounceAt.getTime())
@@ -283,7 +282,7 @@ export default class LeaderboardTracker {
 			},
 			rankings: this.processRankingDifference(currentEvent, currentRanking, rankingPastHour.map(x => x.rankings)),
 			borders: this.processBordersDifference(currentEvent, currentBorders, bordersPastHour.map(x => x.borderRankings)),
-			updated_at: now
+			updated_at: ranking.responseTime
 		}
 		CacheStore.set("leaderboard", lbCache)
 
