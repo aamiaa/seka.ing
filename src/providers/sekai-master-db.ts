@@ -3,6 +3,7 @@ import { SekaiEvent, SekaiEventType, SekaiWorldBloom, SekaiWorldBloomChapterRank
 import SekaiGameCharacter, { SekaiPenlightColor } from "../interface/character";
 import { SekaiResourceBox } from "../interface/resource";
 import { SekaiHonor, SekaiHonorGroup } from "../interface/honor";
+import SekaiCard from "../interface/card";
 
 export default class SekaiMasterDB {
 	private static events: SekaiEvent[] = []
@@ -13,6 +14,7 @@ export default class SekaiMasterDB {
 	private static honors: SekaiHonor[] = []
 	private static honorGroups: SekaiHonorGroup[] = []
 	private static worldBloomChapterRankingRewardRanges: SekaiWorldBloomChapterRankingRewardRange[] = []
+	private static cards: SekaiCard[] = []
 
 	public static async init() {
 		await this.refreshData()
@@ -49,6 +51,9 @@ export default class SekaiMasterDB {
 
 		const worldBloomChapterRankingRewardRangesRes = await axios.get<SekaiWorldBloomChapterRankingRewardRange[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/worldBloomChapterRankingRewardRanges.json")
 		this.worldBloomChapterRankingRewardRanges = worldBloomChapterRankingRewardRangesRes.data
+
+		const cardsRes = await axios.get<SekaiCard[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/cards.json")
+		this.cards = cardsRes.data
 	}
 
 	public static getEvents() {
@@ -117,5 +122,9 @@ export default class SekaiMasterDB {
 
 	public static getHonorGroup(id: number) {
 		return this.honorGroups.find(x => x.id === id)
+	}
+
+	public static getCard(id: number) {
+		return this.cards.find(x => x.id === id)
 	}
 }
