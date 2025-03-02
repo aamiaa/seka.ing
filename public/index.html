@@ -1046,18 +1046,20 @@
 		if(localStorage.getItem("compactMode") === "true") {
 			document.getElementById("compactModeCb").checked = true
 		}
-		document.getElementById("compactModeCb").addEventListener("change", function(event) {
+		document.getElementById("compactModeCb").addEventListener("change", async function(event) {
 			localStorage.setItem("compactMode", this.checked.toString())
-			doUpdate()
+			await doUpdate()
+			this.scrollIntoView({behavior: "instant", block: "center"})
 		})
 
 
 		if(localStorage.getItem("showBorders") === "true") {
 			document.getElementById("showBordersCb").checked = true
 		}
-		document.getElementById("showBordersCb").addEventListener("change", function(event) {
+		document.getElementById("showBordersCb").addEventListener("change", async function(event) {
 			localStorage.setItem("showBorders", this.checked.toString())
-			doUpdate()
+			await doUpdate()
+			this.scrollIntoView({behavior: "instant", block: "center"})
 		})
 
 		doUpdate()
