@@ -114,7 +114,8 @@ export default class ImageGenController {
 			return res.status(400).json({error: "Specified card doesn't exist"})
 		}
 
-		const backgroundImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/thumbnail/chara", card.assetbundleName + (imageType === 0 ? "_normal" : "_after_training") + ".png")
+		const assetbundleName = card.assetbundleName + (imageType === 0 ? "_normal" : "_after_training")
+		const backgroundImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/thumbnail/chara", assetbundleName, assetbundleName + ".png")
 		try {
 			await fs.promises.stat(backgroundImagePath)
 		} catch(ex) {
