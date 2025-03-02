@@ -117,6 +117,16 @@
 		</span>
 		<img style="display: none;" id="eventLogo" alt="Event logo" width="300" height="128">
 		<img style="display: none;" id="eventChapterCharacter" alt="Worldlink chapter character" width="90" height="90">
+		<div id="ccTeamsContainer" class="d-none ms-2 d-flex flex-column justify-content-center align-items-start">
+			<div class="d-flex justify-content-center align-items-center gap-1">
+				<img id="ccTeam1Img" alt="Team 1 icon" width="60">
+				<p id="ccTeam1Bonus" class="mb-0 fw-bold">N/A</p>
+			</div>
+			<div class="d-flex justify-content-center align-items-center gap-1">
+				<img id="ccTeam2Img" alt="Team 2 icon" width="60">
+				<p id="ccTeam2Bonus" class="mb-0 fw-bold">N/A</p>
+			</div>
+		</div>
 	</header>
 
 	<div id="eventCountdownPlaceholder" aria-hidden="true" class="flipdown mb-3 placeholder-glow">
@@ -895,10 +905,16 @@
 				}
 			}
 
-			if(eventData.type === "cheerful_carnival" && document.getElementById("showCCAnnounceCb").checked) {
+			if(eventData.type === "cheerful_carnival") {
 				try {
 					const res = await getAnnouncements()
-					if(res.announcements.length > 0 && res.updated_at !== localStorage.getItem("lastCCAnnounce")) {
+
+					document.getElementById("ccTeamsContainer").classList.remove("d-none")
+					for(const [idx, teamStats] of res.team_stats.entries()) {
+						document.getElementById(`ccTeam${idx + 1}Img`).src = `/assets/team_${teamStats.team_id}.png`
+						document.getElementById(`ccTeam${idx + 1}Bonus`).textContent = formatNumber(teamStats.total_bonus) + " Bonus"
+					}
+					if(document.getElementById("showCCAnnounceCb").checked && res.announcements.length > 0 && res.updated_at !== localStorage.getItem("lastCCAnnounce")) {
 						localStorage.setItem("lastCCAnnounce", res.updated_at)
 						
 						for(const message of res.announcements) {
@@ -908,6 +924,8 @@
 				} catch(ex) {
 					console.error(ex)
 				}
+			} else {
+				document.getElementById("ccTeamsContainer").classList.add("d-none")
 			}
 
 			lastLbUpdate = new Date()

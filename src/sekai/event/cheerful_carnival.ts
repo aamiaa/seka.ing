@@ -84,8 +84,33 @@ export default class CheerfulCarnivalTracker {
 			to: this.lastAnnounceCheckAt,
 			cheerfulCarnivalAnnounceType: {$ne: "stopped_consecutive_wins"} // dedupe the two messages
 		}, {message: 1})
+		const teamStats = await CheerfulCarnivalAnnouncementModel.aggregate([
+			{
+				$match: {
+					eventId: event.id,
+					cheerfulCarnivalAnnounceType: "victory_bonus_live"
+				}
+			},
+			{
+				$group: {
+					_id: "$cheerfulCarnivalTeamId",
+					total_bonus: {$sum: "$value"}
+				}
+			},
+			{
+				$project: {
+					_id: 0,
+					team_id: "$_id",
+					total_bonus: 1
+				}
+			},
+			{
+				$sort: {team_id: 1}
+			}
+		])
 		CacheStore.set("cc_announce", {
 			announcements: lastAnnouncements.map(x => x.message),
+			team_stats: teamStats,
 			updated_at: this.lastAnnounceCheckAt
 		})
 		console.log("[CheerfulCarnivalTracker] Updated!")
