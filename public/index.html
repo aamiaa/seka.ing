@@ -909,10 +909,14 @@
 				try {
 					const res = await getAnnouncements()
 
-					document.getElementById("ccTeamsContainer").classList.remove("d-none")
-					for(const [idx, teamStats] of res.team_stats.entries()) {
-						document.getElementById(`ccTeam${idx + 1}Img`).src = `/assets/team_${teamStats.team_id}.png`
-						document.getElementById(`ccTeam${idx + 1}Bonus`).textContent = formatNumber(teamStats.total_bonus) + " Bonus"
+					if(res.team_stats.length > 0 && !document.getElementById("compactModeCb").checked) {
+						document.getElementById("ccTeamsContainer").classList.remove("d-none")
+						for(const [idx, teamStats] of res.team_stats.entries()) {
+							document.getElementById(`ccTeam${idx + 1}Img`).src = `/assets/team_${teamStats.team_id}.png`
+							document.getElementById(`ccTeam${idx + 1}Bonus`).textContent = formatNumber(teamStats.total_bonus) + " Bonus"
+						}
+					} else {
+						document.getElementById("ccTeamsContainer").classList.add("d-none")
 					}
 					if(document.getElementById("showCCAnnounceCb").checked && res.announcements.length > 0 && res.updated_at !== localStorage.getItem("lastCCAnnounce")) {
 						localStorage.setItem("lastCCAnnounce", res.updated_at)
