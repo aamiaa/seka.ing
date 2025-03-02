@@ -5,13 +5,20 @@ import { BorderSnapshot, RankingSnapshot } from "../../interface/models/snapshot
 import { sha256 } from "../../util/hash"
 import { SekaiEvent, SekaiEventType } from "../../interface/event"
 import CacheStore from "../../webserv/cache"
-import { EventRankingBorderPage, EventRankingPage, UserRanking } from "sekai-api"
+import { EventRankingBorderPage, EventRankingPage, UserCardDefaultImage, UserCardSpecialTrainingStatus, UserRanking } from "sekai-api"
 import ApiClient from "../api"
 
 interface PartialUserRanking {
 	name: string,
 	score: number,
 	rank: number,
+	card: {
+		id: number,
+		level: number,
+		mastery: number,
+		trained: boolean,
+		image: number
+	},
 	hash?: string,
 	delta?: number,
 	rank_delta?: number,
@@ -116,6 +123,13 @@ export default class LeaderboardTracker {
 				team: user.userCheerfulCarnival?.cheerfulCarnivalTeamId,
 				score: user.score,
 				rank: user.rank,
+				card: {
+					id: user.userCard.cardId,
+					level: user.userCard.level,
+					mastery: user.userCard.masterRank,
+					trained: user.userCard.specialTrainingStatus === UserCardSpecialTrainingStatus.DONE,
+					image: user.userCard.defaultImage === UserCardDefaultImage.SPECIAL_TRAINING ? 1 : 0
+				},
 				hash,
 				delta: user.score - earliest,
 				average,
@@ -141,6 +155,13 @@ export default class LeaderboardTracker {
 				team: user.userCheerfulCarnival?.cheerfulCarnivalTeamId,
 				score: user.score,
 				rank: user.rank,
+				card: {
+					id: user.userCard.cardId,
+					level: user.userCard.level,
+					mastery: user.userCard.masterRank,
+					trained: user.userCard.specialTrainingStatus === UserCardSpecialTrainingStatus.DONE,
+					image: user.userCard.defaultImage === UserCardDefaultImage.SPECIAL_TRAINING ? 1 : 0
+				},
 				rank_delta: user.score - earliest
 			}
 		})
