@@ -23,4 +23,14 @@ imageGenRouter.get("/honor/event_key/:eventKey/:rank.png",
 	ImageGenController.generateHonorFromEventKey
 )
 
+imageGenRouter.get("/card/leader/:cardId.png",
+	param("cardId").isInt({min: 1}),
+	query("level").isInt({min: 1, max: 60}),
+	query("mastery").isInt({min: 0, max: 5}),
+	query("trained").isBoolean(),
+	query("image").isInt({min: 0, max: 1}),
+	ValidationMiddleware.sendErrors,
+	ImageGenController.generateLeaderCard
+)
+
 export default imageGenRouter

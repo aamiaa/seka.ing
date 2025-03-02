@@ -556,6 +556,10 @@
 			<label class="form-check-label" for="showBordersCb">Show Highlights</label>
 		</div>
 		<div class="form-check form-switch">
+			<input class="form-check-input" type="checkbox" role="switch" id="compactModeCb">
+			<label class="form-check-label" for="compactModeCb">Compact Mode</label>
+		</div>
+		<div class="form-check form-switch">
 			<input class="form-check-input" type="checkbox" role="switch" id="showCCAnnounceCb" checked>
 			<label class="form-check-label" for="showCCAnnounceCb">Show Cheerful Carnival sliding messages</label>
 		</div>
@@ -618,6 +622,10 @@
 
 		function formatNumber(num) {
 			return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+		}
+
+		function removeTMPTags(name) {
+			return name.replace(/<\/?(?:#|a|align|allcaps|alpha|b|color|cspace|font|font-weight|gradient|i|indent|line-height|line-indent|link|lowercase|margin|mark|mspace|nobr|noparse|page|pos|rotate|s|size|smallcaps|space|sprite|style|sub|sup|u|uppercase|voffset|width).*?>/g, "")
 		}
 
 		let lastUpdatedAt
@@ -923,6 +931,12 @@
 				const deltaCell = document.createElement("td")
 				const avgCell = document.createElement("td")
 
+				rankCell.style.verticalAlign = "middle"
+				nameCell.style.verticalAlign = "middle"
+				pointsCell.style.verticalAlign = "middle"
+				deltaCell.style.verticalAlign = "middle"
+				avgCell.style.verticalAlign = "middle"
+
 				rankCell.setAttribute("scope", "row")
 				if([1,2,3].includes(slot.rank)) {
 					rankCell.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-crown w-6 h-6 text-yellow-400"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"></path><path d="M5 21h14"></path></svg>`
@@ -931,7 +945,20 @@
 					rankCell.innerText = formatNumber(slot.rank)
 				}
 
-				nameCellDiv.setAttribute("class", "d-flex align-items-center gap-1 username-cell")
+				nameCellDiv.setAttribute("class", "d-flex align-items-center gap-2 username-cell")
+
+				if(!document.getElementById("compactModeCb").checked) {
+					nameCell.style.paddingTop = "5px"
+					nameCell.style.paddingBottom = "5px"
+
+					const leaderImg = document.createElement("img")
+					leaderImg.src = `/images/card/leader/${slot.card.id}.png?level=${slot.card.level}&mastery=${slot.card.mastery}&trained=${slot.card.trained}&image=${slot.card.image}`
+					leaderImg.width = 38
+					leaderImg.height = 38
+					leaderImg.alt = "Leader Card"
+					nameCellDiv.appendChild(leaderImg)
+				}
+
 				if(slot.team != null) {
 					const teamImg = document.createElement("img")
 					teamImg.src = `/assets/team_${slot.team}.png`
@@ -943,7 +970,7 @@
 				}
 				const nameLabel = document.createElement("span")
 				nameLabel.setAttribute("class", "username-label")
-				nameLabel.textContent = slot.name
+				nameLabel.textContent = removeTMPTags(slot.name)
 				nameCellDiv.appendChild(nameLabel)
 				nameCell.appendChild(nameCellDiv)
 
@@ -1020,12 +1047,23 @@
 			localStorage.setItem("showCCAnnounce", this.checked.toString())
 		})
 
+		if(localStorage.getItem("compactMode") === "true") {
+			document.getElementById("compactModeCb").checked = true
+		}
+		document.getElementById("compactModeCb").addEventListener("change", async function(event) {
+			localStorage.setItem("compactMode", this.checked.toString())
+			await doUpdate()
+			this.scrollIntoView({behavior: "instant", block: "center"})
+		})
+
+
 		if(localStorage.getItem("showBorders") === "true") {
 			document.getElementById("showBordersCb").checked = true
 		}
-		document.getElementById("showBordersCb").addEventListener("change", function(event) {
+		document.getElementById("showBordersCb").addEventListener("change", async function(event) {
 			localStorage.setItem("showBorders", this.checked.toString())
-			doUpdate()
+			await doUpdate()
+			this.scrollIntoView({behavior: "instant", block: "center"})
 		})
 
 		doUpdate()

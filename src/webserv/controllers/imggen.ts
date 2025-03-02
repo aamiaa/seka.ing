@@ -3,9 +3,10 @@ import SekaiMasterDB from "../../providers/sekai-master-db";
 import fs from "fs";
 import path from "path";
 import { SekaiEventType } from "../../interface/event";
-import { EventHonorImage, EventHonorSubImage } from "sekai-images"
+import { EventHonorImage, EventHonorSubImage, LeaderCardImage } from "sekai-images"
 import { writePNGSignature } from "../../util/img_signature";
 import parseurl from "parseurl"
+import { UserCardSpecialTrainingStatus } from "sekai-api";
 
 export default class ImageGenController {
 	public static async generateHonorFromEventId(req: Request, res: Response, next: NextFunction) {
@@ -96,6 +97,40 @@ export default class ImageGenController {
 			rankImage,
 			honorRarity: rarity,
 			frameName: chapter ? `${eventKeyPart}_cp${chapter}` : undefined
+		}).create()
+		const withSig = writePNGSignature(image, "sekaing")
+		return res.set("Content-Type", "image/png").send(withSig)
+	}
+
+	public static async generateLeaderCard(req: Request, res: Response, next: NextFunction) {
+		const cardId = parseInt(req.params.cardId as string)
+		const level = parseInt(req.query.level as string)
+		const masteryRank = parseInt(req.query.mastery as string)
+		const trained = req.query.trained === "true"
+		const imageType = parseInt(req.query.image as string)
+
+		const card = SekaiMasterDB.getCard(cardId)
+		if(!card) {
+			return res.status(400).json({error: "Specified card doesn't exist"})
+		}
+
+		const assetbundleName = card.assetbundleName + (imageType === 0 ? "_normal" : "_after_training")
+		const backgroundImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/thumbnail/chara", assetbundleName, assetbundleName + ".png")
+		try {
+			await fs.promises.stat(backgroundImagePath)
+		} catch(ex) {
+			return res.status(400).json({error: "Specified card doesn't exist"})
+		}
+
+		const backgroundImage = await fs.promises.readFile(backgroundImagePath)
+		const image = await new LeaderCardImage({
+			level,
+			masteryRank,
+			specialTrainingStatus: trained ? UserCardSpecialTrainingStatus.DONE : UserCardSpecialTrainingStatus.DO_NOTHING,
+			cardRarityType: card.cardRarityType,
+			attr: card.attr,
+			memberImage: backgroundImage
+			
 		}).create()
 		const withSig = writePNGSignature(image, "sekaing")
 		return res.set("Content-Type", "image/png").send(withSig)
