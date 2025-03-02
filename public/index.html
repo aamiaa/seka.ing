@@ -624,6 +624,10 @@
 			return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 		}
 
+		function removeTMPTags(name) {
+			return name.replace(/<\/?(?:#|a|align|allcaps|alpha|b|color|cspace|font|font-weight|gradient|i|indent|line-height|line-indent|link|lowercase|margin|mark|mspace|nobr|noparse|page|pos|rotate|s|size|smallcaps|space|sprite|style|sub|sup|u|uppercase|voffset|width).*?>/g, "")
+		}
+
 		let lastUpdatedAt
 		function toggleIssuesBanner(toggled, errorType, aggregateUntil) {
 			const banner = document.getElementById("issuesBanner")
@@ -966,7 +970,7 @@
 				}
 				const nameLabel = document.createElement("span")
 				nameLabel.setAttribute("class", "username-label")
-				nameLabel.textContent = slot.name
+				nameLabel.textContent = removeTMPTags(slot.name)
 				nameCellDiv.appendChild(nameLabel)
 				nameCell.appendChild(nameCellDiv)
 
