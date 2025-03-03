@@ -83,7 +83,7 @@ export default class SekaiMasterDB {
 	}
 
 	public static getWorldBloomChapters(id: number) {
-		return this.worldBlooms.filter(x => x.eventId === id)
+		return this.worldBlooms.filter(x => x.eventId === id).sort((a,b) => a.chapterNo - b.chapterNo)
 	}
 
 	public static getWorldBloomChapter(id: number, chapter: number) {

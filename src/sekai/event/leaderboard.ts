@@ -253,6 +253,14 @@ export default class LeaderboardTracker {
 			createdAt: ranking.responseTime
 		}
 
+		// Fix for worldlink chapters of borders api being unsorted
+		if(currentEvent.eventType === SekaiEventType.WORLD_BLOOM) {
+			const chapters = SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
+			const characters = chapters.map(x => x.gameCharacterId)
+
+			border.userWorldBloomChapterRankingBorders.sort((a,b) => characters.indexOf(a.gameCharacterId) - characters.indexOf(b.gameCharacterId)) 
+		}
+
 		const eventInProgress = now < new Date(currentEvent.rankingAnnounceAt.getTime())
 		const eventRanksDistributed = now >= new Date(currentEvent.distributionStartAt.getTime())
 		if(eventInProgress) {
@@ -264,7 +272,6 @@ export default class LeaderboardTracker {
 			const borderEntry = new BorderSnapshotModel(borderSnapshot)
 			const lastBorderEntry = await BorderSnapshotModel.findOne({eventId: currentEvent.id}, null, {sort: {createdAt: -1}})
 			if(!lastBorderEntry || lastBorderEntry.getHash() !== borderEntry.getHash()) {
-				// FIXME: worldlink chapters aren't sorted in border api response
 				await borderEntry.save()
 			}
 		} else if(!eventRanksDistributed) {
