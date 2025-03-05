@@ -992,7 +992,7 @@
 				}
 				const nameLabel = document.createElement("span")
 				nameLabel.setAttribute("class", "username-label")
-				nameLabel.textContent = removeTMPTags(slot.name)
+				nameLabel.textContent = nameLabel.title = removeTMPTags(slot.name)
 				nameCellDiv.appendChild(nameLabel)
 				nameCell.appendChild(nameCellDiv)
 
