@@ -167,7 +167,7 @@ export default class LeaderboardTracker {
 		})
 	}
 
-	private static async updateUserProfiles(rankingSnapshot: RankingSnapshot, borderSnapshot: BorderSnapshot) {
+	private static async updateUserProfiles(rankingSnapshot: RankingSnapshot, borderSnapshot: BorderSnapshot, onlyNew?: boolean) {
 		const users: Record<string, UserRanking> = {}
 
 		populateUsersMap(users, rankingSnapshot.rankings)
@@ -189,7 +189,9 @@ export default class LeaderboardTracker {
 			return {
 				updateOne: {
 					filter: {userId: user.userId, eventId: rankingSnapshot.eventId},
-					update: {
+					update: onlyNew ? {
+						$setOnInsert: user
+					} : {
 						$set: user
 					},
 					upsert: true
@@ -293,9 +295,9 @@ export default class LeaderboardTracker {
 				await borderEntry.save()
 			}
 
-			// FIXME: Edge case - if someone deletes their account after event end, and this
-			// causes an unseen-before user to appear in t100/borders, then their profile
-			// will be missing from the db.
+			// Only add unseen-before user profiles. Handles the edge case
+			// where someone deletes their account after event end
+			await this.updateUserProfiles(rankingSnapshot, borderSnapshot, true)
 		}
 
 		// Update data sent to frontend
