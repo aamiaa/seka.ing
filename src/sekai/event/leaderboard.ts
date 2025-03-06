@@ -2,11 +2,11 @@ import { BorderSnapshotModel, RankingSnapshotModel } from "../../models/snapshot
 import SekaiMasterDB from "../../providers/sekai-master-db"
 import { EventProfileModel } from "../../models/event_profile"
 import { BorderSnapshot, RankingSnapshot } from "../../interface/models/snapshot"
-import { sha256 } from "../../util/hash"
 import { SekaiEvent, SekaiEventType } from "../../interface/event"
 import CacheStore from "../../webserv/cache"
 import { EventRankingBorderPage, EventRankingPage, UserCardDefaultImage, UserCardSpecialTrainingStatus, UserRanking } from "sekai-api"
 import ApiClient from "../api"
+import { encryptEventSnowflake } from "../../util/cipher"
 
 interface PartialUserRanking {
 	name: string,
@@ -97,7 +97,7 @@ export default class LeaderboardTracker {
 
 	private static processRankingDifference(event: SekaiEvent, currentRanking: UserRanking[], pastRankings: UserRanking[][]) {
 		return currentRanking.map(user => {
-			const hash = sha256(user.userId + "_" + event.assetbundleName)
+			const hash = encryptEventSnowflake(event.id, user.userId)
 
 			let earliest = user.score
 			for(const entry of pastRankings) {
