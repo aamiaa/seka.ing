@@ -292,6 +292,10 @@ export default class LeaderboardTracker {
 				await BorderSnapshotModel.updateMany({eventId: currentEvent.id, final: true}, {$unset: {final: ""}})
 				await borderEntry.save()
 			}
+
+			// FIXME: Edge case - if someone deletes their account after event end, and this
+			// causes an unseen-before user to appear in t100/borders, then their profile
+			// will be missing from the db.
 		}
 
 		// Update data sent to frontend
