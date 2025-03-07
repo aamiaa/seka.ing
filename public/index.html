@@ -918,7 +918,10 @@
 					} else {
 						document.getElementById("ccTeamsContainer").classList.add("d-none")
 					}
-					if(document.getElementById("showCCAnnounceCb").checked && res.announcements.length > 0 && res.updated_at !== localStorage.getItem("lastCCAnnounce")) {
+
+					const isEnabled = document.getElementById("showCCAnnounceCb").checked
+					const isFresh = Date.now() - new Date(res.updated_at).getTime() <= 2 * 60 * 1000 && res.updated_at !== localStorage.getItem("lastCCAnnounce")
+					if(isEnabled && isFresh && res.announcements.length > 0) {
 						localStorage.setItem("lastCCAnnounce", res.updated_at)
 						
 						for(const message of res.announcements) {
