@@ -893,7 +893,7 @@
 					}
 				}
 				
-				for(const [idx, rankings] of (showHighlights ? data.chapter_highlights : data.chapter_rankings).entries()) {
+				for(const [idx, rankings] of (showHighlights ? data.chapter_borders : data.chapter_rankings).entries()) {
 					updateLeaderboard(document.getElementById("eventTableChapter" + (idx + 1)), rankings)
 				}
 
