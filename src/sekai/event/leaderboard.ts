@@ -346,7 +346,8 @@ export default class LeaderboardTracker {
 						rankingPastHour.map(x => x.userWorldBloomChapterRankings[chapter.num - 1].rankings)
 					)
 				}
-			}).filter(x => x != null)
+				return []
+			})
 			lbCache.chapter_borders = chapters.map(chapter => {
 				if(!ranking.userWorldBloomChapterRankings[chapter.num - 1].isWorldBloomChapterAggregate) {
 					return this.processBordersDifference(
@@ -355,7 +356,8 @@ export default class LeaderboardTracker {
 						bordersPastHour.map(x => x.userWorldBloomChapterRankingBorders.find(y => y.gameCharacterId === chapter.character_id).borderRankings)
 					)
 				}
-			}).filter(x => x != null)
+				return []
+			})
 		}
 
 		if(nextEvent && (nextEvent.startAt.getTime() - Date.now()) <= 86400 * 1000) {
