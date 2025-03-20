@@ -557,6 +557,26 @@
 			</div>
 		</div>
 	</div>
+
+	<div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 id="contactModalLabel" class="modal-title fs-5">Contact</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div id="contactModalBody" class="modal-body">
+					<p class="placeholder-glow" aria-hidden="true">
+						<span class="placeholder col-7"></span>
+						<span class="placeholder col-4"></span>
+						<span class="placeholder col-4"></span>
+						<span class="placeholder col-6"></span>
+						<span class="placeholder col-8"></span>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
 	
 	<p id="errorMsg" style="display: none;">Failed to fetch updated leaderboard. Try again later.</p>
 
@@ -576,7 +596,7 @@
 	</div>
 
 	<footer class="py-3">
-		<span>Contact: neo@seka.ing</span>
+		<span>Contact: <a id="contactBtn" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#contactModal">Show</a></span>
 	</footer>
 
 	<script>
@@ -1100,6 +1120,29 @@
 			const secondsDiff = (Date.now() - lastLbUpdate.getTime())/1000
 			if(document.visibilityState === "visible" && secondsDiff >= 20) {
 				await doUpdate()
+			}
+		})
+
+		document.getElementById("contactBtn").addEventListener("click", async function(event) {
+			const contactBody = document.getElementById("contactModalBody")
+
+			try {
+				const res = await fetch("/api/contact")
+				const data = await res.json()
+				if(res.ok) {
+					contactBody.innerHTML = data.contact_info
+				} else if(data.error) {
+					contactBody.innerHTML = ""
+
+					const label = document.createElement("p")
+					label.textContent = `Error: ${data.error}`
+					contactBody.appendChild(label)
+					
+				} else {
+					throw new Error("Failed to fetch")
+				}
+			} catch(ex) {
+				contactBody.innerHTML = `<p>Failed to load. Please refresh and try again.</p>`
 			}
 		})
 	</script>

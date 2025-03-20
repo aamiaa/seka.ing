@@ -16,6 +16,12 @@ class ExpressServer {
 		this.server = this.express.listen(6979, "127.0.0.1", () => console.log("[Express] Webserv started!"));
 
 		this.express.disable("x-powered-by")
+		this.express.set("trust proxy", "loopback")
+
+		this.express.use((req, res, next) => {
+			req.cfIp = req.get("cf-connecting-ip")
+			next()
+		})
 
 		this.express.use("/", mainRouter)
 		this.express.use("/api", apiRouter)

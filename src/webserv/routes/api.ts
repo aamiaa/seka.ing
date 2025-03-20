@@ -3,6 +3,8 @@ import { query } from "express-validator";
 import EventController from "../controllers/event"
 import ValidationMiddleware from "../middleware/validation";
 import TimeController from "../controllers/time";
+import ContactController from "../controllers/contact";
+import ApiRestriction from "../middleware/antibot/api_restriction";
 
 const apiRouter = Router()
 
@@ -31,6 +33,17 @@ apiRouter.get("/matches",
 	query("worldlink").optional().isBoolean(),
 	ValidationMiddleware.sendErrors,
 	EventController.getUserMatchesCount
+)
+
+apiRouter.get("/contact",
+	ApiRestriction.protectApi({
+		require_browser_ua: true,
+		require_browser_headers: true,
+		require_referer: true,
+		require_sec_fetch: true,
+		require_accept: true
+	}),
+	ContactController.getContactInfo
 )
 
 export default apiRouter

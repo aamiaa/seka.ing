@@ -153,8 +153,30 @@
 		</div>
 	</div>
 
+	<div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 id="contactModalLabel" class="modal-title fs-5">Contact</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div id="contactModalBody" class="modal-body">
+					<p class="placeholder-glow" aria-hidden="true">
+						<span class="placeholder col-7"></span>
+						<span class="placeholder col-4"></span>
+						<span class="placeholder col-4"></span>
+						<span class="placeholder col-6"></span>
+						<span class="placeholder col-8"></span>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 	<footer class="mt-auto py-3">
-		<span>Contact: neo@seka.ing</span>
+		<span>Contact: <a id="contactBtn" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#contactModal">Show</a></span>
 	</footer>
 
 	<script type="module">
@@ -260,6 +282,31 @@
 		window.addEventListener("click", event => {
 			if(!event.target.closest(".select-container")) {
 				document.getElementById("selectOptions").classList.remove("show");
+			}
+		})
+	</script>
+
+	<script>
+		document.getElementById("contactBtn").addEventListener("click", async function(event) {
+			const contactBody = document.getElementById("contactModalBody")
+
+			try {
+				const res = await fetch("/api/contact")
+				const data = await res.json()
+				if(res.ok) {
+					contactBody.innerHTML = data.contact_info
+				} else if(data.error) {
+					contactBody.innerHTML = ""
+
+					const label = document.createElement("p")
+					label.textContent = `Error: ${data.error}`
+					contactBody.appendChild(label)
+					
+				} else {
+					throw new Error("Failed to fetch")
+				}
+			} catch(ex) {
+				contactBody.innerHTML = `<p>Failed to load. Please refresh and try again.</p>`
 			}
 		})
 	</script>
