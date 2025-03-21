@@ -1,9 +1,12 @@
 import { NextFunction, Request, Response } from "express";
+import fs from "fs";
 
 export default class ContactController {
+	public static readonly ContactFilePath = "data/contact_info.html"
+
 	public static async getContactInfo(req: Request, res: Response, next: NextFunction) {
 		return res.json({
-			contact_info: `<p>Legal/operational inquiries: <a href="mailto:neo@seka.ing">neo@seka.ing</a></p>\n<p>Casual & questions: <code>aamia</code> on Discord (uid <code>142007603549962240</code>)</p>`
+			contact_info: (await fs.promises.readFile(this.ContactFilePath)).toString()
 		})
 	}
 }

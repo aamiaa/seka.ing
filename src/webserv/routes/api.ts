@@ -43,7 +43,7 @@ apiRouter.get("/contact",
 		require_sec_fetch: true,
 		require_accept: true
 	}),
-	ContactController.getContactInfo
+	ContactController.getContactInfo.bind(ContactController)
 )
 
 export default apiRouter
