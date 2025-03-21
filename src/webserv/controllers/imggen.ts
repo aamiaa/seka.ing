@@ -114,6 +114,27 @@ export default class ImageGenController {
 			return res.status(400).json({error: "Specified card doesn't exist"})
 		}
 
+		if(trained) {
+			switch(card.cardRarityType) {
+				case "rarity_1":
+				case "rarity_2":
+				case "rarity_birthday":
+					return res.status(400).json({error: "Impossible combination"})
+				case "rarity_3":
+					if(level < 40) {
+						return res.status(400).json({error: "Impossible combination"})
+					}
+					break
+				case "rarity_4":
+					if(level < 50) {
+						return res.status(400).json({error: "Impossible combination"})
+					}
+					break
+			}
+		} else if(!trained && imageType === 1) {
+			return res.status(400).json({error: "Impossible combination"})
+		}
+
 		const assetbundleName = card.assetbundleName + (imageType === 0 ? "_normal" : "_after_training")
 		const backgroundImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/thumbnail/chara", assetbundleName, assetbundleName + ".png")
 		try {
