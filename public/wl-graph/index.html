@@ -55,6 +55,7 @@
 
 		const min = Math.min(...Object.values(points).map(x => x[0].x))
 		const max = Math.max(...Object.values(points).map(x => x.at(-1).x))
+		const maxY = Math.max(...Object.values(points).map(x => x.at(-1).y))
 		const step = 1
 
 		const labels = []
@@ -118,7 +119,8 @@
 							callback: function(value, index, values) {
 								return value / 1e6 + "M"
 							}
-						}
+						},
+						max: Math.max(Math.ceil(maxY/1000000) * 1000000)
 					}
 				},
 				plugins: {
