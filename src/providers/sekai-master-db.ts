@@ -180,6 +180,10 @@ export default class SekaiMasterDB {
 	public static getCard(id: number) {
 		return this.cards.find(x => x.id === id)
 	}
+	
+	public static getCards() {
+		return this.cards
+	}
 
 	public static getCheerfulCarnivalTeams() {
 		return this.cheerfulCarnivalTeams

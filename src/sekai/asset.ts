@@ -89,4 +89,32 @@ export async function ensureEventAssetsExist() {
 			})
 		}
 	}
+
+	// check card thumbnail assets
+	for(const card of SekaiMasterDB.getCards()) {
+		const basePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/thumbnail/chara", card.assetbundleName)
+		const normalPath = basePath + "_normal"
+		const trainedPath = basePath + "_after_training"
+		try {
+			await fs.promises.stat(normalPath)
+		} catch(ex) {
+			console.log("[SekaiAsset] Downloading missing card thumbnail:", card.assetbundleName)
+
+			await fs.promises.mkdir(normalPath, {recursive: true})
+			await downloadImageAsset({
+				assetPath: "thumbnail/chara",
+				assetName: card.assetbundleName + "_normal",
+				destPath: path.join(normalPath, card.assetbundleName + "_normal.png")
+			})
+
+			if(["rarity_3", "rarity_4"].includes(card.cardRarityType)) {
+				await fs.promises.mkdir(trainedPath, {recursive: true})
+			await downloadImageAsset({
+				assetPath: "thumbnail/chara",
+				assetName: card.assetbundleName + "_after_training",
+				destPath: path.join(trainedPath, card.assetbundleName + "_after_training.png")
+			})
+			}
+		}
+	}
 }
