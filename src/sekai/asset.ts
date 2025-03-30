@@ -4,8 +4,7 @@ import path from "path"
 import SekaiMasterDB from "../providers/sekai-master-db"
 import fs from "fs"
 
-// TODO: improve this so that multiple assets can be saved from one bundle
-export async function downloadImageAsset({assetPath, assetName, container, destPath}: {assetPath: string, assetName: string, container?: string, destPath: string}) {
+export async function downloadImageAssets({assetPath, container, nameDestMap}: {assetPath: string, container?: string, nameDestMap: Record<string, string>}) {
 	const UnityPy = await python("UnityPy")
 	UnityPy.config.FALLBACK_UNITY_VERSION = "2022.3.52f1"
 	const warnings = await python("warnings")
@@ -18,18 +17,23 @@ export async function downloadImageAsset({assetPath, assetName, container, destP
 	const bytes = await builtins.bytes(bundleData.toJSON().data)
 	const env = await UnityPy.load(bytes)
 
+	const found: string[] = []
 	for await(const obj of await env.objects) {
 		if(["Texture2D", "Sprite"].includes(await obj.type.name)) {
 			const data = await obj.read()
+			const name = await data.m_Name
 			const containerPath = await obj.container
-			if(await data.m_Name === assetName && (!container || path.basename(containerPath, path.extname(containerPath)) === container)) {
-				await data.image.save(destPath)
-				return
+			if(nameDestMap[name] && (!container || path.basename(containerPath, path.extname(containerPath)) === container)) {
+				await data.image.save(nameDestMap[name])
+				found.push(name)
 			}
 		}
 	}
 
-	throw new Error("Failed to download asset")
+	const notFound = Object.keys(nameDestMap).filter(x => !found.includes(x))
+	if(notFound.length > 0) {
+		throw new Error("Failed to download asset")
+	}
 }
 
 export async function ensureEventAssetsExist() {
@@ -40,10 +44,11 @@ export async function ensureEventAssetsExist() {
 			await fs.promises.stat(filePath)
 		} catch(ex) {
 			console.log("[SekaiAsset] Downloading missing event banner:", event.assetbundleName)
-			await downloadImageAsset({
+			await downloadImageAssets({
 				assetPath: `home/banner/${event.assetbundleName}`,
-				assetName: event.assetbundleName,
-				destPath: filePath
+				nameDestMap: {
+					[event.assetbundleName]: filePath
+				}
 			})
 		}
 	}
@@ -59,15 +64,12 @@ export async function ensureEventAssetsExist() {
 				await fs.promises.mkdir(path.join(folderPath, "degree_main"), {recursive: true})
 				await fs.promises.mkdir(path.join(folderPath, "degree_sub"), {recursive: true})
 
-				await downloadImageAsset({
+				await downloadImageAssets({
 					assetPath: `honor/${honorGroup.backgroundAssetbundleName}`,
-					assetName: "degree_main",
-					destPath: path.join(folderPath, "degree_main/degree_main.png")
-				})
-				await downloadImageAsset({
-					assetPath: `honor/${honorGroup.backgroundAssetbundleName}`,
-					assetName: "degree_sub",
-					destPath: path.join(folderPath, "degree_sub/degree_sub.png")
+					nameDestMap: {
+						degree_main: path.join(folderPath, "degree_main/degree_main.png"),
+						degree_sub: path.join(folderPath, "degree_sub/degree_sub.png")
+					}
 				})
 			}
 		}
@@ -82,15 +84,17 @@ export async function ensureEventAssetsExist() {
 			console.log("[SekaiAsset] Downloading missing team icon:", team.assetbundleName)
 
 			const event = SekaiMasterDB.getEvent(team.eventId)
-			await downloadImageAsset({
+			await downloadImageAssets({
 				assetPath: `event/${event.assetbundleName}/team_image`,
-				assetName: team.assetbundleName,
-				destPath: filePath
+				nameDestMap: {
+					[team.assetbundleName]: filePath	
+				}
 			})
 		}
 	}
 
 	// check card thumbnail assets
+	const nameDestMap: Record<string, string> = {}
 	for(const card of SekaiMasterDB.getCards()) {
 		const basePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/thumbnail/chara", card.assetbundleName)
 		const normalPath = basePath + "_normal"
@@ -100,21 +104,19 @@ export async function ensureEventAssetsExist() {
 		} catch(ex) {
 			console.log("[SekaiAsset] Downloading missing card thumbnail:", card.assetbundleName)
 
+			nameDestMap[card.assetbundleName + "_normal"] = path.join(normalPath, card.assetbundleName + "_normal.png"),
 			await fs.promises.mkdir(normalPath, {recursive: true})
-			await downloadImageAsset({
-				assetPath: "thumbnail/chara",
-				assetName: card.assetbundleName + "_normal",
-				destPath: path.join(normalPath, card.assetbundleName + "_normal.png")
-			})
 
 			if(["rarity_3", "rarity_4"].includes(card.cardRarityType)) {
+				nameDestMap[card.assetbundleName + "_after_training"] = path.join(trainedPath, card.assetbundleName + "_after_training.png")
 				await fs.promises.mkdir(trainedPath, {recursive: true})
-			await downloadImageAsset({
-				assetPath: "thumbnail/chara",
-				assetName: card.assetbundleName + "_after_training",
-				destPath: path.join(trainedPath, card.assetbundleName + "_after_training.png")
-			})
 			}
 		}
+	}
+	if(Object.keys(nameDestMap).length > 0) {
+		await downloadImageAssets({
+			assetPath: "thumbnail/chara",
+			nameDestMap
+		})
 	}
 }
