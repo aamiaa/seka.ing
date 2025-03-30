@@ -54,3 +54,11 @@ export interface SekaiWorldBloomChapterRankingRewardRange {
 	toRank: number,
 	resourceBoxId: number
 }
+
+export interface SekaiCheerfulCarnivalTeam {
+	id: number,
+	eventId: number,
+	seq: number,
+	teamName: string,
+	assetbundleName: string
+}

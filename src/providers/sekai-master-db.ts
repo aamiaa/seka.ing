@@ -1,11 +1,25 @@
 import axios from "axios";
-import { SekaiEvent, SekaiEventType, SekaiWorldBloom, SekaiWorldBloomChapterRankingRewardRange } from "../interface/event";
+import { SekaiCheerfulCarnivalTeam, SekaiEvent, SekaiEventType, SekaiWorldBloom, SekaiWorldBloomChapterRankingRewardRange } from "../interface/event";
 import SekaiGameCharacter, { SekaiPenlightColor } from "../interface/character";
 import { SekaiResourceBox } from "../interface/resource";
 import { SekaiHonor, SekaiHonorGroup } from "../interface/honor";
 import SekaiCard from "../interface/card";
+import { SystemAppVersion } from "sekai-api";
+import ApiClient from "../sekai/api"
+import path from "path"
+import fs from "fs"
+
+async function ensureFolderExists(path: string) {
+	try {
+		await fs.promises.stat(path)
+	} catch(ex) {
+		await fs.promises.mkdir(path)
+	}
+}
 
 export default class SekaiMasterDB {
+	private static readonly requiredModules = ["events", "worldBlooms", "gameCharacters", "penlightColors",
+		"resourceBoxes", "honors", "honorGroups", "worldBloomChapterRankingRewardRanges", "cards", "cheerfulCarnivalTeams"]
 	private static events: SekaiEvent[] = []
 	private static worldBlooms: SekaiWorldBloom[] = []
 	private static gameCharacters: SekaiGameCharacter[] = []
@@ -15,6 +29,7 @@ export default class SekaiMasterDB {
 	private static honorGroups: SekaiHonorGroup[] = []
 	private static worldBloomChapterRankingRewardRanges: SekaiWorldBloomChapterRankingRewardRange[] = []
 	private static cards: SekaiCard[] = []
+	private static cheerfulCarnivalTeams: SekaiCheerfulCarnivalTeam[] = []
 
 	public static async init() {
 		await this.refreshData()
@@ -22,38 +37,72 @@ export default class SekaiMasterDB {
 	}
 
 	private static async refreshData() {
-		const eventsRes = await axios.get<SekaiEvent[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/events.json")
-		eventsRes.data.forEach(event => 
-			["startAt", "aggregateAt", "rankingAnnounceAt", "distributionStartAt", "closedAt", "distributionEndAt"].forEach(field => event[field] = new Date(event[field]))
-		)
-		this.events = eventsRes.data
+		console.log("[SekaiMasterDB] Performing data refresh...")
 
-		const worldBloomsRes = await axios.get<SekaiWorldBloom[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/worldBlooms.json")
-		worldBloomsRes.data.forEach(event => 
-			["chapterStartAt", "aggregateAt", "chapterEndAt"].forEach(field => event[field] = new Date(event[field]))
-		)
-		this.worldBlooms = worldBloomsRes.data
-
-		const gameCharactersRes = await axios.get<SekaiGameCharacter[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/gameCharacters.json")
-		this.gameCharacters = gameCharactersRes.data
-
-		const penlightColorsRes = await axios.get<SekaiPenlightColor[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/penlightColors.json")
-		this.penlightColors = penlightColorsRes.data
+		const versionRes = await axios.get<SystemAppVersion>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/versions.json")
+		const sekaiVersion = (await ApiClient.getSystemInfo()).appVersions.at(-1)
 		
-		const resourceBoxesRes = await axios.get<SekaiResourceBox[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/resourceBoxes.json")
-		this.resourceBoxes = resourceBoxesRes.data
+		const versionFolderPath = path.join(process.env.MASTER_DATA_PATH, sekaiVersion.dataVersion)
+		try {
+			await fs.promises.stat(versionFolderPath)
+			await this.loadFromFiles(versionFolderPath)
 
-		const honorsRes = await axios.get<SekaiHonor[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/honors.json")
-		this.honors = honorsRes.data
+			console.log("[SekaiMasterDB] Data is up to date!")
+		} catch(ex) {
+			if(versionRes.data.dataVersion !== sekaiVersion.dataVersion) {
+				console.log("[SekaiMasterDB] GitHub repo is outdated, falling back to game api")
+				await this.updateFromGameApi(versionFolderPath)
+			} else {
+				await this.updateFromGitHub(versionFolderPath)
+			}
 
-		const honorGroupsRes = await axios.get<SekaiHonorGroup[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/honorGroups.json")
-		this.honorGroups = honorGroupsRes.data
+			await this.loadFromFiles(versionFolderPath)
+		}
 
-		const worldBloomChapterRankingRewardRangesRes = await axios.get<SekaiWorldBloomChapterRankingRewardRange[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/worldBloomChapterRankingRewardRanges.json")
-		this.worldBloomChapterRankingRewardRanges = worldBloomChapterRankingRewardRangesRes.data
+		console.log("[SekaiMasterDB] Finished! Current version:", sekaiVersion.dataVersion)
+	}
 
-		const cardsRes = await axios.get<SekaiCard[]>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/cards.json")
-		this.cards = cardsRes.data
+	private static async updateFromGameApi(folderPath: string) {
+		const masterData = await ApiClient.downloadMasterData()
+		await ensureFolderExists(folderPath)
+		for(const module of this.requiredModules) {
+			const fileName = path.join(folderPath, `${module}.json`)
+			await fs.promises.writeFile(fileName, JSON.stringify(masterData[module]))
+		}
+	}
+
+	private static async updateFromGitHub(folderPath: string) {
+		await ensureFolderExists(folderPath)
+		for(const module of this.requiredModules) {
+			const res = await axios.get(`https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/${module}.json`)
+			const fileName = path.join(folderPath, `${module}.json`)
+			await fs.promises.writeFile(fileName, JSON.stringify(res.data))
+		}
+	}
+
+	private static async loadFromFiles(folderPath: string) {
+		for(const module of this.requiredModules) {
+			const fileName = path.join(folderPath, `${module}.json`)
+			const data = JSON.parse((await fs.promises.readFile(fileName)).toString())
+
+			switch(module) {
+				case "events":
+					data.forEach(event => 
+						["startAt", "aggregateAt", "rankingAnnounceAt", "distributionStartAt", "closedAt", "distributionEndAt"].forEach(field => event[field] = new Date(event[field]))
+					)
+					this.events = data
+					break
+				case "worldBlooms":
+					data.forEach(event => 
+						["chapterStartAt", "aggregateAt", "chapterEndAt"].forEach(field => event[field] = new Date(event[field]))
+					)
+					this.worldBlooms = data
+					break
+				default:
+					this[module] = data
+					break
+			}
+		}
 	}
 
 	public static getEvents() {
@@ -124,7 +173,19 @@ export default class SekaiMasterDB {
 		return this.honorGroups.find(x => x.id === id)
 	}
 
+	public static getHonorGroups() {
+		return this.honorGroups
+	}
+
 	public static getCard(id: number) {
 		return this.cards.find(x => x.id === id)
+	}
+	
+	public static getCards() {
+		return this.cards
+	}
+
+	public static getCheerfulCarnivalTeams() {
+		return this.cheerfulCarnivalTeams
 	}
 }

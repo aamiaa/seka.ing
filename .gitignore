@@ -2,3 +2,5 @@ node_modules
 dist
 .env
 public/assets/event_*
+public/assets/team_*
+sekai-data
