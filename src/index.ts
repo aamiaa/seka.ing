@@ -14,7 +14,6 @@ process.on("unhandledRejection", (reason: Error|any) => {
 async function main() {
 	console.log("Starting... env:", process.env.NODE_ENV)
 
-	await SekaiMasterDB.init()
 	await Database.init()
 
 	await ApiClient.init()
@@ -23,6 +22,8 @@ async function main() {
 		deviceId: process.env.SEKAI_DEVICE_ID,
 		installId: process.env.SEKAI_INSTALL_ID
 	})
+
+	await SekaiMasterDB.init()
 
 	LeaderboardTracker.init()
 	CheerfulCarnivalTracker.init()
