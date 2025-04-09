@@ -40,16 +40,19 @@ export default class SekaiMasterDB {
 		console.log("[SekaiMasterDB] Performing data refresh...")
 
 		const versionRes = await axios.get<SystemAppVersion>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/versions.json")
-		const sekaiVersion = (await ApiClient.getSystemInfo()).appVersions.at(-1)
+		const liveDataVersion = ApiClient.clientInfo.dataVersion
+		if(!liveDataVersion) {
+			throw new Error("[SekaiMasterDB] Data version is null!")
+		}
 		
-		const versionFolderPath = path.join(process.env.MASTER_DATA_PATH, sekaiVersion.dataVersion)
+		const versionFolderPath = path.join(process.env.MASTER_DATA_PATH, liveDataVersion)
 		try {
 			await fs.promises.stat(versionFolderPath)
 			await this.loadFromFiles(versionFolderPath)
 
 			console.log("[SekaiMasterDB] Data is up to date!")
 		} catch(ex) {
-			if(versionRes.data.dataVersion !== sekaiVersion.dataVersion) {
+			if(versionRes.data.dataVersion !== liveDataVersion) {
 				console.log("[SekaiMasterDB] GitHub repo is outdated, falling back to game api")
 				await this.updateFromGameApi(versionFolderPath)
 			} else {
@@ -59,7 +62,7 @@ export default class SekaiMasterDB {
 			await this.loadFromFiles(versionFolderPath)
 		}
 
-		console.log("[SekaiMasterDB] Finished! Current version:", sekaiVersion.dataVersion)
+		console.log("[SekaiMasterDB] Finished! Current version:", liveDataVersion)
 	}
 
 	private static async updateFromGameApi(folderPath: string) {
