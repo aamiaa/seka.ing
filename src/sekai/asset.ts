@@ -44,12 +44,17 @@ export async function ensureEventAssetsExist() {
 			await fs.promises.stat(filePath)
 		} catch(ex) {
 			console.log("[SekaiAsset] Downloading missing event banner:", event.assetbundleName)
-			await downloadImageAssets({
-				assetPath: `home/banner/${event.assetbundleName}`,
-				nameDestMap: {
-					[event.assetbundleName]: filePath
-				}
-			})
+			
+			try {
+				await downloadImageAssets({
+					assetPath: `home/banner/${event.assetbundleName}`,
+					nameDestMap: {
+						[event.assetbundleName]: filePath
+					}
+				})
+			} catch(ex) {
+				console.error("[SekaiAsset] Failed to download", event.assetbundleName, ex.message)
+			}
 		}
 	}
 
@@ -64,13 +69,20 @@ export async function ensureEventAssetsExist() {
 				await fs.promises.mkdir(path.join(folderPath, "degree_main"), {recursive: true})
 				await fs.promises.mkdir(path.join(folderPath, "degree_sub"), {recursive: true})
 
-				await downloadImageAssets({
-					assetPath: `honor/${honorGroup.backgroundAssetbundleName}`,
-					nameDestMap: {
-						degree_main: path.join(folderPath, "degree_main/degree_main.png"),
-						degree_sub: path.join(folderPath, "degree_sub/degree_sub.png")
-					}
-				})
+				try {
+					await downloadImageAssets({
+						assetPath: `honor/${honorGroup.backgroundAssetbundleName}`,
+						nameDestMap: {
+							degree_main: path.join(folderPath, "degree_main/degree_main.png"),
+							degree_sub: path.join(folderPath, "degree_sub/degree_sub.png")
+						}
+					})
+				} catch(ex) {
+					console.error("[SekaiAsset] Failed to download", honorGroup.backgroundAssetbundleName, ex.message)
+
+					await fs.promises.rm(path.join(folderPath, "degree_main"), {recursive: true, force: true})
+					await fs.promises.rm(path.join(folderPath, "degree_sub"), {recursive: true, force: true})
+				}
 			}
 		}
 	}
@@ -84,12 +96,16 @@ export async function ensureEventAssetsExist() {
 			console.log("[SekaiAsset] Downloading missing team icon:", team.assetbundleName)
 
 			const event = SekaiMasterDB.getEvent(team.eventId)
-			await downloadImageAssets({
-				assetPath: `event/${event.assetbundleName}/team_image`,
-				nameDestMap: {
-					[team.assetbundleName]: filePath	
-				}
-			})
+			try {
+				await downloadImageAssets({
+					assetPath: `event/${event.assetbundleName}/team_image`,
+					nameDestMap: {
+						[team.assetbundleName]: filePath	
+					}
+				})
+			} catch(ex) {
+				console.error("[SekaiAsset] Failed to download", team.assetbundleName, ex.message)
+			}
 		}
 	}
 
@@ -114,9 +130,13 @@ export async function ensureEventAssetsExist() {
 		}
 	}
 	if(Object.keys(nameDestMap).length > 0) {
-		await downloadImageAssets({
-			assetPath: "thumbnail/chara",
-			nameDestMap
-		})
+		try {
+			await downloadImageAssets({
+				assetPath: "thumbnail/chara",
+				nameDestMap
+			})
+		} catch(ex) {
+			console.error("[SekaiAsset] Failed to download", "thumbnail/chara", ex.message)
+		}
 	}
 }
