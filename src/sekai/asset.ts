@@ -3,6 +3,7 @@ import ApiClient from "./api"
 import path from "path"
 import SekaiMasterDB from "../providers/sekai-master-db"
 import fs from "fs"
+import { SekaiEventType } from "../interface/event"
 
 export async function downloadImageAssets({assetPath, container, nameDestMap}: {assetPath: string, container?: string, nameDestMap: Record<string, string>}) {
 	const UnityPy = await python("UnityPy")
@@ -88,7 +89,9 @@ export async function ensureEventAssetsExist() {
 	}
 
 	// check event team assets
-	for(const team of SekaiMasterDB.getCheerfulCarnivalTeams()) {
+	const ccEventIds = SekaiMasterDB.getEvents().filter(x => x.eventType === SekaiEventType.CHEERFUL_CARNIVAL).map(x => x.id)
+	const ccTeams = SekaiMasterDB.getCheerfulCarnivalTeams().filter(x => ccEventIds.includes(x.eventId))
+	for(const team of ccTeams) {
 		const filePath = path.join(__dirname, "..", "..", "public", "assets", `team_${team.id}.png`)
 		try {
 			await fs.promises.stat(filePath)
