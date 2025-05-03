@@ -8,6 +8,13 @@ import { writePNGSignature } from "../../util/img_signature";
 import parseurl from "parseurl"
 import { UserCardSpecialTrainingStatus } from "sekai-api";
 
+const RarityMap = {
+	"highest": 4,
+	"high": 3,
+	"middle": 2,
+	"low": 1
+}
+
 export default class ImageGenController {
 	public static async generateHonorFromEventId(req: Request, res: Response, next: NextFunction) {
 		const eventId = parseInt(req.params.eventId as string)
@@ -43,12 +50,20 @@ export default class ImageGenController {
 
 		const backgroundImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honorGroup.backgroundAssetbundleName, sub ? "degree_sub/degree_sub.png" : "degree_main/degree_main.png"))
 		const rankImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honor.assetbundleName, sub ? "rank_sub/rank_sub.png" : "rank_main/rank_main.png"))
+		let frameImage: Buffer
+		if(honorGroup.frameName) {
+			const assetName = `frame_degree_${sub ? "s" : "m"}_${RarityMap[honor.honorRarity]}`
+			try {
+				frameImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor_frame", honorGroup.frameName, `${assetName}/${assetName}.png`))
+			} catch(ex) {}
+		}
 
 		const image = await new (sub ? EventHonorSubImage : EventHonorImage)({
 			backgroundImage,
 			rankImage,
+			frameImage,
 			honorRarity: honor.honorRarity,
-			frameName: honorGroup.frameName
+			isWorldlinkChapter: chapter && event.eventType === SekaiEventType.WORLD_BLOOM
 		}).create()
 		const withSig = writePNGSignature(image, "sekaing")
 		return res.set("Content-Type", "image/png").send(withSig)
@@ -91,12 +106,21 @@ export default class ImageGenController {
 			(rank >= 1 && rank <= 10) ? "highest" :
 			(rank > 10 && rank <= 1000) ? "high" :
 			(rank > 1000 && rank <= 10000) ? "middle" : "low"
-		
+
+		let frameImage: Buffer
+		if(chapter != null) {
+			const assetName = `frame_degree_${sub ? "s" : "m"}_${RarityMap[rarity]}`
+			try {
+				frameImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor_frame", `${eventKeyPart}_cp${chapter}`, `${assetName}/${assetName}.png`))
+			} catch(ex) {}	
+		}
+
 		const image = await new (sub ? EventHonorSubImage : EventHonorImage)({
 			backgroundImage,
 			rankImage,
+			frameImage,
 			honorRarity: rarity,
-			frameName: chapter ? `${eventKeyPart}_cp${chapter}` : undefined
+			isWorldlinkChapter: chapter != null
 		}).create()
 		const withSig = writePNGSignature(image, "sekaing")
 		return res.set("Content-Type", "image/png").send(withSig)

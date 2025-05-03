@@ -85,6 +85,38 @@ export async function ensureEventAssetsExist() {
 					await fs.promises.rm(path.join(folderPath, "degree_sub"), {recursive: true, force: true})
 				}
 			}
+
+			if(honorGroup.frameName) {
+				const folderPath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor_frame", honorGroup.frameName)
+				try {
+					await fs.promises.stat(folderPath)
+				} catch(ex) {
+					console.log("[SekaiAsset] Downloading missing event title frame:", honorGroup.frameName)
+					await fs.promises.mkdir(path.join(folderPath, "frame_degree_m_3"), {recursive: true})
+					await fs.promises.mkdir(path.join(folderPath, "frame_degree_m_4"), {recursive: true})
+					await fs.promises.mkdir(path.join(folderPath, "frame_degree_s_3"), {recursive: true})
+					await fs.promises.mkdir(path.join(folderPath, "frame_degree_s_4"), {recursive: true})
+
+					try {
+						await downloadImageAssets({
+							assetPath: `honor_frame/${honorGroup.frameName}`,
+							nameDestMap: {
+								frame_degree_m_3: path.join(folderPath, "frame_degree_m_3/frame_degree_m_3.png"),
+								frame_degree_m_4: path.join(folderPath, "frame_degree_m_4/frame_degree_m_4.png"),
+								frame_degree_s_3: path.join(folderPath, "frame_degree_s_3/frame_degree_s_3.png"),
+								frame_degree_s_4: path.join(folderPath, "frame_degree_s_4/frame_degree_s_4.png")
+							}
+						})
+					} catch(ex) {
+						console.error("[SekaiAsset] Failed to download", honorGroup.frameName, ex.message)
+
+						await fs.promises.rm(path.join(folderPath, "frame_degree_m_3"), {recursive: true, force: true})
+						await fs.promises.rm(path.join(folderPath, "frame_degree_m_4"), {recursive: true, force: true})
+						await fs.promises.rm(path.join(folderPath, "frame_degree_s_3"), {recursive: true, force: true})
+						await fs.promises.rm(path.join(folderPath, "frame_degree_s_4"), {recursive: true, force: true})
+					}
+				}
+			}
 		}
 	}
 
