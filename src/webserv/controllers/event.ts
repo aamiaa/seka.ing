@@ -240,7 +240,7 @@ export default class EventController {
 								$dateTrunc: {
 									date: "$createdAt",
 									unit: "minute",
-									binSize: 1
+									binSize: isPastChapter ? 5 : 1
 								}
 							},
 							points: {
