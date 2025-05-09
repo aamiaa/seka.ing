@@ -117,6 +117,33 @@ export async function ensureEventAssetsExist() {
 					}
 				}
 			}
+
+			const rankAssets = new Set(SekaiMasterDB.getHonorsForGroup(honorGroup.id).map(x => x.assetbundleName))
+			for(const assetbundleName of rankAssets) {
+				const folderPath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", assetbundleName)
+				try {
+					await fs.promises.stat(folderPath)
+				} catch(ex) {
+					console.log("[SekaiAsset] Downloading missing event title rank:", assetbundleName)
+					await fs.promises.mkdir(path.join(folderPath, "rank_main"), {recursive: true})
+					await fs.promises.mkdir(path.join(folderPath, "rank_sub"), {recursive: true})
+	
+					try {
+						await downloadImageAssets({
+							assetPath: `honor/${assetbundleName}`,
+							nameDestMap: {
+								rank_main: path.join(folderPath, "rank_main/rank_main.png"),
+								rank_sub: path.join(folderPath, "rank_sub/rank_sub.png")
+							}
+						})
+					} catch(ex) {
+						console.error("[SekaiAsset] Failed to download", assetbundleName, ex.message)
+	
+						await fs.promises.rm(path.join(folderPath, "rank_main"), {recursive: true, force: true})
+						await fs.promises.rm(path.join(folderPath, "rank_sub"), {recursive: true, force: true})
+					}
+				}
+			}
 		}
 	}
 

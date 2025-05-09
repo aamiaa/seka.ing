@@ -180,6 +180,10 @@ export default class SekaiMasterDB {
 		return this.honorGroups
 	}
 
+	public static getHonorsForGroup(id: number) {
+		return this.honors.filter(x => x.groupId === id)
+	}
+
 	public static getCard(id: number) {
 		return this.cards.find(x => x.id === id)
 	}
