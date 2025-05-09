@@ -157,6 +157,8 @@
 			let newMin = document.getElementById("minTb").valueAsNumber || min
 			let newMax = document.getElementById("maxTb").valueAsNumber || max
 
+			const isZoomedOut = newMin === min && newMax === max
+
 			let newLabels = []
 			for(let i=newMin;i<=newMax;i+=step) {
 				newLabels.push(i)
@@ -166,6 +168,12 @@
 			chart.data.datasets.forEach(dataset => {
 				dataset.data = points[dataset.label].filter(x => x.x >= newMin && x.x <= newMax).map(x => x.y)
 			})
+			
+			if(!isZoomedOut) {
+				delete chart.options.scales.y.max
+			} else {
+				chart.options.scales.y.max = Math.max(Math.ceil(maxY/1000000) * 1000000)
+			}
 			chart.update()
 		}
 
