@@ -885,7 +885,7 @@
 				document.querySelectorAll(".per-game-col").forEach(x => x.style.display = "")
 				document.querySelectorAll(".past-hour-by-rank-col").forEach(x => x.style.display = "none")
 			}
-			updateLeaderboard(document.getElementById("eventTableOverall"), showHighlights ? data.borders : data.rankings)
+			updateLeaderboard(document.getElementById("eventTableOverall"), showHighlights ? data.borders : data.rankings, true)
 
 			if(data.chapter_rankings) {
 				document.getElementById("chapterTabs").style.removeProperty("display")
@@ -914,7 +914,7 @@
 				}
 				
 				for(const [idx, rankings] of (showHighlights ? data.chapter_borders : data.chapter_rankings).entries()) {
-					updateLeaderboard(document.getElementById("eventTableChapter" + (idx + 1)), rankings)
+					updateLeaderboard(document.getElementById("eventTableChapter" + (idx + 1)), rankings, false)
 				}
 
 				if(!lastLbUpdate) {
@@ -958,7 +958,7 @@
 			lastLbUpdate = new Date()
 		}
 
-		function updateLeaderboard(table, rankings) {
+		function updateLeaderboard(table, rankings, showDividers) {
 			const isBordersView = document.getElementById("showBordersCb").checked
 			const tableBody = table.querySelector("tbody")
 			while(tableBody.firstChild) {
@@ -1027,7 +1027,7 @@
 				}
 				avgCell.innerText = !!slot.average ? "+" + formatNumber(Math.floor(slot.average)) : "-"
 
-				if([3, 10, 50].includes(slot.rank - 1)) {
+				if(showDividers && [3, 10, 50].includes(slot.rank - 1)) {
 					tableRow.classList.add("class", "table-group-divider")
 				}
 				if(trackHash === slot.hash && !isBordersView) {
