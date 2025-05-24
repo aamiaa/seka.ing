@@ -655,7 +655,7 @@
 		}
 
 		function removeTMPTags(name) {
-			return name.replace(/<\/?(?:#|a|align|allcaps|alpha|b|color|cspace|font|font-weight|gradient|i|indent|line-height|line-indent|link|lowercase|margin|mark|mspace|nobr|noparse|page|pos|rotate|s|size|smallcaps|space|sprite|style|sub|sup|u|uppercase|voffset|width).*?>/g, "")
+			return name.replace(/[<‹]\/?(?:#|a|align|allcaps|alpha|b|color|cspace|font|font-weight|gradient|i|indent|line-height|line-indent|link|lowercase|margin|mark|mspace|nobr|noparse|page|pos|rotate|s|size|smallcaps|space|sprite|style|sub|sup|u|uppercase|voffset|width).*?[>›]/gi, "")
 		}
 
 		let lastUpdatedAt
