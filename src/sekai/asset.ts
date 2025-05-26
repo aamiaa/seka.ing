@@ -201,4 +201,47 @@ export async function ensureEventAssetsExist() {
 			console.error("[SekaiAsset] Failed to download", "thumbnail/chara", ex.message)
 		}
 	}
+
+	// check card deck assets
+	for(const card of SekaiMasterDB.getCards()) {
+		const basePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/character/member_cutout", card.assetbundleName)
+		const normalPath = path.join(basePath, "normal")
+		const trainedPath = path.join(basePath, "after_training")
+		const canBeTrained = (["rarity_3", "rarity_4"].includes(card.cardRarityType))
+		try {
+			await fs.promises.stat(normalPath)
+		} catch(ex) {
+			console.log("[SekaiAsset] Downloading missing card deck cutout:", card.assetbundleName)
+			await fs.promises.mkdir(normalPath, {recursive: true})
+			if(canBeTrained) {
+				await fs.promises.mkdir(trainedPath, {recursive: true})
+			}
+
+			try {
+				await downloadImageAssets({
+					assetPath: `character/member_cutout/${card.assetbundleName}`,
+					container: "normal",
+					nameDestMap: {
+						deck: path.join(normalPath, "deck.png")	
+					}
+				})
+				if(canBeTrained) {
+					await downloadImageAssets({
+						assetPath: `character/member_cutout/${card.assetbundleName}`,
+						container: "after_training",
+						nameDestMap: {
+							deck: path.join(trainedPath, "deck.png")	
+						}
+					})
+				}
+			} catch(ex) {
+				console.error("[SekaiAsset] Failed to download", card.assetbundleName, ex.message)
+
+				await fs.promises.rm(normalPath, {recursive: true, force: true})
+				if(canBeTrained) {
+					await fs.promises.rm(trainedPath, {recursive: true, force: true})
+				}
+			}
+		}
+	}
 }

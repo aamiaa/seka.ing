@@ -33,4 +33,15 @@ imageGenRouter.get("/card/leader/:cardId.png",
 	ImageGenController.generateLeaderCard
 )
 
+imageGenRouter.get("/card/deck/:cardId.png",
+	param("cardId").isInt({min: 1}),
+	query("level").isInt({min: 1, max: 60}),
+	query("mastery").isInt({min: 0, max: 5}),
+	query("trained").isBoolean(),
+	query("image").isInt({min: 0, max: 1}),
+	query("slot").isInt({min: 0, max: 4}),
+	ValidationMiddleware.sendErrors,
+	ImageGenController.generateDeckCard
+)
+
 export default imageGenRouter
