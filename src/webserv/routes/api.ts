@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { query } from "express-validator";
+import { param, query } from "express-validator";
 import EventController from "../controllers/event"
 import ValidationMiddleware from "../middleware/validation";
 import TimeController from "../controllers/time";
@@ -11,12 +11,19 @@ const apiRouter = Router()
 apiRouter.get("/events", EventController.getEvents)
 apiRouter.get("/leaderboard",
 	query("nocache").optional().isBoolean(),
+	ValidationMiddleware.sendErrors,
 	EventController.getLeaderboard
 )
 apiRouter.get("/cc-announcements", EventController.getAnnouncements)
 apiRouter.get("/wl-graph",
 	query("all").optional().isBoolean(),
+	ValidationMiddleware.sendErrors,
 	EventController.getWorldlinkGraph
+)
+apiRouter.get("/event-profiles/:hash",
+	param("hash").isString().isLength({min: 32, max: 32}).isHexadecimal(),
+	ValidationMiddleware.sendErrors,
+	EventController.getPlayerEventProfile
 )
 
 apiRouter.get("/time", TimeController.getServerTime)

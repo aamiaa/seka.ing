@@ -7,6 +7,9 @@ import { predict } from "../../util/math";
 import { EventProfileModel } from "../../models/event_profile";
 import { sha256 } from "../../util/hash";
 import CacheStore from "../cache";
+import { decryptEventSnowflake } from "../../util/cipher";
+import { EventProfileDTO } from "../dto/event_profile";
+import { UserCardDefaultImage, UserCardSpecialTrainingStatus } from "sekai-api";
 
 export default class EventController {
 	public static async getEvents(req: Request, res: Response, next: NextFunction) {
@@ -302,5 +305,49 @@ export default class EventController {
 			colors,
 			now
 		})
+	}
+
+	public static async getPlayerEventProfile(req: Request, res: Response, next: NextFunction) {
+		const hash = req.params.hash as string
+
+		let eventId: number, userId: string
+		try {
+			const data = decryptEventSnowflake(hash)
+			eventId = data.eventId
+			userId = data.snowflake
+		} catch(ex) {
+			return res.status(400).send({error: "Invalid hash"})
+		}
+
+		const profile = await EventProfileModel.findOne({eventId, userId}).lean()
+		if(!profile || !profile.fullProfileFetched) {
+			return res.status(404).send({error: "Profile not found"})
+		}
+
+		const deckCardIds = [
+			profile.userDeck.leader,
+			profile.userDeck.subLeader,
+			profile.userDeck.member3,
+			profile.userDeck.member4,
+			profile.userDeck.member5,
+		]
+		const response: EventProfileDTO = {
+			name: profile.name,
+			cards: profile.userCards.filter(x => deckCardIds.includes(x.cardId)).map(x => ({
+				id: x.cardId,
+				level: x.level,
+				mastery: x.masterRank,
+				trained: x.specialTrainingStatus === UserCardSpecialTrainingStatus.DONE,
+				image: x.defaultImage === UserCardDefaultImage.SPECIAL_TRAINING ? 1 : 0
+			})).sort((a,b) => deckCardIds.indexOf(a.id) - deckCardIds.indexOf(b.id)),
+			talent: {
+				basic_talent: profile.totalPower.basicCardTotalPower,
+				area_item_bonus: profile.totalPower.areaItemBonus,
+				character_rank_bonus: profile.totalPower.characterRankBonus,
+				honor_bonus: profile.totalPower.honorBonus,
+				total_talent: profile.totalPower.totalPower
+			}
+		}
+		return res.json(response)
 	}
 }

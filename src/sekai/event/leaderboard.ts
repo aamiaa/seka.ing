@@ -7,53 +7,8 @@ import CacheStore from "../../webserv/cache"
 import { EventRankingBorderPage, EventRankingPage, UserCardDefaultImage, UserCardSpecialTrainingStatus, UserRanking } from "sekai-api"
 import ApiClient from "../api"
 import { encryptEventSnowflake } from "../../util/cipher"
-
-interface PartialUserRanking {
-	name: string,
-	score: number,
-	rank: number,
-	card: {
-		id: number,
-		level: number,
-		mastery: number,
-		trained: boolean,
-		image: number
-	},
-	hash?: string,
-	delta?: number,
-	rank_delta?: number,
-	count?: number,
-	average?: number
-}
-
-interface LeaderboardCacheEvent {
-	name?: string,
-	name_key?: string,
-	type?: string,
-	starts_at?: Date,
-	ends_at?: Date,
-	titles_at?: Date,
-	chapters?: {
-		title: string,
-		num: number,
-		character_id: number,
-		color: string,
-		starts_at: Date
-	}[],
-	chapter_num?: number,
-	chapter_character?: number
-}
-
-interface LeaderboardCache {
-	event: LeaderboardCacheEvent,
-	next_event?: LeaderboardCacheEvent,
-	rankings: PartialUserRanking[],
-	borders: PartialUserRanking[],
-	chapter_rankings?: PartialUserRanking[][],
-	chapter_borders?: PartialUserRanking[][],
-	updated_at?: Date,
-	aggregate_until?: Date
-}
+import { sleep } from "../../util/sleep"
+import { LeaderboardDTO } from "../../webserv/dto/leaderboard"
 
 function populateUsersMap(map: Record<string, UserRanking>, users: UserRanking[]) {
 	for(const user of users) {
@@ -71,6 +26,7 @@ export default class LeaderboardTracker {
 
 		await this.updateLeaderboard()
 		setInterval(this.updateLeaderboard.bind(this), 60 * 1000)
+		this.updateFullProfileData()
 		
 		console.log("[LeaderboardTracker] Started!")
 	}
@@ -168,24 +124,42 @@ export default class LeaderboardTracker {
 	}
 
 	private static async updateUserProfiles(rankingSnapshot: RankingSnapshot, borderSnapshot: BorderSnapshot, onlyNew?: boolean) {
-		const users: Record<string, UserRanking> = {}
+		const usersTop100: Record<string, UserRanking> = {}
+		const usersBorders: Record<string, UserRanking> = {}
 
-		populateUsersMap(users, rankingSnapshot.rankings)
-		populateUsersMap(users, borderSnapshot.borderRankings)
+		populateUsersMap(usersTop100, rankingSnapshot.rankings)
+		populateUsersMap(usersBorders, borderSnapshot.borderRankings)
 		if(rankingSnapshot.userWorldBloomChapterRankings?.length > 0) {
 			rankingSnapshot.userWorldBloomChapterRankings.forEach(x => {
 				if(!x.isWorldBloomChapterAggregate) {
-					populateUsersMap(users, x.rankings)
+					populateUsersMap(usersTop100, x.rankings)
 				}
 			})
 			borderSnapshot.userWorldBloomChapterRankingBorders.forEach(x => {
 				if(!x.isWorldBloomChapterAggregate) {
-					populateUsersMap(users, x.borderRankings)
+					populateUsersMap(usersBorders, x.borderRankings)
 				}
 			})
 		}
 
-		await EventProfileModel.bulkWrite(Object.values(users).map(user => {
+		await EventProfileModel.bulkWrite(Object.values(usersTop100).map(user => {
+			const entry = {
+				...user,
+				wasTop100: true,
+			}
+			return {
+				updateOne: {
+					filter: {userId: user.userId, eventId: rankingSnapshot.eventId},
+					update: onlyNew ? {
+						$setOnInsert: entry
+					} : {
+						$set: entry
+					},
+					upsert: true
+				}
+			}
+		}))
+		await EventProfileModel.bulkWrite(Object.values(usersBorders).map(user => {
 			return {
 				updateOne: {
 					filter: {userId: user.userId, eventId: rankingSnapshot.eventId},
@@ -240,7 +214,7 @@ export default class LeaderboardTracker {
 		if(ranking.isEventAggregate || border.isEventAggregate) {
 			console.warn("[LeaderboardTracker] Event is aggregating")
 
-			CacheStore.get<LeaderboardCache>("leaderboard").aggregate_until = currentEvent.rankingAnnounceAt
+			CacheStore.get<LeaderboardDTO>("leaderboard").aggregate_until = currentEvent.rankingAnnounceAt
 			return
 		}
 
@@ -306,7 +280,7 @@ export default class LeaderboardTracker {
 		const currentRanking = ranking.rankings
 		const currentBorders = border.borderRankings
 
-		const lbCache: LeaderboardCache = {
+		const lbCache: LeaderboardDTO = {
 			event: {
 				name: currentEvent.name,
 				name_key: currentEvent.assetbundleName,
@@ -368,6 +342,70 @@ export default class LeaderboardTracker {
 			}
 		}
 
-		console.log("[LeaderboardTracker] Updated!")
+		console.log("[LeaderboardTracker] Leaderboard updated!")
+	}
+
+	// Updates full profile data of users in top 100.
+	// If a user was briefly in top 100 but hasn't had their data updated at all,
+	// their data will be updated once.
+	private static async updateFullProfileData() {
+		const updateInterval = 10 * 60 * 1000
+
+		while(true) {
+			await sleep(20 * 1000)
+			const now = new Date()
+
+			const currentEvent = SekaiMasterDB.getCurrentEvent()
+			if(!currentEvent) continue
+
+			const eventInProgress = now < new Date(currentEvent.rankingAnnounceAt.getTime())
+			if(!eventInProgress) continue
+
+			const lastTop100 = await RankingSnapshotModel.findOne({eventId: currentEvent.id}, undefined, {sort: {createdAt: -1}, lean: true})
+			if(now.getTime() - lastTop100.createdAt.getTime() > 3 * 60 * 1000) {
+				console.error("[LeaderboardTracker] Failed to run profile updates, as the last top 100 snapshot is too out of date!")
+				continue
+			}
+
+			const top100UserIds = new Set<string>()
+			lastTop100.rankings.forEach(x => top100UserIds.add(x.userId))
+			lastTop100.userWorldBloomChapterRankings?.forEach(x => x.rankings.forEach(y => top100UserIds.add(y.userId)))
+
+			// TODO: try/catch this to prevent the loop from aborting
+			const nextProfiles = await EventProfileModel.find({
+				eventId: currentEvent.id,
+				wasTop100: true,
+				$or: [
+					{fullProfileFetched: false},
+					{
+						$and: [
+							{userId: {$in: Array.from(top100UserIds)}},
+							{fullProfileFetchedAt: {$lte: new Date(now.getTime() - updateInterval)}}
+						]
+					}
+				]
+			}, undefined, {sort: {updatedAt: 1}, lean: true})
+			if(!nextProfiles) continue
+
+			for(const nextProfile of nextProfiles) {
+				try {
+					const profile = await ApiClient.getUserProfile(nextProfile.userId)
+					await EventProfileModel.updateOne({eventId: currentEvent.id, userId: nextProfile.userId}, {
+						$set: {
+							userDeck: profile.userDeck,
+							userCards: profile.userCards,
+							userCharacters: profile.userCharacters,
+							totalPower: profile.totalPower,
+							fullProfileFetched: true,
+							fullProfileFetchedAt: now
+						}
+					})
+
+					console.log("[LeaderboardTracker] Updated profile data of", nextProfile.userId)
+				} catch(ex) {
+					console.error("[LeaderboardTracker] Failed to update profile data of", nextProfile.userId, ex)
+				}
+			}
+		}
 	}
 }
