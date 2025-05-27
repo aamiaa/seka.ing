@@ -385,7 +385,7 @@ export default class LeaderboardTracker {
 					}
 				]
 			}, undefined, {sort: {updatedAt: 1}, lean: true})
-			if(!nextProfiles) continue
+			if(nextProfiles.length === 0) continue
 
 			for(const nextProfile of nextProfiles) {
 				try {
