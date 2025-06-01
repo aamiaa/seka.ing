@@ -362,6 +362,8 @@ export default class LeaderboardTracker {
 			if(!eventInProgress) continue
 
 			const lastTop100 = await RankingSnapshotModel.findOne({eventId: currentEvent.id}, undefined, {sort: {createdAt: -1}, lean: true})
+			if(!lastTop100) continue
+
 			if(now.getTime() - lastTop100.createdAt.getTime() > 3 * 60 * 1000) {
 				console.error("[LeaderboardTracker] Failed to run profile updates, as the last top 100 snapshot is too out of date!")
 				continue
