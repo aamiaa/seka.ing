@@ -37,6 +37,5 @@ interface UserRankingDTO {
 	hash?: string,
 	delta?: number,
 	rank_delta?: number,
-	count?: number,
 	average?: number
 }

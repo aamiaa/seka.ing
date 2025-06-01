@@ -51,7 +51,7 @@ export default class LeaderboardTracker {
 		return bordersPastHour
 	}
 
-	private static processRankingDifference(event: SekaiEvent, currentRanking: UserRanking[], pastRankings: UserRanking[][]) {
+	private static processRankingDifference(event: SekaiEvent, currentRanking: UserRanking[], pastRankings: UserRanking[][]): LeaderboardDTO["rankings"] {
 		return currentRanking.map(user => {
 			const hash = encryptEventSnowflake(event.id, user.userId)
 
@@ -88,8 +88,7 @@ export default class LeaderboardTracker {
 				},
 				hash,
 				delta: user.score - earliest,
-				average,
-				count
+				average
 			}
 		})
 	}
