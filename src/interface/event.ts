@@ -62,3 +62,12 @@ export interface SekaiCheerfulCarnivalTeam {
 	teamName: string,
 	assetbundleName: string
 }
+
+export interface SekaiCheerfulCarnivalSummary {
+	id: number,
+	eventId: number,
+	theme: string,
+	midtermAnnounce1At: Date,
+	midtermAnnounce2At: Date,
+	assetbundleName: string
+}
