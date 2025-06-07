@@ -181,7 +181,7 @@ export default class CheerfulCarnivalTracker {
 			}
 		])
 
-		const midterms = await CheerfulCarnivalMidtermModel.find({eventId: event.id}).sort({term: -1})
+		const midterms = await CheerfulCarnivalMidtermModel.find({eventId: event.id}).sort({term: 1})
 		for(const midterm of midterms) {
 			const team = teamStats.find(x => x.team_id === midterm.teamId)
 			if(team) {
