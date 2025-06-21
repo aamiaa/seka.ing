@@ -350,4 +350,117 @@ export default class EventController {
 		}
 		return res.json(response)
 	}
+
+	public static async getPlayerEventStats(req: Request, res: Response, next: NextFunction) {
+		const hash = req.params.hash as string
+
+		let eventId: number, userId: string
+		try {
+			const data = decryptEventSnowflake(hash)
+			eventId = data.eventId
+			userId = data.snowflake
+		} catch(ex) {
+			return res.status(400).send({error: "Invalid hash"})
+		}
+
+		// const recentGames = await RankingSnapshotModel.aggregate([
+		// 	{
+		// 		$match: {
+		// 			eventId
+		// 		}
+		// 	},
+		// 	{
+		// 		$unwind: {
+		// 			path: "$rankings"
+		// 		}
+		// 	},
+		// 	{
+		// 		$match: {
+		// 			"rankings.userId": userId
+		// 		}
+		// 	},
+		// 	{
+		// 		$project: {
+		// 			timestamp: "$createdAt",
+		// 			score: "$rankings.score",
+		// 		}
+		// 	},
+		// 	{
+		// 		$setWindowFields: {
+		// 			sortBy: {
+		// 				timestamp: 1
+		// 			},
+		// 			output: {
+		// 				previousScore: {
+		// 					$shift: {
+		// 						output: "$score",
+		// 						by: -1
+		// 					}
+		// 				}
+		// 			}
+		// 		}
+		// 	},
+		// 	{
+		// 		$project: {
+		// 			_id: 0,
+		// 			delta: {
+		// 				$subtract: ["$score", "$previousScore"]
+		// 			},
+		// 			timestamp: 1
+		// 		}
+		// 	},
+		// 	{
+		// 		$match: {
+		// 			timestamp: {$gte: new Date(Date.now() - 3600 * 1000)},
+		// 			delta: {$gt: 0}
+		// 		}
+		// 	}
+		// ])
+
+		const timeline = await RankingSnapshotModel.aggregate([
+			{
+				$match: {
+					eventId
+				}
+			},
+			{
+				$unwind: {
+					path: "$rankings"
+				}
+			},
+			{
+				$match: {
+					"rankings.userId": userId
+				}
+			},
+			{
+				$project: {
+					timestamp: "$createdAt",
+					score: "$rankings.score",
+				}
+			},
+			{
+				$group: {
+					_id: "$score",
+					timestamp: {$first: "$timestamp"}
+				}
+			},
+			{
+				$sort: {
+					timestamp: 1
+				}
+			},
+			{
+				$project: {
+					score: "$_id",
+					timestamp: 1,
+					_id: 0
+				}
+			}
+		])
+
+		return res.json({
+			timeline
+		})
+	}
 }

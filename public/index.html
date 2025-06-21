@@ -23,6 +23,11 @@
 			text-overflow: ellipsis;
 		}
 
+		.username-clickable:hover {
+			cursor: pointer;
+			text-decoration: underline;
+		}
+
 		.username-cell {
 			max-width: 20ch;
 		}
@@ -82,10 +87,15 @@
 		.past-hour-by-rank-col {
 			white-space: nowrap;
 		}
+
+		.no-select {
+			user-select: none;
+		}
 	</style>
 </head>
 <body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script src="/assets/flipdown.min.js"></script>
 	<script src="/assets/countdown.min.js"></script>
 
@@ -595,6 +605,44 @@
 		</div>
 	</div>
 
+	<div class="modal" id="eventProfileModal" tabindex="-1" aria-labelledby="eventProfileModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="eventProfileModalLabel">...</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body d-flex flex-column gap-3">
+					<div>
+						<h4>Current Team</h4>
+						<div id="eventProfileDeck" class="d-flex gap-2 no-select mb-3"></div>
+						<div>
+							<details id="eventProfileTalentDetails">
+								<summary id="eventProfileTalentLb">Talent:</summary>
+								<p id="eventProfileBaseTalentLb" class="mb-0">Base Talent:</p>
+								<p id="eventProfileItemTalentLb" class="mb-0">Decoration Bonus:</p>
+								<p id="eventProfileCRTalentLb" class="mb-0">Character Rank Bonus:</p>
+								<p id="eventProfileTitleTalentLb" class="mb-0">Title Bonus:</p>
+							</details>
+						</div>
+					</div>
+					<div>
+						<h4>Recent Games</h4>
+						<div style="height: 6rem; width: 100%;">
+							<canvas id="recentGamesChart"></canvas>
+						</div>
+					</div>
+					<div>
+						<h4>Heatmap</h4>
+					</div>
+					<div>
+						<h4>Points Graph</h4>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<footer class="py-3">
 		<span>Contact: <a id="contactBtn" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#contactModal">Show</a></span>
 	</footer>
@@ -733,6 +781,26 @@
 			const res = await fetch("/api/cc-announcements")
 			if(!res.ok) {
 				throw new Error("getAnnouncements() failed: " + res.status)
+			}
+
+			const json = await res.json()
+			return json
+		}
+
+		async function getUserEventProfile(hash) {
+			const res = await fetch(`/api/event-profiles/${hash}`)
+			if(!res.ok) {
+				throw new Error("getUserEventProfile() failed: " + res.status)
+			}
+
+			const json = await res.json()
+			return json
+		}
+
+		async function getUserEventStats(hash) {
+			const res = await fetch(`/api/event-stats/${hash}`)
+			if(!res.ok) {
+				throw new Error("getUserEventStats() failed: " + res.status)
 			}
 
 			const json = await res.json()
@@ -1016,6 +1084,16 @@
 				const nameLabel = document.createElement("span")
 				nameLabel.setAttribute("class", "username-label")
 				nameLabel.textContent = nameLabel.title = removeTMPTags(slot.name)
+
+				if(slot.hash) {
+					nameLabel.classList.add("username-clickable")
+					nameLabel.addEventListener("click", async function(event) {
+						event.preventDefault()
+						event.stopPropagation()
+						new bootstrap.Modal("#eventProfileModal").show()
+						loadEventProfileModal(slot.hash)
+					})
+				}
 				nameCellDiv.appendChild(nameLabel)
 				nameCell.appendChild(nameCellDiv)
 
@@ -1083,6 +1161,115 @@
 			if(scrollTo) {
 				scrollTo.scrollIntoView({behavior: "smooth", block: "center"})
 			}
+		}
+
+		async function loadEventProfileModal(hash) {
+			// Clear old values
+			eventProfileDeck.innerHTML = ""
+			document.getElementById("eventProfileTalentDetails").open = false
+			document.getElementById("eventProfileModalLabel").textContent = "..."
+			document.getElementById("eventProfileTalentLb").textContent = "Talent:"
+			document.getElementById("eventProfileBaseTalentLb").textContent = "Base Talent:"
+			document.getElementById("eventProfileItemTalentLb").textContent = "Decoration Bonus:"
+			document.getElementById("eventProfileCRTalentLb").textContent = "Character Rank Bonus:"
+			document.getElementById("eventProfileTitleTalentLb").textContent = "Title Bonus:"
+
+			const profile = await getUserEventProfile(hash)
+			const stats = await getUserEventStats(hash)
+			stats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
+
+			// Render name
+			document.getElementById("eventProfileModalLabel").textContent = removeTMPTags(profile.name)
+
+			// Render cards
+			for(const [idx, card] of profile.cards.entries()) {
+				const img = document.createElement("img")
+				img.style.minWidth = "80px"
+				img.style.width = "100%"
+				img.style.maxWidth = "128px"
+				img.src = `/images/card/deck/${card.id}.png?level=${card.level}&mastery=${card.mastery}&trained=${card.trained}&image=${card.image}&slot=${idx}`
+				img.alt = "A card" // TODO: proper description, including all properties?
+
+				const a = document.createElement("a")
+				a.href = `https://sekai.best/card/${card.id}`
+				a.target = "_blank"
+				a.appendChild(img)
+
+				const div = document.createElement("div")
+				div.style.aspectRatio = "312/510"
+				div.style.maxWidth = "20%"
+				div.appendChild(a)
+
+				document.getElementById("eventProfileDeck").appendChild(div)
+			}
+
+			// Render talent
+			document.getElementById("eventProfileTalentLb").textContent = `Talent: ${formatNumber(profile.talent.total_talent)}`
+			document.getElementById("eventProfileBaseTalentLb").textContent = `Base Talent: ${formatNumber(profile.talent.basic_talent.toLocaleString())}`
+			document.getElementById("eventProfileItemTalentLb").textContent = `Decoration Bonus: ${formatNumber(profile.talent.area_item_bonus.toLocaleString())}`
+			document.getElementById("eventProfileCRTalentLb").textContent = `Character Rank Bonus: ${formatNumber(profile.talent.character_rank_bonus.toLocaleString())}`
+			document.getElementById("eventProfileTitleTalentLb").textContent = `Title Bonus: ${formatNumber(profile.talent.honor_bonus.toLocaleString())}`
+
+			// Render recent games
+			const hourAgo = new Date(Date.now() - 3600 * 1000)
+			const recentGames = []
+			for(const [idx, dataPoint] of stats.timeline.entries()) {
+				if(dataPoint.timestamp >= hourAgo && (recentGames.length === 0 || (stats.timeline[idx-1]?.score || 0) < dataPoint.score)) {
+					recentGames.push({
+						timestamp: dataPoint.timestamp,
+						delta: dataPoint.score - (stats.timeline[idx-1]?.score || 0)
+					})
+				}
+			}
+
+			const chart = new Chart(document.getElementById("recentGamesChart"), {
+				type: "scatter",
+				data: {
+					labels: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60],
+					datasets: [{
+						data: recentGames.map(x => ({
+							x: Math.floor((x.timestamp.getTime() - hourAgo.getTime())/1000/60),
+							y: 1
+						}))
+					}]
+				},
+				options: {
+					maintainAspectRatio: false,
+					animation: false,
+					scales: {
+						x: {
+							min: 0,
+							max: 60,
+							grid: {
+								display: false
+							},
+							ticks: {
+								callback: function(value, index, values) {
+									if(value === 60) {
+										return "Now"
+									}
+									return new Date(hourAgo.getTime() + value * 60 * 1000).toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
+								}
+							}
+						},
+						y: {
+							min: 0,
+							max: 2,
+							grid: {
+								display: false
+							},
+							ticks: {
+								display: false
+							}
+						}
+					},
+					plugins: {
+						legend: {
+							display: false
+						}
+					}
+				}
+			})
 		}
 
 		if(localStorage.getItem("showCCAnnounce") === "false") {
