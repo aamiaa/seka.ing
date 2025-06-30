@@ -1,5 +1,5 @@
 import axios from "axios";
-import { SekaiCheerfulCarnivalTeam, SekaiEvent, SekaiEventType, SekaiWorldBloom, SekaiWorldBloomChapterRankingRewardRange } from "../interface/event";
+import { SekaiCheerfulCarnivalSummary, SekaiCheerfulCarnivalTeam, SekaiEvent, SekaiEventType, SekaiWorldBloom, SekaiWorldBloomChapterRankingRewardRange } from "../interface/event";
 import SekaiGameCharacter, { SekaiPenlightColor } from "../interface/character";
 import { SekaiResourceBox } from "../interface/resource";
 import { SekaiHonor, SekaiHonorGroup } from "../interface/honor";
@@ -19,7 +19,8 @@ async function ensureFolderExists(path: string) {
 
 export default class SekaiMasterDB {
 	private static readonly requiredModules = ["events", "worldBlooms", "gameCharacters", "penlightColors",
-		"resourceBoxes", "honors", "honorGroups", "worldBloomChapterRankingRewardRanges", "cards", "cheerfulCarnivalTeams"]
+		"resourceBoxes", "honors", "honorGroups", "worldBloomChapterRankingRewardRanges", "cards", "cheerfulCarnivalTeams",
+		"cheerfulCarnivalSummaries"]
 	private static events: SekaiEvent[] = []
 	private static worldBlooms: SekaiWorldBloom[] = []
 	private static gameCharacters: SekaiGameCharacter[] = []
@@ -30,6 +31,7 @@ export default class SekaiMasterDB {
 	private static worldBloomChapterRankingRewardRanges: SekaiWorldBloomChapterRankingRewardRange[] = []
 	private static cards: SekaiCard[] = []
 	private static cheerfulCarnivalTeams: SekaiCheerfulCarnivalTeam[] = []
+	private static cheerfulCarnivalSummaries: SekaiCheerfulCarnivalSummary[] = []
 
 	public static async init() {
 		await this.refreshData()
@@ -100,6 +102,13 @@ export default class SekaiMasterDB {
 						["chapterStartAt", "aggregateAt", "chapterEndAt"].forEach(field => event[field] = new Date(event[field]))
 					)
 					this.worldBlooms = data
+					break
+				case "cheerfulCarnivalSummaries":
+					data.forEach(x => {
+						x.midtermAnnounce1At = new Date(x.midtermAnnounce1At)
+						x.midtermAnnounce2At = new Date(x.midtermAnnounce2At)
+					})
+					this.cheerfulCarnivalSummaries = data
 					break
 				default:
 					this[module] = data
@@ -194,5 +203,9 @@ export default class SekaiMasterDB {
 
 	public static getCheerfulCarnivalTeams() {
 		return this.cheerfulCarnivalTeams
+	}
+
+	public static getCheerfulCarnivalSummary(id: number) {
+		return this.cheerfulCarnivalSummaries.find(x => x.eventId === id)
 	}
 }
