@@ -333,13 +333,19 @@ export default class EventController {
 		]
 		const response: EventProfileDTO = {
 			name: profile.name,
-			cards: profile.userCards.filter(x => deckCardIds.includes(x.cardId)).map(x => ({
-				id: x.cardId,
-				level: x.level,
-				mastery: x.masterRank,
-				trained: x.specialTrainingStatus === UserCardSpecialTrainingStatus.DONE,
-				image: x.defaultImage === UserCardDefaultImage.SPECIAL_TRAINING ? 1 : 0
-			})).sort((a,b) => deckCardIds.indexOf(a.id) - deckCardIds.indexOf(b.id)),
+			cards: profile.userCards.filter(x => deckCardIds.includes(x.cardId)).map(x => {
+				const card = SekaiMasterDB.getCard(x.cardId)
+				const character = SekaiMasterDB.getGameCharacter(card.characterId)
+
+				return {
+					id: x.cardId,
+					level: x.level,
+					mastery: x.masterRank,
+					trained: x.specialTrainingStatus === UserCardSpecialTrainingStatus.DONE,
+					image: x.defaultImage === UserCardDefaultImage.SPECIAL_TRAINING ? 1 : 0,
+					description: card ? (card.prefix + " " + character.givenName + (character.firstName ? ` ${character.firstName}` : "")) : "Unknown"
+				}
+			}).sort((a,b) => deckCardIds.indexOf(a.id) - deckCardIds.indexOf(b.id)),
 			talent: {
 				basic_talent: profile.totalPower.basicCardTotalPower,
 				area_item_bonus: profile.totalPower.areaItemBonus,

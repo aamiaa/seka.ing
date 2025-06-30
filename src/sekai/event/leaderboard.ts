@@ -284,6 +284,7 @@ export default class LeaderboardTracker {
 				name: currentEvent.name,
 				name_key: currentEvent.assetbundleName,
 				type: currentEvent.eventType,
+				starts_at: currentEvent.startAt,
 				ends_at: currentEvent.aggregateAt,
 				titles_at: currentEvent.distributionStartAt
 			},

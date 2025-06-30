@@ -91,6 +91,29 @@
 		.no-select {
 			user-select: none;
 		}
+
+		.heatmap-container {
+			display: grid;
+			grid-template-columns: repeat(24, 1fr);
+			gap: 0;
+		}
+
+		.heatmap-container > span {
+			border: 1px black solid;
+			aspect-ratio: 1;
+			text-align: center;
+
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			font-size: min(2.3vw, 12px)
+		}
+
+		@media (min-width: 992px) {
+			.heatmap-container > span {
+				font-size: 16px;
+			}
+		}
 	</style>
 </head>
 <body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
@@ -621,7 +644,7 @@
 		<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h1 class="modal-title fs-5" id="eventProfileModalLabel">...</h1>
+					<h1 class="modal-title fw-normal fs-5" id="eventProfileModalLabel">...</h1>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body d-flex flex-column gap-3">
@@ -646,6 +669,7 @@
 					</div>
 					<div>
 						<h4>Heatmap</h4>
+						<div id="heatmapContainer" class="heatmap-container"></div>
 					</div>
 					<div>
 						<h4>Points Graph</h4>
@@ -857,6 +881,7 @@
 			announcementLoop()
 		})
 
+		let currentEvent
 		let timerStarted = false
 		let nextTimerStarted = false
 		let lastLbUpdate
@@ -892,7 +917,7 @@
 				toggleIssuesBanner(false)
 			}
 			
-			const eventData = data.event
+			const eventData = currentEvent = data.event
 			document.getElementById("eventLogoPlaceholder").style.display = "none"
 			document.getElementById("eventLogo").src = `assets/${eventData.name_key}.png`
 			document.getElementById("eventLogo").alt = `${eventData.name} event logo`
@@ -1181,6 +1206,7 @@
 			}
 		}
 
+		let lastChart
 		async function loadEventProfileModal(hash) {
 			// Clear old values
 			eventProfileDeck.innerHTML = ""
@@ -1191,10 +1217,15 @@
 			document.getElementById("eventProfileItemTalentLb").textContent = "Decoration Bonus:"
 			document.getElementById("eventProfileCRTalentLb").textContent = "Character Rank Bonus:"
 			document.getElementById("eventProfileTitleTalentLb").textContent = "Title Bonus:"
+			if(lastChart) {
+				lastChart.clear()
+				lastChart.destroy()
+				lastChart = null
+			}
+			document.getElementById("heatmapContainer").innerHTML = ""
 
 			const profile = await getUserEventProfile(hash)
-			const stats = await getUserEventStats(hash)
-			stats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
+			const statsPromise = getUserEventStats(hash)
 
 			// Render name
 			document.getElementById("eventProfileModalLabel").textContent = removeTMPTags(profile.name)
@@ -1206,7 +1237,7 @@
 				img.style.width = "100%"
 				img.style.maxWidth = "128px"
 				img.src = `/images/card/deck/${card.id}.png?level=${card.level}&mastery=${card.mastery}&trained=${card.trained}&image=${card.image}&slot=${idx}`
-				img.alt = "A card" // TODO: proper description, including all properties?
+				img.alt = img.title = card.description
 
 				const a = document.createElement("a")
 				a.href = `https://sekai.best/card/${card.id}`
@@ -1228,6 +1259,9 @@
 			document.getElementById("eventProfileCRTalentLb").textContent = `Character Rank Bonus: ${formatNumber(profile.talent.character_rank_bonus.toLocaleString())}`
 			document.getElementById("eventProfileTitleTalentLb").textContent = `Title Bonus: ${formatNumber(profile.talent.honor_bonus.toLocaleString())}`
 
+			const stats = await statsPromise
+			stats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
+
 			// Render recent games
 			const hourAgo = new Date(Date.now() - 3600 * 1000)
 			const recentGames = []
@@ -1240,7 +1274,7 @@
 				}
 			}
 
-			const chart = new Chart(document.getElementById("recentGamesChart"), {
+			const chart = lastChart = new Chart(document.getElementById("recentGamesChart"), {
 				type: "scatter",
 				data: {
 					labels: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60],
@@ -1288,6 +1322,30 @@
 					}
 				}
 			})
+
+			// Render heatmap
+			const colors = ["#301934", "#462a57", "#5b3b79", "#714d9c", "#7c59ad", "#8263b3", "#876db9", "#8576bd", "#6c7ebe", "#5287bf", "#398fc0", "#4396c4", "#519ec8", "#60a5cd", "#70acd1", "#83b2d4", "#96b8d8", "#a8bedb", "#c6cce3", "#d2d2e7", "#dbd8ea", "#e4dded", "#c2cbe2", "#e7dfee", "#eee0ee", "#f3dce8", "#f7d8e2", "#fcd4dc", "#f0dfeb", "#f4dbe6", "#f8d8e1", "#fcd4dc"]
+			const days = []
+			for(const dt=new Date(currentEvent.starts_at);dt<=new Date(currentEvent.ends_at);dt.setDate(dt.getDate()+1)) {
+				days.push(new Date(dt))
+			}
+			for(const day of days) {
+				for(let i=0;i<24;i++) {
+					const dateAt = new Date(day.getTime() + i * 3600 * 1000)
+					const dateIn1h = new Date(day.getTime() + (i + 1) * 3600 * 1000)
+
+					const span = document.createElement("span")
+					const eventStartTime = new Date(currentEvent.starts_at)
+					const eventEndTime = new Date(currentEvent.ends_at)
+					if(dateAt.getTime() >= eventStartTime.getTime() && dateAt.getTime() < eventEndTime) {
+						const amountOfGames = stats.timeline.filter(x => x.timestamp.getTime() >= dateAt.getTime() && x.timestamp.getTime() < dateIn1h.getTime()).length
+						span.textContent = amountOfGames
+						span.style.backgroundColor = colors[amountOfGames]
+						span.style.color = amountOfGames === 0 ? "#ffffff": "#000000"
+					}
+					document.getElementById("heatmapContainer").appendChild(span)
+				}
+			}
 		}
 
 		if(localStorage.getItem("showCCAnnounce") === "false") {
