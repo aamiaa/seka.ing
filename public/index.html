@@ -692,6 +692,7 @@
 					</div>
 					<div>
 						<h4>Points Graph</h4>
+						<canvas id="pointsGraph"></canvas>
 					</div>
 				</div>
 			</div>
@@ -1225,7 +1226,7 @@
 			}
 		}
 
-		let lastChart
+		let lastCharts = []
 		async function loadEventProfileModal(hash) {
 			// Clear old values
 			eventProfileDeck.innerHTML = ""
@@ -1236,11 +1237,11 @@
 			document.getElementById("eventProfileItemTalentLb").textContent = "Decoration Bonus:"
 			document.getElementById("eventProfileCRTalentLb").textContent = "Character Rank Bonus:"
 			document.getElementById("eventProfileTitleTalentLb").textContent = "Title Bonus:"
-			if(lastChart) {
-				lastChart.clear()
-				lastChart.destroy()
-				lastChart = null
-			}
+			lastCharts.forEach(x => {
+				x.clear()
+				x.destroy()
+			})
+			lastCharts = []
 			document.getElementById("heatmapContainer").innerHTML = ""
 			// document.getElementById("heatmapPlaceholder").style.display = ""
 
@@ -1298,7 +1299,7 @@
 				}
 			}
 
-			const chart = lastChart = new Chart(document.getElementById("recentGamesChart"), {
+			lastCharts.push(new Chart(document.getElementById("recentGamesChart"), {
 				type: "scatter",
 				data: {
 					labels: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60],
@@ -1345,13 +1346,13 @@
 						},
 						tooltip: {
 							callbacks: {
-								title: (data) => `A game played at ${recentGames[data[0].dataIndex].timestamp.toLocaleTimeString()}`,
-								label: (data) => `+${formatNumber(recentGames[data.dataIndex].delta)} points`
+								title: (data) => `${data.length} game${data.length !== 1 ? "s" : ""} played`,
+								label: (data) => `+${formatNumber(recentGames[data.dataIndex].delta)} points at ${recentGames[data.dataIndex].timestamp.toLocaleTimeString()}`
 							}
 						}
 					}
 				}
-			})
+			}))
 
 			// Render heatmap
 			document.getElementById("heatmapTimezoneCb").onchange = function() {
@@ -1368,6 +1369,112 @@
 			} else {
 				renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), 4, stats.timeline)
 			}
+
+			// Render points graph
+			const recentGamesByDelta = stats.timeline.map(x => ({
+				x: Math.floor((x.timestamp.getTime() - new Date(currentEvent.starts_at).getTime())/60000),
+				y: x.score
+			}))
+			const minX = 0
+			const maxX = Math.max(...recentGamesByDelta.map(x => x.x))
+			const step = 1
+			const labels = []
+			for(let i=minX;i<=maxX;i+=step) {
+				labels.push(i)
+			}
+
+			for(const [idx, val] of labels.entries()) {
+				if(!recentGamesByDelta[idx] || recentGamesByDelta[idx].x !== val) {
+					recentGamesByDelta.splice(idx, 0, {x: val, y: null})
+				}
+			}
+
+			lastCharts.push(new Chart(document.getElementById("pointsGraph"), {
+				type: "line",
+				data: {
+					labels: labels,
+					datasets: [{
+						label: removeTMPTags(profile.name),
+						data: recentGamesByDelta.map(x => x.y),
+						spanGaps: true,
+						pointRadius: 0,
+						pointHitRadius: 1000
+					}]
+				},
+				options: {
+					aspectRatio: Math.max(1, window.screen.availWidth/window.screen.availHeight),
+					scales: {
+						x: {
+							title: {
+								display: true,
+								text: "Event Time"
+							},
+							ticks: {
+								callback: function(value, index, values) {
+									const val = parseInt(this.getLabelForValue(value))
+									if(val % 60 === 0) {
+										if(val % 1440 === 0 && val > 0) {
+											return `${val/1440}d`
+										} else if(val >= 1440) {
+											const days = Math.floor(val/1440)
+											const minutes = val%1440
+											return `${days}d ${minutes/60}h`
+										} else {
+											return `${val/60}h`
+										}
+									} else if(val % 5 === 0) {
+										const hours = Math.floor(val/60)
+										const minutes = val%60
+										if(hours > 0) {
+											return `${hours}h ${minutes}min`
+										} else {
+											return `${minutes} min`
+										}
+									}
+								}
+							}
+						},
+						y: {
+							title: {
+								display: true,
+								text: "Event Points"
+							},
+							// ticks: {
+							// 	callback: function(value, index, values) {
+							// 		return value / 1e6 + "M"
+							// 	}
+							// }
+						}
+					},
+					plugins: {
+						tooltip: {
+							callbacks: {
+								title: function(tooltipItem, data) {
+									let val = parseInt(tooltipItem[0].label)
+									const days = Math.floor(val/1440)
+									val %= 1440
+									const hours = Math.floor(val/60)
+									val %= 60
+									const minutes = val
+
+									const parts = []
+									if(days) {
+										parts.push(`${days} days`)
+									}
+									if(hours) {
+										parts.push(`${hours} hours`)
+									}
+									if(minutes) {
+										parts.push(`${minutes} minutes`)
+									}
+									
+									return parts.join(", ")
+								}
+							}
+						}
+					}
+				}
+			}))
 		}
 
 		function renderHeatmap(startDate, endDate, tzOffset, timeline) {
