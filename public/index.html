@@ -98,7 +98,7 @@
 			gap: 0;
 		}
 
-		.heatmap-container > span {
+		.heatmap-item {
 			border: 1px black solid;
 			aspect-ratio: 1;
 			text-align: center;
@@ -109,9 +109,18 @@
 			font-size: min(2.3vw, 12px)
 		}
 
+		.heatmap-hour-hint {
+			position: relative;
+			left: -2px;
+			font-size: 6px;
+		}
+
 		@media (min-width: 992px) {
-			.heatmap-container > span {
+			.heatmap-item {
 				font-size: 16px;
+			}
+			.heatmap-hour-hint {
+				font-size: 10px;
 			}
 		}
 	</style>
@@ -670,6 +679,16 @@
 					<div>
 						<h4>Heatmap</h4>
 						<div id="heatmapContainer" class="heatmap-container"></div>
+						<div id="heatmapPlaceholder" class="placeholder-glow" style="height: min(300px, 30vw);">
+							<span class="placeholder w-100 h-100"></span>
+						</div>
+						<div class="d-flex gap-2 justify-content-center mt-2">
+							<label class="form-check-label" for="heatmapTimezoneCb">EST</label>
+							<div class="form-check form-switch">
+								<input class="form-check-input" type="checkbox" role="switch" id="heatmapTimezoneCb">
+								<label class="form-check-label" for="heatmapTimezoneCb">Local timezone</label>
+							</div>
+						</div>
 					</div>
 					<div>
 						<h4>Points Graph</h4>
@@ -1223,6 +1242,11 @@
 				lastChart = null
 			}
 			document.getElementById("heatmapContainer").innerHTML = ""
+			document.getElementById("heatmapPlaceholder").style.display = ""
+
+			if(localStorage.getItem("heatmapTimezone") === "true") {
+				document.getElementById("heatmapTimezoneCb").checked = true
+			}
 
 			const profile = await getUserEventProfile(hash)
 			const statsPromise = getUserEventStats(hash)
@@ -1324,10 +1348,38 @@
 			})
 
 			// Render heatmap
+			document.getElementById("heatmapTimezoneCb").onchange = function() {
+				if(this.checked) {
+					renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), new Date().getTimezoneOffset()/60, stats.timeline)
+				} else {
+					renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), 4, stats.timeline)
+				}
+
+				localStorage.setItem("heatmapTimezone", this.checked.toString())
+			}
+			if(localStorage.getItem("heatmapTimezone") === "true") {
+				renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), new Date().getTimezoneOffset()/60, stats.timeline)
+			} else {
+				renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), 4, stats.timeline)
+			}
+		}
+
+		function renderHeatmap(startDate, endDate, tzOffset, timeline) {
+			document.getElementById("heatmapContainer").innerHTML = ""
+
 			const colors = ["#301934", "#462a57", "#5b3b79", "#714d9c", "#7c59ad", "#8263b3", "#876db9", "#8576bd", "#6c7ebe", "#5287bf", "#398fc0", "#4396c4", "#519ec8", "#60a5cd", "#70acd1", "#83b2d4", "#96b8d8", "#a8bedb", "#c6cce3", "#d2d2e7", "#dbd8ea", "#e4dded", "#c2cbe2", "#e7dfee", "#eee0ee", "#f3dce8", "#f7d8e2", "#fcd4dc", "#f0dfeb", "#f4dbe6", "#f8d8e1", "#fcd4dc"]
 			const days = []
-			for(const dt=new Date(currentEvent.starts_at);dt<=new Date(currentEvent.ends_at);dt.setDate(dt.getDate()+1)) {
+			const dt = new Date(startDate.getTime())
+			dt.setUTCHours(tzOffset,0,0,0)
+			for(;dt<=new Date(endDate.getTime());dt.setUTCDate(dt.getUTCDate()+1)) {
+				if(dt.getTime() - startDate.getTime() === -86400000) continue // prevent blank days
 				days.push(new Date(dt))
+			}
+			for(let i=0;i<24;i++) {
+				const span = document.createElement("span")
+				span.classList.add("heatmap-hour-hint", "text-white-50")
+				span.textContent = i
+				document.getElementById("heatmapContainer").appendChild(span)
 			}
 			for(const day of days) {
 				for(let i=0;i<24;i++) {
@@ -1335,10 +1387,11 @@
 					const dateIn1h = new Date(day.getTime() + (i + 1) * 3600 * 1000)
 
 					const span = document.createElement("span")
+					span.classList.add("heatmap-item")
 					const eventStartTime = new Date(currentEvent.starts_at)
 					const eventEndTime = new Date(currentEvent.ends_at)
-					if(dateAt.getTime() >= eventStartTime.getTime() && dateAt.getTime() < eventEndTime) {
-						const amountOfGames = stats.timeline.filter(x => x.timestamp.getTime() >= dateAt.getTime() && x.timestamp.getTime() < dateIn1h.getTime()).length
+					if(dateAt.getTime() >= eventStartTime.getTime() && dateAt.getTime() < eventEndTime && dateAt.getTime() <= Date.now()) {
+						const amountOfGames = timeline.filter(x => x.timestamp.getTime() >= dateAt.getTime() && x.timestamp.getTime() < dateIn1h.getTime()).length
 						span.textContent = amountOfGames
 						span.style.backgroundColor = colors[amountOfGames]
 						span.style.color = amountOfGames === 0 ? "#ffffff": "#000000"
@@ -1346,6 +1399,8 @@
 					document.getElementById("heatmapContainer").appendChild(span)
 				}
 			}
+
+			document.getElementById("heatmapPlaceholder").style.display = "none"
 		}
 
 		if(localStorage.getItem("showCCAnnounce") === "false") {
