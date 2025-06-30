@@ -679,11 +679,11 @@
 					<div>
 						<h4>Heatmap</h4>
 						<div id="heatmapContainer" class="heatmap-container"></div>
-						<div id="heatmapPlaceholder" class="placeholder-glow" style="height: min(300px, 30vw);">
+						<!-- <div id="heatmapPlaceholder" class="placeholder-glow" style="height: min(300px, 30vw);">
 							<span class="placeholder w-100 h-100"></span>
-						</div>
+						</div> -->
 						<div class="d-flex gap-2 justify-content-center mt-2">
-							<label class="form-check-label" for="heatmapTimezoneCb">EST</label>
+							<label class="form-check-label" for="heatmapTimezoneCb">EST (NeneRobo)</label>
 							<div class="form-check form-switch">
 								<input class="form-check-input" type="checkbox" role="switch" id="heatmapTimezoneCb">
 								<label class="form-check-label" for="heatmapTimezoneCb">Local timezone</label>
@@ -1242,7 +1242,7 @@
 				lastChart = null
 			}
 			document.getElementById("heatmapContainer").innerHTML = ""
-			document.getElementById("heatmapPlaceholder").style.display = ""
+			// document.getElementById("heatmapPlaceholder").style.display = ""
 
 			if(localStorage.getItem("heatmapTimezone") === "true") {
 				document.getElementById("heatmapTimezoneCb").checked = true
@@ -1342,6 +1342,12 @@
 					plugins: {
 						legend: {
 							display: false
+						},
+						tooltip: {
+							callbacks: {
+								title: (data) => `A game played at ${recentGames[data[0].dataIndex].timestamp.toLocaleTimeString()}`,
+								label: (data) => `+${formatNumber(recentGames[data.dataIndex].delta)} points`
+							}
 						}
 					}
 				}
@@ -1386,6 +1392,10 @@
 					const dateAt = new Date(day.getTime() + i * 3600 * 1000)
 					const dateIn1h = new Date(day.getTime() + (i + 1) * 3600 * 1000)
 
+					if(dateAt.getTime() > Date.now()) {
+						continue
+					}
+
 					const span = document.createElement("span")
 					span.classList.add("heatmap-item")
 					const eventStartTime = new Date(currentEvent.starts_at)
@@ -1400,7 +1410,7 @@
 				}
 			}
 
-			document.getElementById("heatmapPlaceholder").style.display = "none"
+			// document.getElementById("heatmapPlaceholder").style.display = "none"
 		}
 
 		if(localStorage.getItem("showCCAnnounce") === "false") {
