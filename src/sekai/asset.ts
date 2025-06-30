@@ -22,7 +22,7 @@ export async function downloadImageAssets({assetPath, container, nameDestMap}: {
 	for await(const obj of await env.objects) {
 		if(["Texture2D", "Sprite"].includes(await obj.type.name)) {
 			const data = await obj.read()
-			const name = await data.m_Name
+			const name = (await data.m_Name).toLowerCase() // accounts for event_**I**nfinitelygray_2021
 			const containerPath = await obj.container
 			if(nameDestMap[name] && (!container || path.basename(containerPath, path.extname(containerPath)) === container)) {
 				await data.image.save(nameDestMap[name])
@@ -45,16 +45,21 @@ export async function ensureEventAssetsExist() {
 			await fs.promises.stat(filePath)
 		} catch(ex) {
 			console.log("[SekaiAsset] Downloading missing event banner:", event.assetbundleName)
+
+			let abName = event.assetbundleName
+			if(event.assetbundleName === "event_cuddle_2023") { // sigh
+				abName = "event_cuddle_2024"
+			}
 			
 			try {
 				await downloadImageAssets({
-					assetPath: `home/banner/${event.assetbundleName}`,
+					assetPath: `home/banner/${abName}`,
 					nameDestMap: {
 						[event.assetbundleName]: filePath
 					}
 				})
 			} catch(ex) {
-				console.error("[SekaiAsset] Failed to download", event.assetbundleName, ex.message)
+				console.error("[SekaiAsset] Failed to download", event.assetbundleName, ex.message ?? ex)
 			}
 		}
 	}
@@ -79,7 +84,7 @@ export async function ensureEventAssetsExist() {
 						}
 					})
 				} catch(ex) {
-					console.error("[SekaiAsset] Failed to download", honorGroup.backgroundAssetbundleName, ex.message)
+					console.error("[SekaiAsset] Failed to download", honorGroup.backgroundAssetbundleName, ex.message ?? ex)
 
 					await fs.promises.rm(path.join(folderPath, "degree_main"), {recursive: true, force: true})
 					await fs.promises.rm(path.join(folderPath, "degree_sub"), {recursive: true, force: true})
@@ -108,7 +113,7 @@ export async function ensureEventAssetsExist() {
 							}
 						})
 					} catch(ex) {
-						console.error("[SekaiAsset] Failed to download", honorGroup.frameName, ex.message)
+						console.error("[SekaiAsset] Failed to download", honorGroup.frameName, ex.message ?? ex)
 
 						await fs.promises.rm(path.join(folderPath, "frame_degree_m_3"), {recursive: true, force: true})
 						await fs.promises.rm(path.join(folderPath, "frame_degree_m_4"), {recursive: true, force: true})
@@ -137,7 +142,7 @@ export async function ensureEventAssetsExist() {
 							}
 						})
 					} catch(ex) {
-						console.error("[SekaiAsset] Failed to download", assetbundleName, ex.message)
+						console.error("[SekaiAsset] Failed to download", assetbundleName, ex.message ?? ex)
 	
 						await fs.promises.rm(path.join(folderPath, "rank_main"), {recursive: true, force: true})
 						await fs.promises.rm(path.join(folderPath, "rank_sub"), {recursive: true, force: true})
@@ -166,7 +171,7 @@ export async function ensureEventAssetsExist() {
 					}
 				})
 			} catch(ex) {
-				console.error("[SekaiAsset] Failed to download", team.assetbundleName, ex.message)
+				console.error("[SekaiAsset] Failed to download", team.assetbundleName, ex.message ?? ex)
 			}
 		}
 	}
@@ -198,7 +203,7 @@ export async function ensureEventAssetsExist() {
 				nameDestMap
 			})
 		} catch(ex) {
-			console.error("[SekaiAsset] Failed to download", "thumbnail/chara", ex.message)
+			console.error("[SekaiAsset] Failed to download", "thumbnail/chara", ex.message ?? ex)
 		}
 	}
 
@@ -235,7 +240,7 @@ export async function ensureEventAssetsExist() {
 					})
 				}
 			} catch(ex) {
-				console.error("[SekaiAsset] Failed to download", card.assetbundleName, ex.message)
+				console.error("[SekaiAsset] Failed to download", card.assetbundleName, ex.message ?? ex)
 
 				await fs.promises.rm(normalPath, {recursive: true, force: true})
 				if(canBeTrained) {
