@@ -662,7 +662,7 @@
 						<div id="eventProfileDeck" class="d-flex gap-2 no-select mb-3"></div>
 						<div>
 							<details id="eventProfileTalentDetails">
-								<summary id="eventProfileTalentLb">Talent:</summary>
+								<summary>Talent: <span id="eventProfileTalentLb" class="fw-bold"></span></summary>
 								<p id="eventProfileBaseTalentLb" class="mb-0">Base Talent:</p>
 								<p id="eventProfileItemTalentLb" class="mb-0">Decoration Bonus:</p>
 								<p id="eventProfileCRTalentLb" class="mb-0">Character Rank Bonus:</p>
@@ -1231,7 +1231,7 @@
 			eventProfileDeck.innerHTML = ""
 			document.getElementById("eventProfileTalentDetails").open = false
 			document.getElementById("eventProfileModalLabel").textContent = "..."
-			document.getElementById("eventProfileTalentLb").textContent = "Talent:"
+			document.getElementById("eventProfileTalentLb").textContent = ""
 			document.getElementById("eventProfileBaseTalentLb").textContent = "Base Talent:"
 			document.getElementById("eventProfileItemTalentLb").textContent = "Decoration Bonus:"
 			document.getElementById("eventProfileCRTalentLb").textContent = "Character Rank Bonus:"
@@ -1277,7 +1277,7 @@
 			}
 
 			// Render talent
-			document.getElementById("eventProfileTalentLb").textContent = `Talent: ${formatNumber(profile.talent.total_talent)}`
+			document.getElementById("eventProfileTalentLb").textContent = formatNumber(profile.talent.total_talent)
 			document.getElementById("eventProfileBaseTalentLb").textContent = `Base Talent: ${formatNumber(profile.talent.basic_talent.toLocaleString())}`
 			document.getElementById("eventProfileItemTalentLb").textContent = `Decoration Bonus: ${formatNumber(profile.talent.area_item_bonus.toLocaleString())}`
 			document.getElementById("eventProfileCRTalentLb").textContent = `Character Rank Bonus: ${formatNumber(profile.talent.character_rank_bonus.toLocaleString())}`
