@@ -28,6 +28,10 @@
 			text-decoration: underline;
 		}
 
+		.avatar-clickable:hover {
+			cursor: pointer;
+		}
+
 		.username-cell {
 			max-width: 20ch;
 		}
@@ -1142,6 +1146,17 @@
 					leaderImg.width = 38
 					leaderImg.height = 38
 					leaderImg.alt = "Leader Card"
+
+					if(slot.hash) {
+						leaderImg.classList.add("avatar-clickable")
+						leaderImg.addEventListener("click", async function(event) {
+							event.preventDefault()
+							event.stopPropagation()
+							new bootstrap.Modal("#eventProfileModal").show()
+							loadEventProfileModal(slot.hash, slot.rank)
+						})
+					}
+
 					nameCellDiv.appendChild(leaderImg)
 				}
 
