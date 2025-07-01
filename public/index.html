@@ -1440,7 +1440,23 @@
 							label: removeTMPTags(profile.name),
 							data: recentGamesByDelta.map(x => x.y),
 							spanGaps: true,
-							pointRadius: 0
+							pointRadius: 0,
+							segment: {
+								borderDash: ctx => {
+									if(!ctx.p0.skip && !ctx.p1.skip) {
+										return
+									}
+
+									// ctx only provides the two points compared, including the dummy y: null ones,
+									// so we have to do the math ourselves
+									const start = recentGamesByDelta.findLastIndex((val, idx) => idx <= ctx.p0DataIndex && val.y != null)
+									const end = recentGamesByDelta.findIndex((val, idx) => idx >= ctx.p0DataIndex && val.y != null)
+									const diff = end - start
+									if(diff > 30) {
+										return [6,6]
+									}
+								}
+							}
 						},
 						{
 							label: `T${cutoff} Cutoff`,
