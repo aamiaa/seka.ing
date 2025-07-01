@@ -1529,7 +1529,7 @@
 		function renderHeatmap(startDate, endDate, tzOffset, timeline) {
 			document.getElementById("heatmapContainer").innerHTML = ""
 
-			const colors = ["#321b37", "#3c2243", "#46284f", "#4f2f5b", "#573567", "#5f3c72", "#67427d", "#6e4989", "#745095", "#7956a1", "#7e5dae", "#766ab9", "#6b78bf", "#5d85c2", "#4d91c1", "#5598c4", "#5e9ec7", "#68a4cb", "#71a9cf", "#79afd2", "#88b3d6", "#95b7d9", "#a2bbdb", "#adbfdd", "#b8c4de", "#c6c6e3", "#d6c8e5", "#e4cae4", "#f0cee0", "#fad3db"]
+			const colors = ["#321b37", "#3b2142", "#45284e", "#4e2e5a", "#563465", "#5e3b70", "#65417b", "#6c4786", "#724e92", "#78549e", "#7d5baa", "#7a65b5", "#7072bd", "#637fc1", "#558cc2", "#5095c2", "#599bc5", "#62a0c9", "#6ba6cc", "#74abd0", "#7eb0d3", "#8cb4d7", "#99b8d9", "#a4bcdb", "#afc0dd", "#b9c4de", "#c8c6e3", "#d7c8e5", "#e5cae4", "#f0cee0", "#fad3db"]
 			const days = []
 			const dt = new Date(startDate.getTime())
 			dt.setUTCHours(tzOffset,0,0,0)
