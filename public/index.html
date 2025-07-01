@@ -863,6 +863,16 @@
 			return json
 		}
 
+		async function getCutoffStats(cutoff) {
+			const res = await fetch(`/api/event-cutoff-stats/${cutoff}`)
+			if(!res.ok) {
+				throw new Error("getCutoffStats() failed: " + res.status)
+			}
+
+			const json = await res.json()
+			return json
+		}
+
 		const announceQueue = []
 		let announceDebounce = false
 		function queueAnnouncement(message) {
@@ -1154,7 +1164,7 @@
 						event.preventDefault()
 						event.stopPropagation()
 						new bootstrap.Modal("#eventProfileModal").show()
-						loadEventProfileModal(slot.hash)
+						loadEventProfileModal(slot.hash, slot.rank)
 					})
 				}
 				nameCellDiv.appendChild(nameLabel)
@@ -1227,7 +1237,7 @@
 		}
 
 		let lastCharts = []
-		async function loadEventProfileModal(hash) {
+		async function loadEventProfileModal(hash, cutoff) {
 			// Clear old values
 			eventProfileDeck.innerHTML = ""
 			document.getElementById("eventProfileTalentDetails").open = false
@@ -1251,6 +1261,7 @@
 
 			const profile = await getUserEventProfile(hash)
 			const statsPromise = getUserEventStats(hash)
+			const cutoffPromise = getCutoffStats(cutoff)
 
 			// Render name
 			document.getElementById("eventProfileModalLabel").textContent = removeTMPTags(profile.name)
@@ -1311,6 +1322,11 @@
 					}]
 				},
 				options: {
+					interaction: {
+						intersect: false,
+						mode: "nearest",
+						axis: "x"
+					},
 					maintainAspectRatio: false,
 					animation: false,
 					scales: {
@@ -1347,7 +1363,8 @@
 						tooltip: {
 							callbacks: {
 								title: (data) => `${data.length} game${data.length !== 1 ? "s" : ""} played`,
-								label: (data) => `+${formatNumber(recentGames[data.dataIndex].delta)} points at ${recentGames[data.dataIndex].timestamp.toLocaleTimeString()}`
+								label: (data) => `+${formatNumber(recentGames[data.dataIndex].delta)} points`,
+								// afterLabel: (data) => `at ${recentGames[data.dataIndex].timestamp.toLocaleTimeString()}`
 							}
 						}
 					}
@@ -1370,8 +1387,15 @@
 				renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), 4, stats.timeline)
 			}
 
+			const cutoffStats = await cutoffPromise
+			cutoffStats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
+
 			// Render points graph
 			const recentGamesByDelta = stats.timeline.map(x => ({
+				x: Math.floor((x.timestamp.getTime() - new Date(currentEvent.starts_at).getTime())/60000),
+				y: x.score
+			}))
+			const cutoffByDelta = cutoffStats.timeline.map(x => ({
 				x: Math.floor((x.timestamp.getTime() - new Date(currentEvent.starts_at).getTime())/60000),
 				y: x.score
 			}))
@@ -1387,21 +1411,36 @@
 				if(!recentGamesByDelta[idx] || recentGamesByDelta[idx].x !== val) {
 					recentGamesByDelta.splice(idx, 0, {x: val, y: null})
 				}
+				if(!cutoffByDelta[idx] || cutoffByDelta[idx].x !== val) {
+					cutoffByDelta.splice(idx, 0, {x: val, y: null})
+				}
 			}
 
 			lastCharts.push(new Chart(document.getElementById("pointsGraph"), {
 				type: "line",
 				data: {
 					labels: labels,
-					datasets: [{
-						label: removeTMPTags(profile.name),
-						data: recentGamesByDelta.map(x => x.y),
-						spanGaps: true,
-						pointRadius: 0,
-						pointHitRadius: 1000
-					}]
+					datasets: [
+						{
+							label: removeTMPTags(profile.name),
+							data: recentGamesByDelta.map(x => x.y),
+							spanGaps: true,
+							pointRadius: 0
+						},
+						{
+							label: `T${cutoff} Cutoff`,
+							data: cutoffByDelta.map(x => x.y),
+							spanGaps: true,
+							pointRadius: 0
+						}
+					]
 				},
 				options: {
+					interaction: {
+						intersect: false,
+						mode: "nearest",
+						axis: "x"
+					},
 					aspectRatio: Math.max(1, window.screen.availWidth/window.screen.availHeight),
 					scales: {
 						x: {
@@ -1438,12 +1477,7 @@
 							title: {
 								display: true,
 								text: "Event Points"
-							},
-							// ticks: {
-							// 	callback: function(value, index, values) {
-							// 		return value / 1e6 + "M"
-							// 	}
-							// }
+							}
 						}
 					},
 					plugins: {

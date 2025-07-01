@@ -30,6 +30,11 @@ apiRouter.get("/event-stats/:hash",
 	ValidationMiddleware.sendErrors,
 	EventController.getPlayerEventStats
 )
+apiRouter.get("/event-cutoff-stats/:cutoff",
+	param("cutoff").isInt({min: 1, max: 100}),
+	ValidationMiddleware.sendErrors,
+	EventController.getCutoffStats
+)
 
 apiRouter.get("/time", TimeController.getServerTime)
 

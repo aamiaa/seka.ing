@@ -415,4 +415,58 @@ export default class EventController {
 			timeline
 		})
 	}
+
+	public static async getCutoffStats(req: Request, res: Response, next: NextFunction) {
+		const cutoff = parseInt(req.params.cutoff as string)
+		const currentEvent = SekaiMasterDB.getCurrentEvent()
+		if(!currentEvent) {
+			return res.status(400).json({error: "No event in progress"})
+		}
+	
+		const timeline = await RankingSnapshotModel.aggregate([
+			{
+				$match: {
+					eventId: currentEvent.id
+				}
+			},
+			{
+				$unwind: {
+					path: "$rankings"
+				}
+			},
+			{
+				$match: {
+					"rankings.rank": cutoff
+				}
+			},
+			{
+				$project: {
+					timestamp: "$createdAt",
+					score: "$rankings.score",
+				}
+			},
+			{
+				$group: {
+					_id: "$score",
+					timestamp: {$first: "$timestamp"}
+				}
+			},
+			{
+				$sort: {
+					timestamp: 1
+				}
+			},
+			{
+				$project: {
+					score: "$_id",
+					timestamp: 1,
+					_id: 0
+				}
+			}
+		])
+
+		return res.json({
+			timeline
+		})
+	}
 }
