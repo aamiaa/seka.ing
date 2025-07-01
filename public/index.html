@@ -1440,7 +1440,10 @@
 							label: removeTMPTags(profile.name),
 							data: recentGamesByDelta.map(x => x.y),
 							spanGaps: true,
-							pointRadius: 0
+							pointRadius: 0,
+							segment: {
+								borderDash: ctx => ctx.p0.skip || ctx.p1.skip ? [6,6] : undefined
+							}
 						},
 						{
 							label: `T${cutoff} Cutoff`,
