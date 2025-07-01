@@ -25,6 +25,16 @@ apiRouter.get("/event-profiles/:hash",
 	ValidationMiddleware.sendErrors,
 	EventController.getPlayerEventProfile
 )
+apiRouter.get("/event-stats/:hash",
+	param("hash").isString().isLength({min: 32, max: 32}).isHexadecimal(),
+	ValidationMiddleware.sendErrors,
+	EventController.getPlayerEventStats
+)
+apiRouter.get("/event-cutoff-stats/:cutoff",
+	param("cutoff").isInt({min: 1, max: 100}),
+	ValidationMiddleware.sendErrors,
+	EventController.getCutoffStats
+)
 
 apiRouter.get("/time", TimeController.getServerTime)
 

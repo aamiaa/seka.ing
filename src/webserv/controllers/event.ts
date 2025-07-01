@@ -333,13 +333,19 @@ export default class EventController {
 		]
 		const response: EventProfileDTO = {
 			name: profile.name,
-			cards: profile.userCards.filter(x => deckCardIds.includes(x.cardId)).map(x => ({
-				id: x.cardId,
-				level: x.level,
-				mastery: x.masterRank,
-				trained: x.specialTrainingStatus === UserCardSpecialTrainingStatus.DONE,
-				image: x.defaultImage === UserCardDefaultImage.SPECIAL_TRAINING ? 1 : 0
-			})).sort((a,b) => deckCardIds.indexOf(a.id) - deckCardIds.indexOf(b.id)),
+			cards: profile.userCards.filter(x => deckCardIds.includes(x.cardId)).map(x => {
+				const card = SekaiMasterDB.getCard(x.cardId)
+				const character = SekaiMasterDB.getGameCharacter(card.characterId)
+
+				return {
+					id: x.cardId,
+					level: x.level,
+					mastery: x.masterRank,
+					trained: x.specialTrainingStatus === UserCardSpecialTrainingStatus.DONE,
+					image: x.defaultImage === UserCardDefaultImage.SPECIAL_TRAINING ? 1 : 0,
+					description: card ? (card.prefix + " " + character.givenName + (character.firstName ? ` ${character.firstName}` : "")) : "Unknown"
+				}
+			}).sort((a,b) => deckCardIds.indexOf(a.id) - deckCardIds.indexOf(b.id)),
 			talent: {
 				basic_talent: profile.totalPower.basicCardTotalPower,
 				area_item_bonus: profile.totalPower.areaItemBonus,
@@ -349,5 +355,118 @@ export default class EventController {
 			}
 		}
 		return res.json(response)
+	}
+
+	public static async getPlayerEventStats(req: Request, res: Response, next: NextFunction) {
+		const hash = req.params.hash as string
+
+		let eventId: number, userId: string
+		try {
+			const data = decryptEventSnowflake(hash)
+			eventId = data.eventId
+			userId = data.snowflake
+		} catch(ex) {
+			return res.status(400).send({error: "Invalid hash"})
+		}
+
+		const timeline = await RankingSnapshotModel.aggregate([
+			{
+				$match: {
+					eventId
+				}
+			},
+			{
+				$unwind: {
+					path: "$rankings"
+				}
+			},
+			{
+				$match: {
+					"rankings.userId": userId
+				}
+			},
+			{
+				$project: {
+					timestamp: "$createdAt",
+					score: "$rankings.score",
+				}
+			},
+			{
+				$group: {
+					_id: "$score",
+					timestamp: {$first: "$timestamp"}
+				}
+			},
+			{
+				$sort: {
+					timestamp: 1
+				}
+			},
+			{
+				$project: {
+					score: "$_id",
+					timestamp: 1,
+					_id: 0
+				}
+			}
+		])
+
+		return res.json({
+			timeline
+		})
+	}
+
+	public static async getCutoffStats(req: Request, res: Response, next: NextFunction) {
+		const cutoff = parseInt(req.params.cutoff as string)
+		const currentEvent = SekaiMasterDB.getCurrentEvent()
+		if(!currentEvent) {
+			return res.status(400).json({error: "No event in progress"})
+		}
+	
+		const timeline = await RankingSnapshotModel.aggregate([
+			{
+				$match: {
+					eventId: currentEvent.id
+				}
+			},
+			{
+				$unwind: {
+					path: "$rankings"
+				}
+			},
+			{
+				$match: {
+					"rankings.rank": cutoff
+				}
+			},
+			{
+				$project: {
+					timestamp: "$createdAt",
+					score: "$rankings.score",
+				}
+			},
+			{
+				$group: {
+					_id: "$score",
+					timestamp: {$first: "$timestamp"}
+				}
+			},
+			{
+				$sort: {
+					timestamp: 1
+				}
+			},
+			{
+				$project: {
+					score: "$_id",
+					timestamp: 1,
+					_id: 0
+				}
+			}
+		])
+
+		return res.json({
+			timeline
+		})
 	}
 }
