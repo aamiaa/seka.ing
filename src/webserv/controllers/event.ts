@@ -392,20 +392,12 @@ export default class EventController {
 				}
 			},
 			{
-				$group: {
-					_id: "$score",
-					timestamp: {$first: "$timestamp"}
-				}
-			},
-			{
 				$sort: {
 					timestamp: 1
 				}
 			},
 			{
 				$project: {
-					score: "$_id",
-					timestamp: 1,
 					_id: 0
 				}
 			}
@@ -446,20 +438,12 @@ export default class EventController {
 				}
 			},
 			{
-				$group: {
-					_id: "$score",
-					timestamp: {$first: "$timestamp"}
-				}
-			},
-			{
 				$sort: {
 					timestamp: 1
 				}
 			},
 			{
 				$project: {
-					score: "$_id",
-					timestamp: 1,
 					_id: 0
 				}
 			}

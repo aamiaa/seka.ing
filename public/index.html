@@ -1312,15 +1312,21 @@
 
 			const stats = await statsPromise
 			stats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
+			const deltaTimeline = []
+			for(const [idx, val] of stats.timeline.entries()) {
+				if(idx === 0 || stats.timeline[idx-1].score !== val.score) {
+					deltaTimeline.push(val)
+				}
+			}
 
 			// Render recent games
 			const hourAgo = new Date(Date.now() - 3600 * 1000)
 			const recentGames = []
-			for(const [idx, dataPoint] of stats.timeline.entries()) {
-				if(dataPoint.timestamp >= hourAgo && (recentGames.length === 0 || (stats.timeline[idx-1]?.score || 0) < dataPoint.score)) {
+			for(const [idx, dataPoint] of deltaTimeline.entries()) {
+				if(dataPoint.timestamp >= hourAgo && (recentGames.length === 0 || (deltaTimeline[idx-1]?.score || 0) < dataPoint.score)) {
 					recentGames.push({
 						timestamp: dataPoint.timestamp,
-						delta: dataPoint.score - (stats.timeline[idx-1]?.score || 0)
+						delta: dataPoint.score - (deltaTimeline[idx-1]?.score || 0)
 					})
 				}
 			}
@@ -1389,17 +1395,17 @@
 			// Render heatmap
 			document.getElementById("heatmapTimezoneCb").onchange = function() {
 				if(this.checked) {
-					renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), new Date().getTimezoneOffset()/60, stats.timeline)
+					renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), new Date().getTimezoneOffset()/60, deltaTimeline)
 				} else {
-					renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), 4, stats.timeline)
+					renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), 4, deltaTimeline)
 				}
 
 				localStorage.setItem("heatmapTimezone", this.checked.toString())
 			}
 			if(localStorage.getItem("heatmapTimezone") === "true") {
-				renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), new Date().getTimezoneOffset()/60, stats.timeline)
+				renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), new Date().getTimezoneOffset()/60, deltaTimeline)
 			} else {
-				renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), 4, stats.timeline)
+				renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), 4, deltaTimeline)
 			}
 
 			const cutoffStats = await cutoffPromise
