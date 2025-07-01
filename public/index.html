@@ -1559,7 +1559,7 @@
 					if(dateAt.getTime() >= eventStartTime.getTime() && dateAt.getTime() < eventEndTime && dateAt.getTime() <= Date.now()) {
 						const amountOfGames = timeline.filter(x => x.timestamp.getTime() >= dateAt.getTime() && x.timestamp.getTime() < dateIn1h.getTime()).length
 						span.textContent = amountOfGames
-						span.style.backgroundColor = colors[amountOfGames]
+						span.style.backgroundColor = colors[Math.min(amountOfGames, colors.length-1)]
 						span.style.color = amountOfGames === 0 ? "#ffffff": "#000000"
 					}
 					document.getElementById("heatmapContainer").appendChild(span)
