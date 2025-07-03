@@ -681,7 +681,10 @@
 						</div>
 					</div>
 					<div>
-						<h4>Heatmap</h4>
+						<div class="d-flex flex-column mb-1">
+							<h4 class="mb-0">Heatmap</h4>
+							<span id="eventProfileTotalGamesLb" style="font-size: 0.9rem;" class="text-white-50"></span>
+						</div>
 						<div id="heatmapContainer" class="heatmap-container"></div>
 						<!-- <div id="heatmapPlaceholder" class="placeholder-glow" style="height: min(300px, 30vw);">
 							<span class="placeholder w-100 h-100"></span>
@@ -1271,6 +1274,7 @@
 				x.destroy()
 			})
 			lastCharts = []
+			document.getElementById("eventProfileTotalGamesLb").textContent = ""
 			document.getElementById("heatmapContainer").innerHTML = ""
 			// document.getElementById("heatmapPlaceholder").style.display = ""
 
@@ -1397,6 +1401,7 @@
 			}))
 
 			// Render heatmap
+			document.getElementById("eventProfileTotalGamesLb").textContent = `${deltaTimeline.length} total games`
 			document.getElementById("heatmapTimezoneCb").onchange = function() {
 				if(this.checked) {
 					renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), new Date().getTimezoneOffset()/60, deltaTimeline)
