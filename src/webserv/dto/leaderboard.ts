@@ -1,4 +1,5 @@
 import { CardDTO } from "./card"
+import { EventDTO } from "./event"
 
 export interface LeaderboardDTO {
 	event: EventDTO,
@@ -9,24 +10,6 @@ export interface LeaderboardDTO {
 	chapter_borders?: UserRankingDTO[][],
 	updated_at?: Date,
 	aggregate_until?: Date
-}
-
-interface EventDTO {
-	name?: string,
-	name_key?: string,
-	type?: string,
-	starts_at?: Date,
-	ends_at?: Date,
-	titles_at?: Date,
-	chapters?: {
-		title: string,
-		num: number,
-		character_id: number,
-		color: string,
-		starts_at: Date
-	}[],
-	chapter_num?: number,
-	chapter_character?: number
 }
 
 interface UserRankingDTO {

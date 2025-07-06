@@ -183,7 +183,7 @@
 		let selectedEvent
 
 		try {
-			const res = await fetch("/api/events")
+			const res = await fetch("/api/events?with_honors=true")
 			const events = await res.json()
 
 			events.sort((a,b) => b.id - a.id).forEach(event => {

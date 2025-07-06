@@ -9,6 +9,7 @@ import ApiClient from "../api"
 import { encryptEventSnowflake } from "../../util/cipher"
 import { sleep } from "../../util/sleep"
 import { LeaderboardDTO } from "../../webserv/dto/leaderboard"
+import { getEventDTO } from "../../transformers/event"
 
 function populateUsersMap(map: Record<string, UserRanking>, users: UserRanking[]) {
 	for(const user of users) {
@@ -280,14 +281,7 @@ export default class LeaderboardTracker {
 		const currentBorders = border.borderRankings
 
 		const lbCache: LeaderboardDTO = {
-			event: {
-				name: currentEvent.name,
-				name_key: currentEvent.assetbundleName,
-				type: currentEvent.eventType,
-				starts_at: currentEvent.startAt,
-				ends_at: currentEvent.aggregateAt,
-				titles_at: currentEvent.distributionStartAt
-			},
+			event: getEventDTO(currentEvent),
 			rankings: this.processRankingDifference(currentEvent, currentRanking, rankingPastHour.map(x => x.rankings)),
 			borders: this.processBordersDifference(currentEvent, currentBorders, bordersPastHour.map(x => x.borderRankings)),
 			updated_at: ranking.responseTime
@@ -335,11 +329,7 @@ export default class LeaderboardTracker {
 		}
 
 		if(nextEvent && (nextEvent.startAt.getTime() - Date.now()) <= 86400 * 1000) {
-			lbCache.next_event = {
-				name: nextEvent.name,
-				name_key: nextEvent.assetbundleName,
-				starts_at: nextEvent.startAt
-			}
+			lbCache.next_event = getEventDTO(nextEvent)
 		}
 
 		console.log("[LeaderboardTracker] Leaderboard updated!")

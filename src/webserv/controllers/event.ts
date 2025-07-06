@@ -10,35 +10,13 @@ import CacheStore from "../cache";
 import { decryptEventSnowflake } from "../../util/cipher";
 import { EventProfileDTO } from "../dto/event_profile";
 import { UserCardDefaultImage, UserCardSpecialTrainingStatus } from "sekai-api";
+import { getEventDTO } from "../../transformers/event";
 
 export default class EventController {
 	public static async getEvents(req: Request, res: Response, next: NextFunction) {
-		const events = SekaiMasterDB.getEvents().map(event => {
-			let honors = event.eventRankingRewardRanges.filter(x => 
-				SekaiMasterDB.getResourceBox(x.eventRankingRewards[0].resourceBoxId, "event_ranking_reward")?.details?.find(x => x.resourceType === "honor")
-			).map(range => ({
-				rank: range.toRank,
-				image: `/images/honor/event/${event.id}/${range.toRank}.png`
-			}))
-			
-			if(event.eventType === SekaiEventType.WORLD_BLOOM) {
-				SekaiMasterDB.getWorldBloomChapters(event.id).forEach(chapter => {
-					honors = honors.concat(
-						SekaiMasterDB.getWorldBloomChapterRankingRewardRanges(event.id, chapter.gameCharacterId).map(range => ({
-							rank: range.toRank,
-							image: `/images/honor/event/${event.id}/${range.toRank}.png?chapter=${chapter.chapterNo}`
-						}))
-					)
-				})
-			}
-			return {
-				id: event.id,
-				name: event.name,
-				name_key: event.assetbundleName,
-				honors
-			}
-		})
+		const withHonors = req.query.with_honors === "true"
 
+		const events = SekaiMasterDB.getEvents().map(x => getEventDTO(x, {withHonors}))
 		return res.json(events)
 	}
 

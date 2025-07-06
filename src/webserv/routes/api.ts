@@ -8,7 +8,10 @@ import ApiRestriction from "../middleware/antibot/api_restriction";
 
 const apiRouter = Router()
 
-apiRouter.get("/events", EventController.getEvents)
+apiRouter.get("/events",
+	query("with_honors").optional().isBoolean(),
+	EventController.getEvents
+)
 apiRouter.get("/leaderboard",
 	query("nocache").optional().isBoolean(),
 	ValidationMiddleware.sendErrors,
