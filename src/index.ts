@@ -7,6 +7,7 @@ import ApiClient from "./sekai/api"
 import { Database } from "./providers/database";
 import CheerfulCarnivalTracker from "./sekai/event/cheerful_carnival";
 import { ensureEventAssetsExist } from "./sekai/asset";
+import { execSync } from "child_process";
 
 process.on("unhandledRejection", (reason: Error|any) => {
 	console.log("Unhandled Rejection at:", reason.stack || reason)
@@ -14,6 +15,9 @@ process.on("unhandledRejection", (reason: Error|any) => {
 
 async function main() {
 	console.log("Starting... env:", process.env.NODE_ENV)
+
+	process.env.VERSION_HASH = execSync("git rev-parse --short HEAD").toString().trim()
+	console.log("Version hash:", process.env.VERSION_HASH)
 
 	await Database.init()
 

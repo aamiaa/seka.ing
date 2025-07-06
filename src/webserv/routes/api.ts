@@ -2,7 +2,7 @@ import { Router } from "express"
 import { param, query } from "express-validator";
 import EventController from "../controllers/event"
 import ValidationMiddleware from "../middleware/validation";
-import TimeController from "../controllers/time";
+import ServerController from "../controllers/server";
 import ContactController from "../controllers/contact";
 import ApiRestriction from "../middleware/antibot/api_restriction";
 
@@ -39,7 +39,11 @@ apiRouter.get("/event-cutoff-stats/:cutoff",
 	EventController.getCutoffStats
 )
 
-apiRouter.get("/time", TimeController.getServerTime)
+apiRouter.get("/time", ServerController.getServerTime)
+apiRouter.get("/version",
+	query("version").optional().isInt({min: 0}),
+	ServerController.getServerVersion
+)
 
 apiRouter.get("/prediction",
 	query("rank").isInt({min: 1, max: 100}),

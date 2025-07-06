@@ -14,7 +14,7 @@ import { getEventDTO } from "../../transformers/event";
 
 export default class EventController {
 	public static async getEvents(req: Request, res: Response, next: NextFunction) {
-		const withHonors = req.query.with_honors === "true"
+		const withHonors = req.query.with_honors !== "false" // TODO: change to `=== "true"` after html cache expires
 
 		const events = SekaiMasterDB.getEvents().map(x => getEventDTO(x, {withHonors}))
 		return res.json(events)
