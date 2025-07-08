@@ -8,6 +8,7 @@ import { SystemAppVersion } from "sekai-api";
 import ApiClient from "../sekai/api"
 import path from "path"
 import fs from "fs"
+import { ensureEventAssetsExist } from "../sekai/asset";
 
 async function ensureFolderExists(path: string) {
 	try {
@@ -63,6 +64,7 @@ export default class SekaiMasterDB {
 
 			await this.loadFromFiles(versionFolderPath)
 		}
+		ensureEventAssetsExist()
 
 		console.log("[SekaiMasterDB] Finished! Current version:", liveDataVersion)
 	}
