@@ -127,6 +127,15 @@
 				font-size: 10px;
 			}
 		}
+
+		.twitter-tweet {
+			margin-top: 0!important;
+			margin-bottom: 0!important;
+		}
+
+		.twitter-tweet p {
+			margin: 0;
+		}
 	</style>
 </head>
 <body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
@@ -135,6 +144,7 @@
 	<script src="/assets/flipdown.min.js"></script>
 	<script src="/assets/countdown.min.js"></script>
 	<script src="/assets/updater.js"></script>
+	<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 	<div class="sticky-top w-100">
 		<div id="announcementBanner" role="marquee" style="display: none; animation: fade-in-anim 0.5s linear 1;" class="announcement-banner slide-parent py-1 overflow-hidden">
@@ -1114,8 +1124,20 @@
 		function updateLeaderboard(table, rankings, showDividers) {
 			const isBordersView = document.getElementById("showBordersCb").checked
 			const tableBody = table.querySelector("tbody")
-			while(tableBody.firstChild) {
-				tableBody.removeChild(tableBody.lastChild)
+			for(const tr of tableBody.querySelectorAll("tr")) {
+				if(tr.id !== "foo") {
+					tableBody.removeChild(tr)
+				}
+			}
+
+			const kura = rankings.find(x => x.hash === "4674120687c333fe686520130c8761aa")
+
+			if(document.getElementById("foo")) {
+				if(!kura) {
+					document.getElementById("foo").classList.add("d-none")
+				} else {
+					document.getElementById("foo").classList.remove("d-none")
+				}
 			}
 
 			let scrollTo
@@ -1234,7 +1256,16 @@
 					tableRow.appendChild(avgCell)
 				}
 
-				tableBody.appendChild(tableRow)
+				if(slot.hash === "4674120687c333fe686520130c8761aa") {
+					tableRow.querySelectorAll("td").forEach(x => {
+						x.style.borderBottom = "none"
+					})
+				}
+				if(kura && slot.rank <= kura.rank) {
+					tableBody.insertBefore(tableRow, document.getElementById("foo"))
+				} else {
+					tableBody.appendChild(tableRow)
+				}
 
 				tableRow.addEventListener("click", function() {
 					if(isBordersView) {
@@ -1252,6 +1283,13 @@
 						this.classList.add("table-row-tracked")
 					}
 				})
+
+				if(slot.hash === "4674120687c333fe686520130c8761aa" && !document.getElementById("foo")) {
+					const foo = document.createElement("tr")
+					foo.id = "foo"
+					foo.innerHTML = `<td colspan="5" class="p-0"><blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/kuraverykira/status/1942113378098725235?ref_src=twsrc%5Etfw"></a></blockquote></td>`
+					tableBody.appendChild(foo)
+				}
 			}
 
 			if(scrollTo) {
@@ -1618,9 +1656,9 @@
 		})
 
 
-		if(localStorage.getItem("showBorders") === "true") {
-			document.getElementById("showBordersCb").checked = true
-		}
+		// if(localStorage.getItem("showBorders") === "true") {
+		// 	document.getElementById("showBordersCb").checked = true
+		// }
 		document.getElementById("showBordersCb").addEventListener("change", async function(event) {
 			localStorage.setItem("showBorders", this.checked.toString())
 			await doUpdate()
