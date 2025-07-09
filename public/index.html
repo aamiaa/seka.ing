@@ -144,6 +144,7 @@
 	<script src="/assets/flipdown.min.js"></script>
 	<script src="/assets/countdown.min.js"></script>
 	<script src="/assets/updater.js"></script>
+	<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 	<div class="sticky-top w-100">
 		<div id="announcementBanner" role="marquee" style="display: none; animation: fade-in-anim 0.5s linear 1;" class="announcement-banner slide-parent py-1 overflow-hidden">
@@ -1288,11 +1289,6 @@
 					foo.id = "foo"
 					foo.innerHTML = `<td colspan="5" class="p-0"><blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/kuraverykira/status/1942113378098725235?ref_src=twsrc%5Etfw"></a></blockquote></td>`
 					tableBody.appendChild(foo)
-
-					const bar = document.createElement("script")
-					bar.setAttribute("src", "https://platform.twitter.com/widgets.js")
-					bar.setAttribute("charset", "utf-8")
-					document.body.appendChild(bar)
 				}
 			}
 
