@@ -31,7 +31,7 @@ export const UserRankingSchema = new mongoose.Schema<UserRanking>({
 	userId: {type: String, required: true},
 	score: {type: Number, required: true},
 	rank: {type: Number, required: true},
-	name: {type: String, required: true},
+	name: {type: String},
 	userCheerfulCarnival: UserCheerfulCarnivalSchema
 }, {_id: false})
 
@@ -45,6 +45,7 @@ export const RankingSnapshotSchema = new mongoose.Schema<IRankingSnapshotModel, 
 		rankings: [UserRankingSchema]
 	}],
 	final: {type: Boolean},
+	source: {type: String},
 	createdAt: {type: Date, required: true}
 }, {
 	methods: RankingSnapshotMethods
@@ -60,6 +61,7 @@ export const BorderSnapshotSchema = new mongoose.Schema<IBorderSnapshotModel, IB
 		borderRankings: [UserRankingSchema]
 	}],
 	final: {type: Boolean},
+	source: {type: String},
 	createdAt: {type: Date, required: true}
 }, {
 	methods: BorderSnapshotMethods
