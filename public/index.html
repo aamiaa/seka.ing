@@ -1422,14 +1422,24 @@
 			cutoffStats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
 
 			// Render points graph
-			const recentGamesByDelta = stats.timeline.map(x => ({
+			const recentGamesByDelta = []
+			const cutoffByDelta = []
+			stats.timeline.map(x => ({
 				x: Math.floor((x.timestamp.getTime() - new Date(currentEvent.starts_at).getTime())/60000),
 				y: x.score
-			}))
-			const cutoffByDelta = cutoffStats.timeline.map(x => ({
+			})).forEach(entry => {
+				if(recentGamesByDelta.length === 0 || recentGamesByDelta.at(-1).x !== entry.x) {
+					recentGamesByDelta.push(entry)
+				}
+			})
+			cutoffStats.timeline.map(x => ({
 				x: Math.floor((x.timestamp.getTime() - new Date(currentEvent.starts_at).getTime())/60000),
 				y: x.score
-			}))
+			})).forEach(entry => {
+				if(cutoffByDelta.length === 0 || cutoffByDelta.at(-1).x !== entry.x) {
+					cutoffByDelta.push(entry)
+				}
+			})
 			const minX = 0
 			const maxX = Math.max(...recentGamesByDelta.map(x => x.x))
 			const step = 1
