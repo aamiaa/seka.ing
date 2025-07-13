@@ -1,12 +1,12 @@
 {
 	"compilerOptions": {
-		"target": "esnext",
+		"target": "es2023",
 		"module": "commonjs",
 		"esModuleInterop": true,
 		"moduleResolution": "node",
 		"outDir": "dist",
 		"sourceMap": true
 	},
-	"include": ["src/**/*", "scripts/**/*"],
+	"include": ["src/**/*"],
 	"files": ["src/custom.d.ts"]
 }
