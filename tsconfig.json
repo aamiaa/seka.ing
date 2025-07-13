@@ -1,12 +1,12 @@
 {
 	"compilerOptions": {
-		"target": "ES2021",
+		"target": "esnext",
 		"module": "commonjs",
 		"esModuleInterop": true,
 		"moduleResolution": "node",
 		"outDir": "dist",
 		"sourceMap": true
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "scripts/**/*"],
 	"files": ["src/custom.d.ts"]
 }
