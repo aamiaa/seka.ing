@@ -1,15 +1,30 @@
-import { EventRankingBorderPage, EventRankingPage } from "sekai-api";
+import { UserWorldBloomChapterRankingBorder, UserWorldBloomRanking } from "sekai-api";
 
-export interface RankingSnapshot extends EventRankingPage {
-	eventId: number,
-	final?: boolean,
-	source?: string,
-	createdAt: Date
+export interface RankingEntry {
+	userId: string,
+	score: number,
+	rank: number,
+	name?: string
 }
 
-export interface BorderSnapshot extends EventRankingBorderPage {
+export interface RankingSnapshot {
 	eventId: number,
 	final?: boolean,
 	source?: string,
-	createdAt: Date
+	createdAt: Date,
+
+	rankings: RankingEntry[],
+	isEventAggregate?: boolean,
+	userWorldBloomChapterRankings?: UserWorldBloomRanking[]
+}
+
+export interface BorderSnapshot {
+	eventId: number,
+	final?: boolean,
+	source?: string,
+	createdAt: Date,
+
+	borderRankings: RankingEntry[],
+	isEventAggregate?: boolean,
+	userWorldBloomChapterRankingBorders?: UserWorldBloomChapterRankingBorder[]
 }

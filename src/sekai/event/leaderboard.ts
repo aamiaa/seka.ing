@@ -1,7 +1,7 @@
 import { BorderSnapshotModel, RankingSnapshotModel } from "../../models/snapshot/model"
 import SekaiMasterDB from "../../providers/sekai-master-db"
 import { EventProfileModel } from "../../models/event_profile"
-import { BorderSnapshot, RankingSnapshot } from "../../interface/models/snapshot"
+import { BorderSnapshot, RankingEntry, RankingSnapshot } from "../../interface/models/snapshot"
 import { SekaiEvent, SekaiEventType } from "../../interface/event"
 import CacheStore from "../../webserv/cache"
 import { EventRankingBorderPage, EventRankingPage, UserCardDefaultImage, UserCardSpecialTrainingStatus, UserRanking } from "sekai-api"
@@ -11,7 +11,7 @@ import { sleep } from "../../util/sleep"
 import { LeaderboardDTO } from "../../webserv/dto/leaderboard"
 import { getEventDTO } from "../../transformers/event"
 
-function populateUsersMap(map: Record<string, UserRanking>, users: UserRanking[]) {
+function populateUsersMap(map: Record<string, RankingEntry>, users: RankingEntry[]) {
 	for(const user of users) {
 		map[user.userId] = user
 	}
@@ -52,7 +52,7 @@ export default class LeaderboardTracker {
 		return bordersPastHour
 	}
 
-	private static processRankingDifference(event: SekaiEvent, currentRanking: UserRanking[], pastRankings: UserRanking[][]): LeaderboardDTO["rankings"] {
+	private static processRankingDifference(event: SekaiEvent, currentRanking: UserRanking[], pastRankings: RankingEntry[][]): LeaderboardDTO["rankings"] {
 		return currentRanking.map(user => {
 			const hash = encryptEventSnowflake(event.id, user.userId)
 
@@ -94,7 +94,7 @@ export default class LeaderboardTracker {
 		})
 	}
 
-	private static processBordersDifference(event: SekaiEvent, currentRanking: UserRanking[], pastRankings: UserRanking[][]) {
+	private static processBordersDifference(event: SekaiEvent, currentRanking: UserRanking[], pastRankings: RankingEntry[][]) {
 		return currentRanking.map(user => {
 			// Doing it this way instead of pastRankings[0] since not all ranks will be immediately there (ex. t300k might take a while to appear)
 			let earliest = user.score
