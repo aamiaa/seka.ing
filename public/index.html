@@ -683,7 +683,9 @@
 					</div>
 					<div>
 						<div class="d-flex flex-column mb-1">
-							<h4 class="mb-0">Heatmap</h4>
+							<h4 class="mb-0">
+								<span>Heatmap </span><svg data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Heatmap shows the number of games played during each hour of the event. Each row represents one calendar day." style="width: 0.9em; height: 0.9em;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/></svg>
+							</h4>
 							<span id="eventProfileTotalGamesLb" style="font-size: 0.9rem;" class="text-white-50"></span>
 						</div>
 						<div id="heatmapContainer" class="heatmap-container"></div>
@@ -716,6 +718,8 @@
 	</footer>
 
 	<script>
+		document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(x => new bootstrap.Tooltip(x))
+	
 		function switchTab(idx) {
 			const button = document.querySelector(`#chapterTabs .nav-item:nth-child(${idx + 1}) button`)
 			const eventTableCard = document.getElementById("eventTableCard")
