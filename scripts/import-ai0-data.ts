@@ -203,10 +203,12 @@ async function main() {
 
 	// TODO: verify border rankings integrity
 
-	console.log("Inserting into db...")
+	fs.writeFileSync("snapshots.json", JSON.stringify(snapshots, null, 4))
+	fs.writeFileSync("borderSnapshots.json", JSON.stringify(dedupedBordersnapshots, null, 4))
 
-	// fs.writeFileSync("snapshots.json", JSON.stringify(snapshots, null, 4))
-	// fs.writeFileSync("borderSnapshots.json", JSON.stringify(dedupedBordersnapshots, null, 4))
+	await ask("Data written to files. Press enter to insert into db...")
+
+	console.log("Inserting into db...")
 
 	await RankingSnapshotModel.insertMany(snapshots)
 	await BorderSnapshotModel.insertMany(dedupedBordersnapshots)
