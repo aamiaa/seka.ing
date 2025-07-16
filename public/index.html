@@ -869,8 +869,8 @@
 			return json
 		}
 
-		async function getUserEventStats(hash) {
-			const res = await fetch(`/api/event-stats/${hash}`)
+		async function getUserEventStats(hash, chapter) {
+			const res = await fetch(`/api/event-stats/${hash}${chapter != null ? `?chapter=${chapter}` : ""}`)
 			if(!res.ok) {
 				throw new Error("getUserEventStats() failed: " + res.status)
 			}
@@ -879,8 +879,8 @@
 			return json
 		}
 
-		async function getCutoffStats(cutoff) {
-			const res = await fetch(`/api/event-cutoff-stats/${cutoff}`)
+		async function getCutoffStats(cutoff, chapter) {
+			const res = await fetch(`/api/event-cutoff-stats/${cutoff}${chapter != null ? `?chapter=${chapter}` : ""}`)
 			if(!res.ok) {
 				throw new Error("getCutoffStats() failed: " + res.status)
 			}
@@ -1036,7 +1036,7 @@
 				document.querySelectorAll(".per-game-col").forEach(x => x.style.display = "")
 				document.querySelectorAll(".past-hour-by-rank-col").forEach(x => x.style.display = "none")
 			}
-			updateLeaderboard(document.getElementById("eventTableOverall"), showHighlights ? data.borders : data.rankings, true)
+			updateLeaderboard(document.getElementById("eventTableOverall"), showHighlights ? data.borders : data.rankings)
 
 			if(data.chapter_rankings) {
 				document.getElementById("chapterTabs").style.removeProperty("display")
@@ -1065,7 +1065,8 @@
 				}
 				
 				for(const [idx, rankings] of (showHighlights ? data.chapter_borders : data.chapter_rankings).entries()) {
-					updateLeaderboard(document.getElementById("eventTableChapter" + (idx + 1)), rankings, false)
+					const chapterNum = idx + 1
+					updateLeaderboard(document.getElementById("eventTableChapter" + chapterNum), rankings, chapterNum)
 				}
 
 				if(!lastLbUpdate) {
@@ -1115,7 +1116,7 @@
 			lastLbUpdate = new Date()
 		}
 
-		function updateLeaderboard(table, rankings, showDividers) {
+		function updateLeaderboard(table, rankings, chapter) {
 			const isBordersView = document.getElementById("showBordersCb").checked
 			const tableBody = table.querySelector("tbody")
 			while(tableBody.firstChild) {
@@ -1165,7 +1166,7 @@
 							event.preventDefault()
 							event.stopPropagation()
 							new bootstrap.Modal("#eventProfileModal").show()
-							loadEventProfileModal(slot.hash, slot.rank)
+							loadEventProfileModal(slot.hash, slot.rank, chapter)
 						})
 					}
 
@@ -1191,7 +1192,7 @@
 						event.preventDefault()
 						event.stopPropagation()
 						new bootstrap.Modal("#eventProfileModal").show()
-						loadEventProfileModal(slot.hash, slot.rank)
+						loadEventProfileModal(slot.hash, slot.rank, chapter)
 					})
 				}
 				nameCellDiv.appendChild(nameLabel)
@@ -1205,7 +1206,7 @@
 				}
 				avgCell.innerText = !!slot.average ? "+" + formatNumber(Math.floor(slot.average)) : "-"
 
-				if(showDividers && [3, 10, 50].includes(slot.rank - 1)) {
+				if(chapter == null && [3, 10, 50].includes(slot.rank - 1)) {
 					tableRow.classList.add("class", "table-group-divider")
 				}
 				if(trackHash === slot.hash && !isBordersView) {
@@ -1264,7 +1265,7 @@
 		}
 
 		let lastCharts = []
-		async function loadEventProfileModal(hash, cutoff) {
+		async function loadEventProfileModal(hash, cutoff, chapter) {
 			// Clear old values
 			eventProfileDeck.innerHTML = ""
 			document.getElementById("eventProfileTalentDetails").open = false
@@ -1288,8 +1289,8 @@
 			}
 
 			const profile = await getUserEventProfile(hash)
-			const statsPromise = getUserEventStats(hash)
-			const cutoffPromise = getCutoffStats(cutoff)
+			const statsPromise = getUserEventStats(hash, chapter)
+			const cutoffPromise = getCutoffStats(cutoff, chapter)
 
 			// Render name
 			document.getElementById("eventProfileModalLabel").textContent = removeTMPTags(profile.name)

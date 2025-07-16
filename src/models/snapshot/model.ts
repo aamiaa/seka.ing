@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { RankingSnapshot, BorderSnapshot } from "../../interface/models/snapshot";
 import { UserRanking } from "sekai-api";
 import { BorderSnapshotMethods, RankingSnapshotMethods } from "./methods";
+import { SekaiWorldBloom } from "../../interface/event";
 
 export interface IRankingSnapshotModel extends RankingSnapshot, mongoose.Document {
 	// Methods and fields which need the model type go here
@@ -10,6 +11,8 @@ export interface IRankingSnapshotModel extends RankingSnapshot, mongoose.Documen
 
 export interface IRankingSnapshotModelStatic extends mongoose.Model<IRankingSnapshotModel> {
 	// Static methods go here
+	getPlayerEventTimeline(eventId: number, userId: string): Promise<{timestamp: Date, score: number}[]>,
+	getPlayerWorldlinkChapterTimeline(eventId: number, userId: string, chapter: SekaiWorldBloom): Promise<{timestamp: Date, score: number}[]>
 }
 
 export interface IBorderSnapshotModel extends BorderSnapshot, mongoose.Document {
@@ -35,7 +38,7 @@ export const UserRankingSchema = new mongoose.Schema<UserRanking>({
 	userCheerfulCarnival: UserCheerfulCarnivalSchema
 }, {_id: false})
 
-export const RankingSnapshotSchema = new mongoose.Schema<IRankingSnapshotModel, IRankingSnapshotModelStatic>({
+export const RankingSnapshotSchema = new mongoose.Schema({
 	eventId: {type: Number, required: true},
 	rankings: [UserRankingSchema],
 	isEventAggregate: {type: Boolean},
@@ -48,7 +51,86 @@ export const RankingSnapshotSchema = new mongoose.Schema<IRankingSnapshotModel, 
 	source: {type: String},
 	createdAt: {type: Date, required: true}
 }, {
-	methods: RankingSnapshotMethods
+	methods: RankingSnapshotMethods,
+	statics: {
+		async getPlayerEventTimeline(eventId: number, userId: string) {
+			return await this.aggregate([
+				{
+					$match: {
+						eventId
+					}
+				},
+				{
+					$unwind: {
+						path: "$rankings"
+					}
+				},
+				{
+					$match: {
+						"rankings.userId": userId
+					}
+				},
+				{
+					$project: {
+						timestamp: "$createdAt",
+						_id: 0,
+						score: "$rankings.score",
+					}
+				},
+				{
+					$sort: {
+						timestamp: 1
+					}
+				}
+			])
+		},
+
+		async getPlayerWorldlinkChapterTimeline(eventId: number, userId: string, chapter: SekaiWorldBloom) {
+			return await this.aggregate([
+				{
+					$match: {
+						eventId,
+						createdAt: {
+							$gte: chapter.chapterStartAt,
+							$lte: chapter.aggregateAt
+						}
+					}
+				},
+				{
+					$unwind: {
+						path: "$userWorldBloomChapterRankings"
+					}
+				},
+				{
+					$match: {
+						"userWorldBloomChapterRankings.gameCharacterId": chapter.gameCharacterId
+					}
+				},
+				{
+					$unwind: {
+						path: "$userWorldBloomChapterRankings.rankings"
+					}
+				},
+				{
+					$match: {
+						"userWorldBloomChapterRankings.rankings.userId": userId
+					}
+				},
+				{
+					$project: {
+						timestamp: "$createdAt",
+						_id: 0,
+						score: "$userWorldBloomChapterRankings.rankings.score"
+					}
+				},
+				{
+					$sort: {
+						timestamp: 1
+					}
+				}
+			])
+		}
+	}
 })
 
 export const BorderSnapshotSchema = new mongoose.Schema<IBorderSnapshotModel, IBorderSnapshotModelStatic>({

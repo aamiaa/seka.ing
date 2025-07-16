@@ -30,11 +30,13 @@ apiRouter.get("/event-profiles/:hash",
 )
 apiRouter.get("/event-stats/:hash",
 	param("hash").isString().isLength({min: 32, max: 32}).isHexadecimal(),
+	query("chapter").optional().isInt({min: 1, max: 4}),
 	ValidationMiddleware.sendErrors,
 	EventController.getPlayerEventStats
 )
 apiRouter.get("/event-cutoff-stats/:cutoff",
 	param("cutoff").isInt({min: 1, max: 100}),
+	query("chapter").optional().isInt({min: 1, max: 4}),
 	ValidationMiddleware.sendErrors,
 	EventController.getCutoffStats
 )

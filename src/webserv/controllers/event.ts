@@ -337,6 +337,7 @@ export default class EventController {
 
 	public static async getPlayerEventStats(req: Request, res: Response, next: NextFunction) {
 		const hash = req.params.hash as string
+		const chapter = parseInt(req.query.chapter as string)
 
 		let eventId: number, userId: string
 		try {
@@ -347,43 +348,22 @@ export default class EventController {
 			return res.status(400).send({error: "Invalid hash"})
 		}
 
-		const timeline = await RankingSnapshotModel.aggregate([
-			{
-				$match: {
-					eventId
-				}
-			},
-			{
-				$unwind: {
-					path: "$rankings"
-				}
-			},
-			{
-				$match: {
-					"rankings.userId": userId
-				}
-			},
-			{
-				$project: {
-					timestamp: "$createdAt",
-					score: "$rankings.score",
-				}
-			},
-			{
-				$sort: {
-					timestamp: 1
-				}
-			},
-			{
-				$project: {
-					_id: 0
-				}
-			}
-		])
+		const event = SekaiMasterDB.getEvent(eventId)
+		if(!event) {
+			return res.status(400).send({error: "Invalid event"})
+		}
+		if(req.query.chapter && event.eventType !== SekaiEventType.WORLD_BLOOM) {
+			return res.status(400).send({error: "Cannot specify chapter for non-worldlink events"})
+		}
 
-		return res.json({
-			timeline
-		})
+		if(!req.query.chapter) {
+			const timeline = await RankingSnapshotModel.getPlayerEventTimeline(eventId, userId)
+			return res.json({timeline})
+		} else {
+			const eventChapter = SekaiMasterDB.getWorldBloomChapter(eventId, chapter)
+			const timeline = await RankingSnapshotModel.getPlayerWorldlinkChapterTimeline(eventId, userId, eventChapter)
+			return res.json({timeline})
+		}
 	}
 
 	public static async getCutoffStats(req: Request, res: Response, next: NextFunction) {
