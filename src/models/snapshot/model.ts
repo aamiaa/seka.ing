@@ -13,6 +13,8 @@ export interface IRankingSnapshotModelStatic extends mongoose.Model<IRankingSnap
 	// Static methods go here
 	getPlayerEventTimeline(eventId: number, userId: string): Promise<{timestamp: Date, score: number}[]>,
 	getPlayerWorldlinkChapterTimeline(eventId: number, userId: string, chapter: SekaiWorldBloom): Promise<{timestamp: Date, score: number}[]>
+	getCutoffEventTimeline(eventId: number, cutoff: number): Promise<{timestamp: Date, score: number}[]>
+	getCutoffWorldlinkChapterTimeline(eventId: number, cutoff: number, chapter: SekaiWorldBloom): Promise<{timestamp: Date, score: number}[]>
 }
 
 export interface IBorderSnapshotModel extends BorderSnapshot, mongoose.Document {
@@ -114,6 +116,84 @@ export const RankingSnapshotSchema = new mongoose.Schema({
 				{
 					$match: {
 						"userWorldBloomChapterRankings.rankings.userId": userId
+					}
+				},
+				{
+					$project: {
+						timestamp: "$createdAt",
+						_id: 0,
+						score: "$userWorldBloomChapterRankings.rankings.score"
+					}
+				},
+				{
+					$sort: {
+						timestamp: 1
+					}
+				}
+			])
+		},
+
+		async getCutoffEventTimeline(eventId: number, cutoff: number) {
+			return await this.aggregate([
+				{
+					$match: {
+						eventId: eventId
+					}
+				},
+				{
+					$unwind: {
+						path: "$rankings"
+					}
+				},
+				{
+					$match: {
+						"rankings.rank": cutoff
+					}
+				},
+				{
+					$project: {
+						timestamp: "$createdAt",
+						score: "$rankings.score",
+						_id: 0
+					}
+				},
+				{
+					$sort: {
+						timestamp: 1
+					}
+				}
+			])
+		},
+
+		async getCutoffWorldlinkChapterTimeline(eventId: number, cutoff: number, chapter: SekaiWorldBloom) {
+			return await this.aggregate([
+				{
+					$match: {
+						eventId,
+						createdAt: {
+							$gte: chapter.chapterStartAt,
+							$lte: chapter.aggregateAt
+						}
+					}
+				},
+				{
+					$unwind: {
+						path: "$userWorldBloomChapterRankings"
+					}
+				},
+				{
+					$match: {
+						"userWorldBloomChapterRankings.gameCharacterId": chapter.gameCharacterId
+					}
+				},
+				{
+					$unwind: {
+						path: "$userWorldBloomChapterRankings.rankings"
+					}
+				},
+				{
+					$match: {
+						"userWorldBloomChapterRankings.rankings.rank": cutoff
 					}
 				},
 				{

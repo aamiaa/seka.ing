@@ -368,47 +368,22 @@ export default class EventController {
 
 	public static async getCutoffStats(req: Request, res: Response, next: NextFunction) {
 		const cutoff = parseInt(req.params.cutoff as string)
+		const chapter = parseInt(req.query.chapter as string)
 		const currentEvent = SekaiMasterDB.getCurrentEvent()
 		if(!currentEvent) {
 			return res.status(400).json({error: "No event in progress"})
 		}
-	
-		const timeline = await RankingSnapshotModel.aggregate([
-			{
-				$match: {
-					eventId: currentEvent.id
-				}
-			},
-			{
-				$unwind: {
-					path: "$rankings"
-				}
-			},
-			{
-				$match: {
-					"rankings.rank": cutoff
-				}
-			},
-			{
-				$project: {
-					timestamp: "$createdAt",
-					score: "$rankings.score",
-				}
-			},
-			{
-				$sort: {
-					timestamp: 1
-				}
-			},
-			{
-				$project: {
-					_id: 0
-				}
-			}
-		])
+		if(req.query.chapter && currentEvent.eventType !== SekaiEventType.WORLD_BLOOM) {
+			return res.status(400).send({error: "Cannot specify chapter for non-worldlink events"})
+		}
 
-		return res.json({
-			timeline
-		})
+		if(!req.query.chapter) {
+			const timeline = await RankingSnapshotModel.getCutoffEventTimeline(currentEvent.id, cutoff)
+			return res.json({timeline})
+		} else {
+			const eventChapter = SekaiMasterDB.getWorldBloomChapter(currentEvent.id, chapter)
+			const timeline = await RankingSnapshotModel.getCutoffWorldlinkChapterTimeline(currentEvent.id, cutoff, eventChapter)
+			return res.json({timeline})
+		}
 	}
 }
