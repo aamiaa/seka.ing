@@ -1407,20 +1407,22 @@
 			}))
 
 			// Render heatmap
+			const startDate = chapter != null ? currentEvent.chapters.find(x => x.num === chapter).starts_at : currentEvent.starts_at
+			const endDate = chapter != null ? currentEvent.chapters.find(x => x.num === chapter).ends_at : currentEvent.ends_at
 			document.getElementById("eventProfileTotalGamesLb").textContent = `${deltaTimeline.length} total games`
 			document.getElementById("heatmapTimezoneCb").onchange = function() {
 				if(this.checked) {
-					renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), new Date().getTimezoneOffset()/60, deltaTimeline)
+					renderHeatmap(new Date(startDate), new Date(endDate), new Date().getTimezoneOffset()/60, deltaTimeline)
 				} else {
-					renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), 4, deltaTimeline)
+					renderHeatmap(new Date(startDate), new Date(endDate), 4, deltaTimeline)
 				}
 
 				localStorage.setItem("heatmapTimezone", this.checked.toString())
 			}
 			if(localStorage.getItem("heatmapTimezone") === "true") {
-				renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), new Date().getTimezoneOffset()/60, deltaTimeline)
+				renderHeatmap(new Date(startDate), new Date(endDate), new Date().getTimezoneOffset()/60, deltaTimeline)
 			} else {
-				renderHeatmap(new Date(currentEvent.starts_at), new Date(currentEvent.ends_at), 4, deltaTimeline)
+				renderHeatmap(new Date(startDate), new Date(endDate), 4, deltaTimeline)
 			}
 
 			const cutoffStats = await cutoffPromise
@@ -1430,7 +1432,7 @@
 			const recentGamesByDelta = []
 			const cutoffByDelta = []
 			stats.timeline.map(x => ({
-				x: Math.floor((x.timestamp.getTime() - new Date(currentEvent.starts_at).getTime())/60000),
+				x: Math.floor((x.timestamp.getTime() - new Date(startDate).getTime())/60000),
 				y: x.score
 			})).forEach(entry => {
 				if(recentGamesByDelta.length === 0 || recentGamesByDelta.at(-1).x !== entry.x) {
@@ -1438,7 +1440,7 @@
 				}
 			})
 			cutoffStats.timeline.map(x => ({
-				x: Math.floor((x.timestamp.getTime() - new Date(currentEvent.starts_at).getTime())/60000),
+				x: Math.floor((x.timestamp.getTime() - new Date(startDate).getTime())/60000),
 				y: x.score
 			})).forEach(entry => {
 				if(cutoffByDelta.length === 0 || cutoffByDelta.at(-1).x !== entry.x) {
@@ -1601,9 +1603,7 @@
 
 					const span = document.createElement("span")
 					span.classList.add("heatmap-item")
-					const eventStartTime = new Date(currentEvent.starts_at)
-					const eventEndTime = new Date(currentEvent.ends_at)
-					if(dateAt.getTime() >= eventStartTime.getTime() && dateAt.getTime() < eventEndTime && dateAt.getTime() <= Date.now()) {
+					if(dateAt.getTime() >= startDate.getTime() && dateAt.getTime() < endDate && dateAt.getTime() <= Date.now()) {
 						const amountOfGames = timeline.filter(x => x.timestamp.getTime() >= dateAt.getTime() && x.timestamp.getTime() < dateIn1h.getTime()).length
 						span.textContent = amountOfGames
 						span.style.backgroundColor = colors[Math.min(amountOfGames, colors.length-1)]

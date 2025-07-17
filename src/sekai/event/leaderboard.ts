@@ -10,6 +10,7 @@ import { encryptEventSnowflake } from "../../util/cipher"
 import { sleep } from "../../util/sleep"
 import { LeaderboardDTO } from "../../webserv/dto/leaderboard"
 import { getEventDTO } from "../../transformers/event"
+import { EventDTO } from "../../webserv/dto/event"
 
 function populateUsersMap(map: Record<string, RankingEntry>, users: RankingEntry[]) {
 	for(const user of users) {
@@ -289,13 +290,14 @@ export default class LeaderboardTracker {
 		CacheStore.set("leaderboard", lbCache)
 
 		if(currentEvent.eventType === SekaiEventType.WORLD_BLOOM) {
-			const chapters = SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
+			const chapters: EventDTO["chapters"] = SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
 				.map(x => ({
 					title: SekaiMasterDB.getGameCharacter(x.gameCharacterId).givenName,
 					num: x.chapterNo,
 					character_id: x.gameCharacterId,
 					color: SekaiMasterDB.getCharacterColor(x.gameCharacterId),
-					starts_at: new Date(x.chapterStartAt)
+					starts_at: new Date(x.chapterStartAt),
+					ends_at: new Date(x.aggregateAt)
 				}))
 
 			lbCache.event.chapters = chapters

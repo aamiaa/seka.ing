@@ -11,7 +11,8 @@ export interface EventDTO {
 		num: number,
 		character_id: number,
 		color: string,
-		starts_at: Date
+		starts_at: Date,
+		ends_at: Date
 	}[],
 	chapter_num?: number,
 	chapter_character?: number,
