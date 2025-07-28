@@ -26,11 +26,16 @@ export default class ImageGenController {
 		if(!event) {
 			return res.status(400).json({error: "Specified event doesn't exist"})
 		}
-		
+
 		let resourceBoxId: number
 		let resourceBoxPurpose: string
 		if(chapter && event.eventType === SekaiEventType.WORLD_BLOOM) {
-			resourceBoxId = SekaiMasterDB.getWorldBloomChapterRankingRewardRanges(event.id, SekaiMasterDB.getWorldBloomChapter(event.id, chapter).gameCharacterId)?.find(x => x.toRank === rank)?.resourceBoxId
+			const chapterData = SekaiMasterDB.getWorldBloomChapter(event.id, chapter)
+			if(!chapterData) {
+				return res.status(400).json({error: "Specified chapter doesn't exist"})
+			}
+
+			resourceBoxId = SekaiMasterDB.getWorldBloomChapterRankingRewardRanges(event.id, chapterData.gameCharacterId)?.find(x => x.toRank === rank)?.resourceBoxId
 			resourceBoxPurpose = "world_bloom_chapter_ranking_reward"
 		} else {
 			resourceBoxId = event.eventRankingRewardRanges.find(x => x.toRank === rank)?.eventRankingRewards?.[0]?.resourceBoxId

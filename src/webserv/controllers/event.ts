@@ -231,6 +231,10 @@ export default class EventController {
 			return res.json({timeline})
 		} else {
 			const eventChapter = SekaiMasterDB.getWorldBloomChapter(eventId, chapter)
+			if(!eventChapter) {
+				return res.status(400).json({error: "Specified chapter doesn't exist"})
+			}
+
 			const timeline = await RankingSnapshotModel.getPlayerWorldlinkChapterTimeline(eventId, userId, eventChapter)
 			return res.json({timeline})
 		}
@@ -252,6 +256,10 @@ export default class EventController {
 			return res.json({timeline})
 		} else {
 			const eventChapter = SekaiMasterDB.getWorldBloomChapter(currentEvent.id, chapter)
+			if(!eventChapter) {
+				return res.status(400).json({error: "Specified chapter doesn't exist"})
+			}
+
 			const timeline = await RankingSnapshotModel.getCutoffWorldlinkChapterTimeline(currentEvent.id, cutoff, eventChapter)
 			return res.json({timeline})
 		}

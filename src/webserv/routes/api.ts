@@ -10,6 +10,7 @@ const apiRouter = Router()
 
 apiRouter.get("/events",
 	query("with_honors").optional().isBoolean(),
+	ValidationMiddleware.sendErrors,
 	EventController.getEvents
 )
 apiRouter.get("/leaderboard",
@@ -30,7 +31,7 @@ apiRouter.get("/event-profiles/:hash",
 )
 apiRouter.get("/event-stats/:hash",
 	param("hash").isString().isLength({min: 32, max: 32}).isHexadecimal(),
-	query("chapter").optional().isInt({min: 1, max: 4}),
+	query("chapter").optional().isInt({min: 1, max: 6}),
 	ValidationMiddleware.sendErrors,
 	EventController.getPlayerEventStats
 )
@@ -43,7 +44,8 @@ apiRouter.get("/event-cutoff-stats/:cutoff",
 
 apiRouter.get("/time", ServerController.getServerTime)
 apiRouter.get("/version",
-	query("version").optional().isInt({min: 0}),
+	query("version").optional().isHexadecimal(),
+	ValidationMiddleware.sendErrors,
 	ServerController.getServerVersion
 )
 
