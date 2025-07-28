@@ -1,18 +1,12 @@
 import crypto from "crypto"
 
 export function encryptEventSnowflake(eventId: number, snowflake: string) {
-	const eventIdBuf = Buffer.alloc(2)
-	eventIdBuf.writeUInt16BE(eventId)
-
-	let snowflakeHex = BigInt(snowflake).toString(16)
-	if(snowflakeHex.length % 2 !== 0) {
-		snowflakeHex = "0" + snowflakeHex
-	}
-	const snowflakeBuf = Buffer.from(snowflakeHex, "hex")
-	const resultBuf = Buffer.concat([eventIdBuf, snowflakeBuf])
+	const buf = Buffer.alloc(10)
+	buf.writeUInt16BE(eventId)
+	buf.writeBigUInt64BE(BigInt(snowflake), 2)
 	
 	const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(process.env.CIPHERKEY), process.env.CIPHERIV)
-	let encrypted = cipher.update(resultBuf)
+	let encrypted = cipher.update(buf)
 	encrypted = Buffer.concat([encrypted, cipher.final()])
 	return encrypted.toString("hex")
 }
@@ -24,6 +18,6 @@ export function decryptEventSnowflake(hex: string) {
 	decrypted = Buffer.concat([decrypted, decipher.final()])
 
 	const eventId = decrypted.readUInt16BE()
-	const snowflake = BigInt("0x" + decrypted.subarray(2).toString("hex")).toString()
+	const snowflake = decrypted.readBigUInt64BE(2).toString()
 	return {eventId, snowflake}
 }
