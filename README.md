@@ -28,6 +28,8 @@ Uses the game's latest assets to automatically generate certain images as they a
 - Deck cards (displayed in event profiles)
 - Event titles (displayed on https://seka.ing/titles)
 
+Source code is located in a separate repository: https://github.com/aamiaa/sekai-images
+
 ### Automated data updating
 
 The latest game data and assets are downloaded automatically, allowing the site to continue running unattended.
