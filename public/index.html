@@ -95,38 +95,6 @@
 		.no-select {
 			user-select: none;
 		}
-
-		.heatmap-container {
-			display: grid;
-			grid-template-columns: repeat(24, 1fr);
-			gap: 0;
-		}
-
-		.heatmap-item {
-			border: 1px black solid;
-			aspect-ratio: 1;
-			text-align: center;
-
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			font-size: min(2.3vw, 12px)
-		}
-
-		.heatmap-hour-hint {
-			position: relative;
-			left: -2px;
-			font-size: 6px;
-		}
-
-		@media (min-width: 992px) {
-			.heatmap-item {
-				font-size: 16px;
-			}
-			.heatmap-hour-hint {
-				font-size: 10px;
-			}
-		}
 	</style>
 </head>
 <body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
@@ -688,16 +656,28 @@
 							</h4>
 							<span id="eventProfileTotalGamesLb" style="font-size: 0.9rem;" class="text-white-50"></span>
 						</div>
-						<div id="heatmapContainer" class="heatmap-container"></div>
+						<svg id="heatmapContainer" viewBox="-3 0 780 128" xmlns="http://www.w3.org/2000/svg"></svg>
 						<!-- <div id="heatmapPlaceholder" class="placeholder-glow" style="height: min(300px, 30vw);">
 							<span class="placeholder w-100 h-100"></span>
 						</div> -->
-						<div class="d-flex gap-2 justify-content-center mt-2">
-							<label class="form-check-label" for="heatmapTimezoneCb">EST (NeneRobo)</label>
-							<div class="form-check form-switch">
-								<input class="form-check-input" type="checkbox" role="switch" id="heatmapTimezoneCb">
-								<label class="form-check-label" for="heatmapTimezoneCb">Local timezone</label>
+						<div class="d-flex mt-2">
+							<div style="flex: 1;">
+								<button id="copyHeatmapBtn" class="btn btn-secondary btn-sm">
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+										<path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+										<path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+									</svg>
+									<span>Copy as image</span>
+								</button>
 							</div>
+							<div class="d-flex gap-2 justify-content-center mt-1">
+								<label class="form-check-label" for="heatmapTimezoneCb">EST (NeneRobo)</label>
+								<div class="form-check form-switch">
+									<input class="form-check-input" type="checkbox" role="switch" id="heatmapTimezoneCb">
+									<label class="form-check-label" for="heatmapTimezoneCb">Local timezone</label>
+								</div>
+							</div>
+							<div style="flex: 1;"></div>
 						</div>
 					</div>
 					<div>
@@ -1582,6 +1562,13 @@
 		function renderHeatmap(startDate, endDate, tzOffset, timeline) {
 			document.getElementById("heatmapContainer").innerHTML = ""
 
+			const BoxWidthHeight = 32
+			const BoxStrokeSize = 2
+			const HourLabelHeight = 15
+			const HourLabelPadding = 3
+			const XOffsetStart = -3
+			const XOffsetEnd = 10
+
 			const colors = ["#321b37", "#3b2142", "#45284e", "#4e2e5a", "#563465", "#5e3b70", "#65417b", "#6c4786", "#724e92", "#78549e", "#7d5baa", "#7a65b5", "#7072bd", "#637fc1", "#558cc2", "#5095c2", "#599bc5", "#62a0c9", "#6ba6cc", "#74abd0", "#7eb0d3", "#8cb4d7", "#99b8d9", "#a4bcdb", "#afc0dd", "#b9c4de", "#c8c6e3", "#d7c8e5", "#e5cae4", "#f0cee0", "#fad3db"]
 			const days = []
 			const dt = new Date(startDate.getTime())
@@ -1591,13 +1578,23 @@
 				if(dt.getTime() - startDate.getTime() === -86400000) continue // prevent blank days
 				days.push(new Date(dt))
 			}
-			for(let i=0;i<24;i++) {
-				const span = document.createElement("span")
-				span.classList.add("heatmap-hour-hint", "text-white-50")
-				span.textContent = i
-				document.getElementById("heatmapContainer").appendChild(span)
+			for(let i=0;i<=24;i++) {
+				const text = document.createElementNS("http://www.w3.org/2000/svg", "text")
+				text.setAttribute("x", (BoxWidthHeight * i).toString())
+				text.setAttribute("y", HourLabelHeight.toString())
+				text.setAttribute("text-anchor", "middle")
+				text.setAttribute("font-size", "10px")
+				text.setAttribute("line-height", HourLabelHeight + "px")
+				text.setAttribute("fill", "rgba(255, 255, 255, 0.5)")
+				text.setAttribute("dominant-baseline", "text-after-edge")
+				text.textContent = i
+				document.getElementById("heatmapContainer").appendChild(text)
 			}
-			for(const day of days) {
+
+			const effectiveDays = days.filter(x => x.getTime() <= shiftTimestampByTimezone(Date.now(), tzOffset))
+			document.getElementById("heatmapContainer").setAttribute("viewBox", `${XOffsetStart} 0 ${BoxWidthHeight * 24 + XOffsetEnd} ${BoxWidthHeight * effectiveDays.length + BoxStrokeSize + HourLabelHeight + HourLabelPadding}`)
+
+			for(const [dayIdx, day] of days.entries()) {
 				for(let i=0;i<24;i++) {
 					const dateAt = new Date(day.getTime() + i * 3600 * 1000)
 					const dateIn1h = new Date(day.getTime() + (i + 1) * 3600 * 1000)
@@ -1606,15 +1603,30 @@
 						continue
 					}
 
-					const span = document.createElement("span")
-					span.classList.add("heatmap-item")
+					const g = document.createElementNS("http://www.w3.org/2000/svg", "g")
+					const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+					rect.setAttribute("x", (BoxWidthHeight * i).toString())
+					rect.setAttribute("y", (dayIdx * BoxWidthHeight + HourLabelHeight + HourLabelPadding).toString())
+					rect.setAttribute("width", BoxWidthHeight.toString())
+					rect.setAttribute("height", BoxWidthHeight.toString())
+					rect.setAttribute("stroke", "black")
+					rect.setAttribute("stroke-width", BoxStrokeSize.toString())
+					const text = document.createElementNS("http://www.w3.org/2000/svg", "text")
+					text.setAttribute("x", (BoxWidthHeight * i + BoxWidthHeight/2).toString())
+					text.setAttribute("y", (dayIdx * BoxWidthHeight + HourLabelHeight + HourLabelPadding + BoxWidthHeight/2).toString())
+					text.setAttribute("text-anchor", "middle")
+					text.setAttribute("dominant-baseline", "central")
 					if(dateAt.getTime() >= shiftTimestampByTimezone(startDate.getTime(), tzOffset) && dateAt.getTime() < shiftTimestampByTimezone(endDate.getTime(), tzOffset) && dateAt.getTime() <= shiftTimestampByTimezone(Date.now(), tzOffset)) {
 						const amountOfGames = timeline.filter(x => shiftTimestampByTimezone(x.timestamp.getTime(), tzOffset) >= dateAt.getTime() && shiftTimestampByTimezone(x.timestamp.getTime(), tzOffset) < dateIn1h.getTime()).length
-						span.textContent = amountOfGames
-						span.style.backgroundColor = colors[Math.min(amountOfGames, colors.length-1)]
-						span.style.color = amountOfGames === 0 ? "#ffffff": "#000000"
+						text.textContent = amountOfGames
+						rect.setAttribute("fill", colors[Math.min(amountOfGames, colors.length-1)])
+						text.setAttribute("fill", amountOfGames === 0 ? "#ffffff": "#000000")
+					} else {
+						rect.setAttribute("fill", "transparent")
 					}
-					document.getElementById("heatmapContainer").appendChild(span)
+					g.appendChild(rect)
+					g.appendChild(text)
+					document.getElementById("heatmapContainer").appendChild(g)
 				}
 			}
 
@@ -1645,6 +1657,44 @@
 			localStorage.setItem("showBorders", this.checked.toString())
 			await doUpdate()
 			this.scrollIntoView({behavior: "instant", block: "center"})
+		})
+
+		document.getElementById("copyHeatmapBtn").addEventListener("click", async function(event) {
+			const scale = 2
+			const heatmapContainer = document.getElementById("heatmapContainer") 
+			const svgElement = heatmapContainer.cloneNode(true)
+			svgElement.style.backgroundColor = "#212529"
+			svgElement.style.fontFamily = getComputedStyle(heatmapContainer).fontFamily
+			const bbox = heatmapContainer.getBBox()
+			svgElement.setAttribute("width", bbox.width * scale)
+			svgElement.setAttribute("height", bbox.height * scale)
+
+			const serializer = new XMLSerializer()
+			const svgString = serializer.serializeToString(svgElement)
+			const encodedData = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgString)
+
+			const image = new Image()
+			const loadPromise = new Promise(resolve => {
+				image.addEventListener("load", () => resolve())
+			})
+			image.src = encodedData
+			await loadPromise
+
+			const canvas = document.createElement("canvas")
+			canvas.width = image.naturalWidth
+			canvas.height = image.naturalHeight
+			canvas.getContext("2d").drawImage(image, 0, 0)
+
+			const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"))
+			canvas.remove()
+
+			const item = new ClipboardItem({"image/png": blob})
+			navigator.clipboard.write([item])
+
+			const span = this.querySelector("span")
+			const currentText = span.textContent
+			span.textContent = "Copied!"
+			setTimeout(() => span.textContent = currentText, 2000)
 		})
 
 		doUpdate()
