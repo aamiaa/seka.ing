@@ -1575,7 +1575,6 @@
 			dt.setHours(dt.getHours() - tzOffset + dt.getTimezoneOffset()/60,0,0,0)
 			dt.setHours(0)
 			for(;dt<=new Date(shiftTimestampByTimezone(endDate.getTime(), tzOffset));dt.setDate(dt.getDate()+1)) {
-				if(dt.getTime() - startDate.getTime() === -86400000) continue // prevent blank days
 				days.push(new Date(dt))
 			}
 			for(let i=0;i<=24;i++) {
