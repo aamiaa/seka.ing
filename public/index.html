@@ -183,6 +183,12 @@
 				<li class="nav-item" role="presentation">
 					<button style="display: none;" class="nav-link" id="chapter-4-tab" data-bs-toggle="tab" data-bs-target="#chapter-4-tab-pane" type="button" role="tab" aria-controls="chapter-4-tab-pane" aria-selected="false"></button>
 				</li>
+				<li class="nav-item" role="presentation">
+					<button style="display: none;" class="nav-link" id="chapter-5-tab" data-bs-toggle="tab" data-bs-target="#chapter-5-tab-pane" type="button" role="tab" aria-controls="chapter-5-tab-pane" aria-selected="false"></button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button style="display: none;" class="nav-link" id="chapter-6-tab" data-bs-toggle="tab" data-bs-target="#chapter-6-tab-pane" type="button" role="tab" aria-controls="chapter-6-tab-pane" aria-selected="false"></button>
+				</li>
 			</ul>
 			<div id="eventTableCard" class="card" style="background-color: white;">
 				<div class="card-body">
@@ -577,6 +583,44 @@
 							<div id="eventTableChapter4Countdown" style="display: none;" class="p-4">
 								<h4 class="text-dark text-center">Chapter starts at:</h4>
 								<h3 id="eventTableChapter4CountdownLabel" class="text-dark text-center"></h3>
+							</div>
+						</div>
+						<div class="tab-pane fade" id="chapter-5-tab-pane" role="tabpanel" aria-labelledby="chapter-5-tab" tabindex="0">
+							<table id="eventTableChapter5" class="table table-hover table-light" style="--bs-table-bg: white;">
+								<thead>
+									<tr>
+										<th scope="col">#</th>
+										<th scope="col">Name</th>
+										<th scope="col">Points</th>
+										<th scope="col" class="past-hour-col">Past hour</th>
+										<th scope="col" class="per-game-col">Per game</th>
+										<th scope="col" class="past-hour-by-rank-col" style="display: none;">Past hour <u>by tier</u></th>
+									</tr>
+								</thead>
+								<tbody id="eventTableChapter5Body" class="table-group-divider"></tbody>
+							</table>
+							<div id="eventTableChapter5Countdown" style="display: none;" class="p-4">
+								<h4 class="text-dark text-center">Chapter starts at:</h4>
+								<h3 id="eventTableChapter5CountdownLabel" class="text-dark text-center"></h3>
+							</div>
+						</div>
+						<div class="tab-pane fade" id="chapter-6-tab-pane" role="tabpanel" aria-labelledby="chapter-6-tab" tabindex="0">
+							<table id="eventTableChapter6" class="table table-hover table-light" style="--bs-table-bg: white;">
+								<thead>
+									<tr>
+										<th scope="col">#</th>
+										<th scope="col">Name</th>
+										<th scope="col">Points</th>
+										<th scope="col" class="past-hour-col">Past hour</th>
+										<th scope="col" class="per-game-col">Per game</th>
+										<th scope="col" class="past-hour-by-rank-col" style="display: none;">Past hour <u>by tier</u></th>
+									</tr>
+								</thead>
+								<tbody id="eventTableChapter6Body" class="table-group-divider"></tbody>
+							</table>
+							<div id="eventTableChapter6Countdown" style="display: none;" class="p-4">
+								<h4 class="text-dark text-center">Chapter starts at:</h4>
+								<h3 id="eventTableChapter6CountdownLabel" class="text-dark text-center"></h3>
 							</div>
 						</div>
 					</div>
