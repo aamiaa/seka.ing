@@ -883,8 +883,8 @@
 			return json
 		}
 
-		async function getUserEventProfile(hash) {
-			const res = await fetch(`/api/event-profiles/${hash}`)
+		async function getUserEventProfile(hash, abortSignal) {
+			const res = await fetch(`/api/event-profiles/${hash}`, {signal: abortSignal})
 			if(!res.ok) {
 				throw new Error("getUserEventProfile() failed: " + res.status)
 			}
@@ -893,8 +893,8 @@
 			return json
 		}
 
-		async function getUserEventStats(hash, chapter) {
-			const res = await fetch(`/api/event-stats/${hash}${chapter != null ? `?chapter=${chapter}` : ""}`)
+		async function getUserEventStats(hash, chapter, abortSignal) {
+			const res = await fetch(`/api/event-stats/${hash}${chapter != null ? `?chapter=${chapter}` : ""}`, {signal: abortSignal})
 			if(!res.ok) {
 				throw new Error("getUserEventStats() failed: " + res.status)
 			}
@@ -903,8 +903,8 @@
 			return json
 		}
 
-		async function getCutoffStats(cutoff, chapter) {
-			const res = await fetch(`/api/event-cutoff-stats/${cutoff}${chapter != null ? `?chapter=${chapter}` : ""}`)
+		async function getCutoffStats(cutoff, chapter, abortSignal) {
+			const res = await fetch(`/api/event-cutoff-stats/${cutoff}${chapter != null ? `?chapter=${chapter}` : ""}`, {signal: abortSignal})
 			if(!res.ok) {
 				throw new Error("getCutoffStats() failed: " + res.status)
 			}
@@ -1296,6 +1296,7 @@
 		}
 
 		let lastCharts = []
+		let profileModalAbort
 		async function loadEventProfileModal(hash, cutoff, chapter) {
 			// Clear old values
 			eventProfileDeck.innerHTML = ""
@@ -1311,6 +1312,10 @@
 				x.destroy()
 			})
 			lastCharts = []
+			if(profileModalAbort) {
+				profileModalAbort.abort()
+			}
+			profileModalAbort = new AbortController()
 			document.getElementById("eventProfileTotalGamesLb").textContent = ""
 			document.getElementById("heatmapContainer").innerHTML = ""
 			// document.getElementById("heatmapPlaceholder").style.display = ""
@@ -1319,9 +1324,9 @@
 				document.getElementById("heatmapTimezoneCb").checked = true
 			}
 
-			const profile = await getUserEventProfile(hash)
-			const statsPromise = getUserEventStats(hash, chapter)
-			const cutoffPromise = getCutoffStats(cutoff, chapter)
+			const profile = await getUserEventProfile(hash, profileModalAbort.signal)
+			const statsPromise = getUserEventStats(hash, chapter, profileModalAbort.signal)
+			const cutoffPromise = getCutoffStats(cutoff, chapter, profileModalAbort.signal)
 
 			// Render name
 			document.getElementById("eventProfileModalLabel").textContent = removeTMPTags(profile.name)
