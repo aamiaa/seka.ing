@@ -9,5 +9,6 @@ export interface EventProfileDTO {
 		character_rank_bonus: number,
 		honor_bonus: number,
 		total_talent: number
-	}
+	},
+	event_bonus?: number
 }

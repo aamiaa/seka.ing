@@ -1,3 +1,4 @@
+import { SekaiCardAttribute, SekaiCardRarityType } from "./card";
 import { SekaiUnit } from "./unit";
 
 export interface SekaiEvent {
@@ -70,4 +71,26 @@ export interface SekaiCheerfulCarnivalSummary {
 	midtermAnnounce1At: Date,
 	midtermAnnounce2At: Date,
 	assetbundleName: string
+}
+
+export interface SekaiEventCard {
+	id: number,
+	cardId: number,
+	eventId: number,
+	bonusRate: number
+}
+
+export interface SekaiEventDeckBonus {
+	id: number,
+	eventId: number,
+	gameCharacterUnitId?: number,
+	cardAttr?: SekaiCardAttribute,
+	bonusRate: number
+}
+
+export interface SekaiEventRarityBonusRate {
+	id: number,
+	cardRarityType: SekaiCardRarityType,
+	masterRank: number,
+	bonusRate: number
 }

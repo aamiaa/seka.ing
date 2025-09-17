@@ -7,3 +7,9 @@ export enum SekaiUnit {
 	WONDERLANDS_X_SHOWTIME = "theme_park",
 	NIGHTCORD_AT_25 = "school_refusal"
 }
+
+export interface SekaiGameCharacterUnit {
+	id: number,
+	gameCharacterId: number,
+	unit: SekaiUnit
+}

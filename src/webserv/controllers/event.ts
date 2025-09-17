@@ -9,6 +9,7 @@ import { decryptEventSnowflake } from "../../util/cipher";
 import { EventProfileDTO } from "../dto/event_profile";
 import { UserCardDefaultImage, UserCardSpecialTrainingStatus } from "sekai-api";
 import { getEventDTO } from "../../transformers/event";
+import { calculateEventBonus } from "../../sekai/helpers/event_bonus";
 
 export default class EventController {
 	public static async getEvents(req: Request, res: Response, next: NextFunction) {
@@ -167,6 +168,11 @@ export default class EventController {
 			return res.status(400).send({error: "Invalid hash"})
 		}
 
+		const event = SekaiMasterDB.getEvent(eventId)
+		if(!event) {
+			return res.status(404).send({error: "Invalid event"})
+		}
+
 		const profile = await EventProfileModel.findOne({eventId, userId}).lean()
 		if(!profile || !profile.fullProfileFetched) {
 			return res.status(404).send({error: "Profile not found"})
@@ -179,28 +185,31 @@ export default class EventController {
 			profile.userDeck.member4,
 			profile.userDeck.member5,
 		]
+		const cards = profile.userCards.filter(x => deckCardIds.includes(x.cardId)).map(x => {
+			const card = SekaiMasterDB.getCard(x.cardId)
+			const character = SekaiMasterDB.getGameCharacter(card.characterId)
+
+			return {
+				id: x.cardId,
+				level: x.level,
+				mastery: x.masterRank,
+				trained: x.specialTrainingStatus === UserCardSpecialTrainingStatus.DONE,
+				image: x.defaultImage === UserCardDefaultImage.SPECIAL_TRAINING ? 1 : 0,
+				description: card ? (card.prefix + " " + character.givenName + (character.firstName ? ` ${character.firstName}` : "")) : "Unknown"
+			}
+		}).sort((a,b) => deckCardIds.indexOf(a.id) - deckCardIds.indexOf(b.id))
+
 		const response: EventProfileDTO = {
 			name: profile.name,
-			cards: profile.userCards.filter(x => deckCardIds.includes(x.cardId)).map(x => {
-				const card = SekaiMasterDB.getCard(x.cardId)
-				const character = SekaiMasterDB.getGameCharacter(card.characterId)
-
-				return {
-					id: x.cardId,
-					level: x.level,
-					mastery: x.masterRank,
-					trained: x.specialTrainingStatus === UserCardSpecialTrainingStatus.DONE,
-					image: x.defaultImage === UserCardDefaultImage.SPECIAL_TRAINING ? 1 : 0,
-					description: card ? (card.prefix + " " + character.givenName + (character.firstName ? ` ${character.firstName}` : "")) : "Unknown"
-				}
-			}).sort((a,b) => deckCardIds.indexOf(a.id) - deckCardIds.indexOf(b.id)),
+			cards: cards,
 			talent: {
 				basic_talent: profile.totalPower.basicCardTotalPower,
 				area_item_bonus: profile.totalPower.areaItemBonus,
 				character_rank_bonus: profile.totalPower.characterRankBonus,
 				honor_bonus: profile.totalPower.honorBonus,
 				total_talent: profile.totalPower.totalPower
-			}
+			},
+			event_bonus: event.eventType !== SekaiEventType.WORLD_BLOOM ? calculateEventBonus(eventId, cards) : undefined
 		}
 		return res.json(response)
 	}

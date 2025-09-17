@@ -1,5 +1,5 @@
 import axios from "axios";
-import { SekaiCheerfulCarnivalSummary, SekaiCheerfulCarnivalTeam, SekaiEvent, SekaiEventType, SekaiWorldBloom, SekaiWorldBloomChapterRankingRewardRange } from "../interface/event";
+import { SekaiCheerfulCarnivalSummary, SekaiCheerfulCarnivalTeam, SekaiEvent, SekaiEventCard, SekaiEventDeckBonus, SekaiEventRarityBonusRate, SekaiEventType, SekaiWorldBloom, SekaiWorldBloomChapterRankingRewardRange } from "../interface/event";
 import SekaiGameCharacter, { SekaiPenlightColor } from "../interface/character";
 import { SekaiResourceBox } from "../interface/resource";
 import { SekaiHonor, SekaiHonorGroup } from "../interface/honor";
@@ -9,6 +9,7 @@ import ApiClient from "../sekai/api"
 import path from "path"
 import fs from "fs"
 import { ensureEventAssetsExist } from "../sekai/asset";
+import { SekaiGameCharacterUnit } from "../interface/unit";
 
 async function ensureFolderExists(path: string) {
 	try {
@@ -21,7 +22,7 @@ async function ensureFolderExists(path: string) {
 export default class SekaiMasterDB {
 	private static readonly requiredModules = ["events", "worldBlooms", "gameCharacters", "penlightColors",
 		"resourceBoxes", "honors", "honorGroups", "worldBloomChapterRankingRewardRanges", "cards", "cheerfulCarnivalTeams",
-		"cheerfulCarnivalSummaries"]
+		"cheerfulCarnivalSummaries", "eventCards", "eventDeckBonuses", "eventRarityBonusRates", "gameCharacterUnits"]
 	private static events: SekaiEvent[] = []
 	private static worldBlooms: SekaiWorldBloom[] = []
 	private static gameCharacters: SekaiGameCharacter[] = []
@@ -33,6 +34,10 @@ export default class SekaiMasterDB {
 	private static cards: SekaiCard[] = []
 	private static cheerfulCarnivalTeams: SekaiCheerfulCarnivalTeam[] = []
 	private static cheerfulCarnivalSummaries: SekaiCheerfulCarnivalSummary[] = []
+	private static eventCards: SekaiEventCard[] = []
+	private static eventDeckBonuses: SekaiEventDeckBonus[] = []
+	private static eventRarityBonusRates: SekaiEventRarityBonusRate[] = []
+	private static gameCharacterUnits: SekaiGameCharacterUnit[] = []
 
 	public static async init() {
 		await this.refreshData()
@@ -209,5 +214,21 @@ export default class SekaiMasterDB {
 
 	public static getCheerfulCarnivalSummary(id: number) {
 		return this.cheerfulCarnivalSummaries.find(x => x.eventId === id)
+	}
+
+	public static getEventCards(eventId: number) {
+		return this.eventCards.filter(x => x.eventId === eventId)
+	}
+
+	public static getEventDeckBonuses(eventId: number) {
+		return this.eventDeckBonuses.filter(x => x.eventId === eventId)
+	}
+
+	public static getEventRarityBonusRates() {
+		return this.eventRarityBonusRates
+	}
+
+	public static getGameCharacterUnit(id: number) {
+		return this.gameCharacterUnits.find(x => x.id === id)
 	}
 }

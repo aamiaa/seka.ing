@@ -686,6 +686,7 @@
 								<p id="eventProfileTitleTalentLb" class="mb-0">Title Bonus:</p>
 							</details>
 						</div>
+						<p>Event Bonus: <span id="eventProfileBonusLb" class="fw-bold"></span></p>
 					</div>
 					<div>
 						<h4>Recent Games</h4>
@@ -1307,6 +1308,7 @@
 			document.getElementById("eventProfileItemTalentLb").textContent = "Decoration Bonus:"
 			document.getElementById("eventProfileCRTalentLb").textContent = "Character Rank Bonus:"
 			document.getElementById("eventProfileTitleTalentLb").textContent = "Title Bonus:"
+			document.getElementById("eventProfileBonusLb").textContent = ""
 			lastCharts.forEach(x => {
 				x.clear()
 				x.destroy()
@@ -1359,6 +1361,9 @@
 			document.getElementById("eventProfileItemTalentLb").textContent = `Decoration Bonus: ${formatNumber(profile.talent.area_item_bonus)}`
 			document.getElementById("eventProfileCRTalentLb").textContent = `Character Rank Bonus: ${formatNumber(profile.talent.character_rank_bonus)}`
 			document.getElementById("eventProfileTitleTalentLb").textContent = `Title Bonus: ${formatNumber(profile.talent.honor_bonus)}`
+
+			// Render event bonus
+			document.getElementById("eventProfileBonusLb").textContent = profile.event_bonus != null ? `${profile.event_bonus}%` : "¯\\_(ツ)_/¯"
 
 			const stats = await statsPromise
 			stats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
