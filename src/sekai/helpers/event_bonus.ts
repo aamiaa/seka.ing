@@ -48,5 +48,5 @@ export function calculateEventBonus(eventId: number, cards: {id: number, mastery
 		}
 	}
 
-	return Math.floor(bonus)
+	return bonus
 }
