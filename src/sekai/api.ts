@@ -3,8 +3,8 @@ import SekaiApiClient from "sekai-api"
 
 const httpsAgent = HttpsProxyAgent({
 	host: process.env.ProxyHost,
-	port: parseInt(process.env.ProxyPort) + 2,
-	auth: `${process.env.ProxyUsername}:${process.env.ProxyPassword}`,
+	port: parseInt(process.env.ProxyPort),
+	auth: `${process.env.ProxyUsername}-2:${process.env.ProxyPassword}`,
 })
 
 const client = new SekaiApiClient({httpsAgent})
