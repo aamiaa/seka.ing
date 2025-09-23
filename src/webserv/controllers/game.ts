@@ -9,7 +9,7 @@ export default class GameController {
 		const planned = await GameMaintenanceModel.find({startsAt: {$gte: new Date()}}).lean()
 
 		return res.json({
-			active_maintenance: active && active.endsAt.getTime() > Date.now() ? {
+			active_maintenance: active && active.startsAt.getTime() < Date.now() && active.endsAt.getTime() > Date.now() ? {
 				starts_at: active.startsAt,
 				ends_at: active.endsAt
 			} : null,
