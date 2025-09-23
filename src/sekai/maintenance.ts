@@ -1,7 +1,6 @@
-import { GameMaintenanceModel } from "../../models/maintenance";
-import proxyRequest from "../../util/proxy";
-import { dateFromPTString } from "../../util/time";
-import CacheStore from "../../webserv/cache";
+import proxyRequest from "../util/proxy";
+import { dateFromPTString } from "../util/time";
+import CacheStore from "../webserv/cache";
 
 export default class MaintenanceTracker {
 	public static async init() {

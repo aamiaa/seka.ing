@@ -7,7 +7,7 @@ import ApiClient from "./sekai/api"
 import { Database } from "./providers/database";
 import CheerfulCarnivalTracker from "./sekai/event/cheerful_carnival";
 import { execSync } from "child_process";
-import MaintenanceTracker from "./sekai/event/maintenance";
+import MaintenanceTracker from "./sekai/maintenance";
 
 process.on("unhandledRejection", (reason: Error|any) => {
 	console.log("Unhandled Rejection at:", reason.stack || reason)
