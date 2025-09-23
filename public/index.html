@@ -1000,7 +1000,7 @@
 				lastMaintCheck = new Date()
 			}
 
-			if(document.getElementById("gameMaintenanceBanner") != null) { // If banner wasb;t dismissed
+			if(document.getElementById("gameMaintenanceBanner") != null) { // If banner wasn't dismissed
 				const next = lastMaintRes.planned_maintenances.find(x => {
 					const startsAt = new Date(x.starts_at).getTime()
 					return startsAt > Date.now() && (startsAt - Date.now() < 4 * 3600 * 1000)
