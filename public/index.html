@@ -824,6 +824,9 @@
 					case "aggregate":
 						label.innerText = `The leaderboard is calculating until ${aggregateUntil.toLocaleTimeString()}!\nLast update: ${lastUpdatedAt?.toLocaleTimeString() ?? "N/A"}`
 						break
+					case "maintenance":
+						label.innerText = `Project Sekai is under maintenance. The leaderboard cannot update!\nLast update: ${lastUpdatedAt?.toLocaleTimeString() ?? "N/A"}`
+						break
 				}
 
 				banner.style.display = ""
@@ -997,7 +1000,9 @@
 			toggleFailureMessage(false)
 			if(data.aggregate_until) {
 				toggleIssuesBanner(true, "aggregate", new Date(data.aggregate_until))
-			} else if(data.update_error || (lastUpdatedAt && (Date.now() - lastUpdatedAt.getTime() > 3 * 60 * 1000))) {
+			} else if(data.update_error) {
+				toggleIssuesBanner(true, data.update_error)
+			} else if(lastUpdatedAt && (Date.now() - lastUpdatedAt.getTime() > 3 * 60 * 1000)) {
 				toggleIssuesBanner(true, "backend")
 			} else {
 				toggleIssuesBanner(false)
@@ -1725,44 +1730,30 @@
 				res = lastMaintenanceResponse
 			}
 
-			if(res.active_maintenance) {
-				const startsAt = new Date(res.active_maintenance.starts_at)
-				const endsAt = new Date(res.active_maintenance.ends_at)
+			const next = res.planned_maintenances.find(x => {
+				const startsAt = new Date(x.starts_at).getTime()
+				return startsAt > Date.now() && (startsAt - Date.now() < 4 * 3600 * 1000)
+			})
+			if(next) {
+				const startsAt = new Date(next.starts_at)
+				const endsAt = new Date(next.ends_at)
 
 				const startsAtStr = startsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
 				const endsAtStr = endsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
 
+				const countdownStr = startsAt.getTime() - Date.now() < 60 * 1000 ? "less than a minute" : countdown(null, startsAt, countdown.HOURS | countdown.MINUTES).toString()
+
 				document.getElementById("gameMaintenanceBanner").style.display = ""
-				document.getElementById("gameMaintenanceBannerLabel").innerText = `Project Sekai has an active maintenance!\nMaintenance period: ${startsAtStr} - ${endsAtStr} local time`
+				document.getElementById("gameMaintenanceBannerLabel").innerText = `Project Sekai maintenance is scheduled to take place in ${countdownStr}!\nMaintenance period: ${startsAtStr} - ${endsAtStr} local time`
 
-				document.getElementById("gameMaintenanceBannerNewsLink").style.display = ""
-				document.getElementById("gameMaintenanceBannerNewsLink").href = `https://n-production-web.sekai-en.com/maintenance/index.html`
-			} else {
-				const next = res.planned_maintenances.find(x => {
-					const startsAt = new Date(x.starts_at).getTime()
-					return startsAt > Date.now() && (startsAt - Date.now() < 4 * 3600 * 1000)
-				})
-				if(next) {
-					const startsAt = new Date(next.starts_at)
-					const endsAt = new Date(next.ends_at)
-
-					const startsAtStr = startsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
-					const endsAtStr = endsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
-
-					const countdownStr = startsAt.getTime() - Date.now() < 60 * 1000 ? "less than a minute" : countdown(null, startsAt, countdown.HOURS | countdown.MINUTES).toString()
-
-					document.getElementById("gameMaintenanceBanner").style.display = ""
-					document.getElementById("gameMaintenanceBannerLabel").innerText = `Project Sekai maintenance is scheduled to take place in ${countdownStr}!\nMaintenance period: ${startsAtStr} - ${endsAtStr} local time`
-
-					if(next.news_id) {
-						document.getElementById("gameMaintenanceBannerNewsLink").style.display = ""
-						document.getElementById("gameMaintenanceBannerNewsLink").href = `https://n-production-web.sekai-en.com/information/index.html?id=${next.news_id}`
-					} else {
-						document.getElementById("gameMaintenanceBannerNewsLink").style.display = "none"
-					}
+				if(next.news_id) {
+					document.getElementById("gameMaintenanceBannerNewsLink").style.display = ""
+					document.getElementById("gameMaintenanceBannerNewsLink").href = `https://n-production-web.sekai-en.com/information/index.html?id=${next.news_id}`
 				} else {
-					document.getElementById("gameMaintenanceBanner").style.display = "none"
+					document.getElementById("gameMaintenanceBannerNewsLink").style.display = "none"
 				}
+			} else {
+				document.getElementById("gameMaintenanceBanner").style.display = "none"
 			}
 		}
 
