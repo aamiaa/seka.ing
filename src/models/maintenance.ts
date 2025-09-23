@@ -14,6 +14,6 @@ export const GameMaintenanceSchema = new mongoose.Schema<IGameMaintenanceModel, 
 	endsAt: {type: Date},
 	newsId: {type: String}
 })
-GameMaintenanceSchema.index({startsAt: -1})
+GameMaintenanceSchema.index({startsAt: 1})
 
 export const GameMaintenanceModel = mongoose.model<IGameMaintenanceModel, IGameMaintenanceModelStatic>("maintenances", GameMaintenanceSchema)
