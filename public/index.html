@@ -1036,6 +1036,9 @@
 				}
 				return
 			}
+			if(!data.event) { // Backend restarting
+				return
+			}
 			lastUpdatedAt = data.updated_at && new Date(data.updated_at)
 			
 			toggleFailureMessage(false)

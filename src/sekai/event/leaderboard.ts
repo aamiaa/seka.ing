@@ -21,7 +21,7 @@ function populateUsersMap(map: Record<string, RankingEntry>, users: RankingEntry
 export default class LeaderboardTracker {
 	public static async init() {
 		CacheStore.set("leaderboard", {
-			event: {},
+			event: null,
 			rankings: [],
 			updated_at: null
 		})
