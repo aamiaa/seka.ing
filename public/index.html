@@ -809,26 +809,12 @@
 		}
 
 		let lastUpdatedAt
-		function toggleIssuesBanner(toggled, errorType, aggregateUntil) {
+		function toggleIssuesBanner(toggled, msg) {
 			const banner = document.getElementById("issuesBanner")
 			const label = document.getElementById("issuesBannerLabel")
 
 			if(toggled) {
-				switch(errorType) {
-					case "backend":
-						label.innerText = `We're experiencing issues. The leaderboard might not be up to date!\nLast update: ${lastUpdatedAt?.toLocaleTimeString() ?? "N/A"}`
-						break
-					case "network":
-						label.innerText = `Your network is offline. The leaderboard cannot update!\nLast update: ${lastUpdatedAt?.toLocaleTimeString() ?? "N/A"}`
-						break
-					case "aggregate":
-						label.innerText = `The leaderboard is calculating until ${aggregateUntil.toLocaleTimeString()}!\nLast update: ${lastUpdatedAt?.toLocaleTimeString() ?? "N/A"}`
-						break
-					case "maintenance":
-						label.innerText = `Project Sekai is under maintenance. The leaderboard cannot update!\nLast update: ${lastUpdatedAt?.toLocaleTimeString() ?? "N/A"}`
-						break
-				}
-
+				label.innerText = msg + `\nLast update: ${lastUpdatedAt?.toLocaleTimeString() ?? "N/A"}`
 				banner.style.display = ""
 			} else {
 				banner.style.display = "none"
@@ -849,6 +835,30 @@
 			} else {
 				rankingContainer.style.display = logoContainer.style.display = ""
 				errorMsg.style.display = "none"
+			}
+		}
+
+		function toggleMaintenanceBanner(toggled, data) {
+			if(toggled) {
+				const startsAt = new Date(data.starts_at)
+				const endsAt = new Date(data.ends_at)
+
+				const startsAtStr = startsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
+				const endsAtStr = endsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
+
+				const countdownStr = startsAt.getTime() - Date.now() < 60 * 1000 ? "less than a minute" : countdown(null, startsAt, countdown.HOURS | countdown.MINUTES).toString()
+
+				document.getElementById("gameMaintenanceBanner").style.display = ""
+				document.getElementById("gameMaintenanceBannerLabel").innerText = `Project Sekai maintenance is scheduled to take place in ${countdownStr}!\nMaintenance period: ${startsAtStr} - ${endsAtStr} local time`
+
+				if(data.news_id) {
+					document.getElementById("gameMaintenanceBannerNewsLink").style.display = ""
+					document.getElementById("gameMaintenanceBannerNewsLink").href = `https://n-production-web.sekai-en.com/information/index.html?id=${next.news_id}`
+				} else {
+					document.getElementById("gameMaintenanceBannerNewsLink").style.display = "none"
+				}
+			} else {
+				document.getElementById("gameMaintenanceBanner").style.display = "none"
 			}
 		}
 
@@ -974,12 +984,32 @@
 		let timerStarted = false
 		let nextTimerStarted = false
 		let lastLbUpdate
+		let lastMaintCheck
+		let lastMaintRes
 		let trackHash = localStorage.getItem("trackHash")
 		let clockOffset = 0
 
 		async function doUpdate() {
 			if(lastLbUpdate && document.visibilityState === "hidden") {
 				return
+			}
+
+			// Check for game maintenances
+			if(!lastMaintCheck || (Date.now() - lastMaintCheck.getTime() >= 10 * 60 * 1000)) {
+				lastMaintRes = await getGameMaintenance()
+				lastMaintCheck = new Date()
+			}
+
+			if(document.getElementById("gameMaintenanceBanner") != null) { // If banner wasb;t dismissed
+				const next = lastMaintRes.planned_maintenances.find(x => {
+					const startsAt = new Date(x.starts_at).getTime()
+					return startsAt > Date.now() && (startsAt - Date.now() < 4 * 3600 * 1000)
+				})
+				if(next) {
+					toggleMaintenanceBanner(true, next)
+				} else {
+					toggleMaintenanceBanner(false)
+				}
 			}
 
 			const {data, errorType} = await getLeaderboard(!timerStarted)
@@ -991,7 +1021,18 @@
 				if(!lastLbUpdate) {
 					toggleFailureMessage(true)
 				} else {
-					toggleIssuesBanner(true, errorType)
+					let msg = "An unknown error has occurred."
+
+					switch(errorType) {
+						case "backend":
+							msg = "We're experiencing issues. The leaderboard might not be up to date!"
+							break
+						case "network":
+							msg = "Your network is offline. The leaderboard cannot update!"
+							break
+					}
+
+					toggleIssuesBanner(true, msg)
 				}
 				return
 			}
@@ -999,11 +1040,25 @@
 			
 			toggleFailureMessage(false)
 			if(data.aggregate_until) {
-				toggleIssuesBanner(true, "aggregate", new Date(data.aggregate_until))
+				toggleIssuesBanner(true, `The leaderboard is calculating until ${new Date(data.aggregate_until).toLocaleTimeString()}!`)
 			} else if(data.update_error) {
-				toggleIssuesBanner(true, data.update_error)
+				let msg = "An unknown error has occurred."
+
+				switch(data.update_error) {
+					case "maintenance":
+						if(lastMaintRes.active_maintenance) {
+							const startTimeStr = new Date(lastMaintRes.active_maintenance.starts_at).toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
+							const endTimeStr = new Date(lastMaintRes.active_maintenance.ends_at).toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
+							msg = `Project Sekai is under maintenance. The leaderboard cannot update!\nMaintenance period: ${startTimeStr} - ${endTimeStr} local time.`
+						} else {
+							msg = "Project Sekai is under maintenance. The leaderboard cannot update!"
+						}
+						break
+				}
+
+				toggleIssuesBanner(true, msg)
 			} else if(lastUpdatedAt && (Date.now() - lastUpdatedAt.getTime() > 3 * 60 * 1000)) {
-				toggleIssuesBanner(true, "backend")
+				toggleIssuesBanner(true, "We're experiencing issues. The leaderboard might not be up to date!")
 			} else {
 				toggleIssuesBanner(false)
 			}
@@ -1713,50 +1768,6 @@
 			// document.getElementById("heatmapPlaceholder").style.display = "none"
 		}
 
-		let lastMaintenanceResponse
-		let lastMaintenanceCheckTime
-		async function checkGameMaintenance() {
-			if(!document.getElementById("gameMaintenanceBanner")) { // Banner dismissed
-				return
-			}
-
-			// Make api request every 10 minutes, but update the label every minute
-			let res
-			if(!lastMaintenanceCheckTime || (Date.now() - lastMaintenanceCheckTime.getTime() >= 10 * 60 * 1000)) {
-				res = await getGameMaintenance()
-				lastMaintenanceResponse = res
-				lastMaintenanceCheckTime = new Date()
-			} else {
-				res = lastMaintenanceResponse
-			}
-
-			const next = res.planned_maintenances.find(x => {
-				const startsAt = new Date(x.starts_at).getTime()
-				return startsAt > Date.now() && (startsAt - Date.now() < 4 * 3600 * 1000)
-			})
-			if(next) {
-				const startsAt = new Date(next.starts_at)
-				const endsAt = new Date(next.ends_at)
-
-				const startsAtStr = startsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
-				const endsAtStr = endsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
-
-				const countdownStr = startsAt.getTime() - Date.now() < 60 * 1000 ? "less than a minute" : countdown(null, startsAt, countdown.HOURS | countdown.MINUTES).toString()
-
-				document.getElementById("gameMaintenanceBanner").style.display = ""
-				document.getElementById("gameMaintenanceBannerLabel").innerText = `Project Sekai maintenance is scheduled to take place in ${countdownStr}!\nMaintenance period: ${startsAtStr} - ${endsAtStr} local time`
-
-				if(next.news_id) {
-					document.getElementById("gameMaintenanceBannerNewsLink").style.display = ""
-					document.getElementById("gameMaintenanceBannerNewsLink").href = `https://n-production-web.sekai-en.com/information/index.html?id=${next.news_id}`
-				} else {
-					document.getElementById("gameMaintenanceBannerNewsLink").style.display = "none"
-				}
-			} else {
-				document.getElementById("gameMaintenanceBanner").style.display = "none"
-			}
-		}
-
 		if(localStorage.getItem("showCCAnnounce") === "false") {
 			document.getElementById("showCCAnnounceCb").checked = false
 		}
@@ -1823,9 +1834,6 @@
 
 		doUpdate()
 		setInterval(doUpdate, 20 * 1000)
-
-		checkGameMaintenance()
-		setInterval(checkGameMaintenance, 60 * 1000)
 
 		document.addEventListener("visibilitychange", async function() {
 			if(!lastLbUpdate) return
