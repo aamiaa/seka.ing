@@ -113,6 +113,11 @@
 		<div id="issuesBanner" role="alert" style="display: none;" class="py-3 bg-danger text-center rounded-bottom">
 			<span id="issuesBannerLabel"></span>
 		</div>
+		<div id="gameMaintenanceBanner" role="alert" style="display: none;" class="py-3 alert alert-warning alert-dismissible show text-center">
+			<span id="gameMaintenanceBannerLabel"></span>
+			<a id="gameMaintenanceBannerNewsLink" style="display: none;" target="_blank"><br>More Info</a>
+			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+		</div>
 	</div>
 
 	<header id="nextLogoContainer" class="my-3 d-flex justify-content-center align-items-center gap-1 d-none">
@@ -914,6 +919,16 @@
 			return json
 		}
 
+		async function getGameMaintenance() {
+			const res = await fetch("/api/game/maintenance")
+			if(!res.ok) {
+				throw new Error("getGameMaintenance() failed: " + res.status)
+			}
+
+			const json = await res.json()
+			return json
+		}
+
 		const announceQueue = []
 		let announceDebounce = false
 		function queueAnnouncement(message) {
@@ -1693,6 +1708,64 @@
 			// document.getElementById("heatmapPlaceholder").style.display = "none"
 		}
 
+		let lastMaintenanceResponse
+		let lastMaintenanceCheckTime
+		async function checkGameMaintenance() {
+			if(!document.getElementById("gameMaintenanceBanner")) { // Banner dismissed
+				return
+			}
+
+			// Make api request every 10 minutes, but update the label every minute
+			let res
+			if(!lastMaintenanceCheckTime || (Date.now() - lastMaintenanceCheckTime.getTime() >= 10 * 60 * 1000)) {
+				res = await getGameMaintenance()
+				lastMaintenanceResponse = res
+				lastMaintenanceCheckTime = new Date()
+			} else {
+				res = lastMaintenanceResponse
+			}
+
+			if(res.active_maintenance) {
+				const startsAt = new Date(res.active_maintenance.starts_at)
+				const endsAt = new Date(res.active_maintenance.ends_at)
+
+				const startsAtStr = startsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
+				const endsAtStr = endsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
+
+				document.getElementById("gameMaintenanceBanner").style.display = ""
+				document.getElementById("gameMaintenanceBannerLabel").innerText = `Project Sekai has an active maintenance!\nMaintenance period: ${startsAtStr} - ${endsAtStr} local time`
+
+				document.getElementById("gameMaintenanceBannerNewsLink").style.display = ""
+				document.getElementById("gameMaintenanceBannerNewsLink").href = `https://n-production-web.sekai-en.com/maintenance/index.html`
+			} else {
+				const next = res.planned_maintenances.find(x => {
+					const startsAt = new Date(x.starts_at).getTime()
+					return startsAt > Date.now() && (startsAt - Date.now() < 4 * 3600 * 1000)
+				})
+				if(next) {
+					const startsAt = new Date(next.starts_at)
+					const endsAt = new Date(next.ends_at)
+
+					const startsAtStr = startsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
+					const endsAtStr = endsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
+
+					const countdownStr = startsAt.getTime() - Date.now() < 60 * 1000 ? "less than a minute" : countdown(null, startsAt, countdown.HOURS | countdown.MINUTES).toString()
+
+					document.getElementById("gameMaintenanceBanner").style.display = ""
+					document.getElementById("gameMaintenanceBannerLabel").innerText = `Project Sekai maintenance is scheduled to take place in ${countdownStr}!\nMaintenance period: ${startsAtStr} - ${endsAtStr} local time`
+
+					if(next.news_id) {
+						document.getElementById("gameMaintenanceBannerNewsLink").style.display = ""
+						document.getElementById("gameMaintenanceBannerNewsLink").href = `https://n-production-web.sekai-en.com/information/index.html?id=${next.news_id}`
+					} else {
+						document.getElementById("gameMaintenanceBannerNewsLink").style.display = "none"
+					}
+				} else {
+					document.getElementById("gameMaintenanceBanner").style.display = "none"
+				}
+			}
+		}
+
 		if(localStorage.getItem("showCCAnnounce") === "false") {
 			document.getElementById("showCCAnnounceCb").checked = false
 		}
@@ -1759,6 +1832,9 @@
 
 		doUpdate()
 		setInterval(doUpdate, 20 * 1000)
+
+		checkGameMaintenance()
+		setInterval(checkGameMaintenance, 60 * 1000)
 
 		document.addEventListener("visibilitychange", async function() {
 			if(!lastLbUpdate) return
