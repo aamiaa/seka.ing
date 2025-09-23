@@ -9,7 +9,8 @@ export interface LeaderboardDTO {
 	chapter_rankings?: UserRankingDTO[][],
 	chapter_borders?: UserRankingDTO[][],
 	updated_at?: Date,
-	aggregate_until?: Date
+	aggregate_until?: Date,
+	update_error?: string
 }
 
 interface UserRankingDTO {

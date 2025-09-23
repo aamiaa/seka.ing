@@ -5,6 +5,7 @@ import ValidationMiddleware from "../middleware/validation";
 import ServerController from "../controllers/server";
 import ContactController from "../controllers/contact";
 import ApiRestriction from "../middleware/antibot/api_restriction";
+import GameController from "../controllers/game";
 
 const apiRouter = Router()
 
@@ -48,6 +49,8 @@ apiRouter.get("/version",
 	ValidationMiddleware.sendErrors,
 	ServerController.getServerVersion
 )
+
+apiRouter.get("/game/maintenance", GameController.getMaintenance)
 
 apiRouter.get("/contact",
 	ApiRestriction.protectApi({

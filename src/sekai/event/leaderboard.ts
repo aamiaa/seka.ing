@@ -4,7 +4,7 @@ import { EventProfileModel } from "../../models/event_profile"
 import { BorderSnapshot, RankingEntry, RankingSnapshot } from "../../interface/models/snapshot"
 import { SekaiEvent, SekaiEventType } from "../../interface/event"
 import CacheStore from "../../webserv/cache"
-import { EventRankingBorderPage, EventRankingPage, UserCardDefaultImage, UserCardSpecialTrainingStatus, UserRanking } from "sekai-api"
+import { EventRankingBorderPage, EventRankingPage, SekaiError, UserCardDefaultImage, UserCardSpecialTrainingStatus, UserRanking } from "sekai-api"
 import ApiClient from "../api"
 import { encryptEventSnowflake } from "../../util/cipher"
 import { sleep } from "../../util/sleep"
@@ -204,6 +204,10 @@ export default class LeaderboardTracker {
 				break
 			} catch(ex) {
 				console.error("[LeaderboardTracker] Update failed:", ex)
+
+				if(ex instanceof SekaiError && ex.statusCode === 503 && ex.errorMessage === "maintenance") {
+					CacheStore.get<LeaderboardDTO>("leaderboard").update_error = "maintenance"
+				}
 			}
 		}
 		if(!ranking || !border || (Date.now() - now.getTime()) >= 45 * 1000) {
