@@ -47,7 +47,7 @@ export default class SekaiMasterDB {
 	private static async refreshData() {
 		console.log("[SekaiMasterDB] Performing data refresh...")
 
-		const versionRes = await axios.get<SystemAppVersion>("https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/versions.json")
+		const versionRes = await axios.get<SystemAppVersion>("https://raw.githubusercontent.com/aamiaa/sekai-en-diff/refs/heads/main/api/currentVersion.json")
 		const liveDataVersion = ApiClient.clientInfo.dataVersion
 		if(!liveDataVersion) {
 			throw new Error("[SekaiMasterDB] Data version is null!")
@@ -86,7 +86,7 @@ export default class SekaiMasterDB {
 	private static async updateFromGitHub(folderPath: string) {
 		await ensureFolderExists(folderPath)
 		for(const module of this.requiredModules) {
-			const res = await axios.get(`https://github.com/Sekai-World/sekai-master-db-en-diff/raw/refs/heads/main/${module}.json`)
+			const res = await axios.get(`https://raw.githubusercontent.com/aamiaa/sekai-en-diff/refs/heads/main/modules/${module}.json`)
 			const fileName = path.join(folderPath, `${module}.json`)
 			await fs.promises.writeFile(fileName, JSON.stringify(res.data))
 		}

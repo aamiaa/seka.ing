@@ -64,7 +64,7 @@ async function main() {
 		installId: process.env.SEKAI_INSTALL_ID
 	})
 
-	const {data: events} = await axios.get<SekaiEvent[]>("https://raw.githubusercontent.com/Sekai-World/sekai-master-db-en-diff/refs/heads/main/events.json")
+	const {data: events} = await axios.get<SekaiEvent[]>("https://raw.githubusercontent.com/aamiaa/sekai-en-diff/refs/heads/main/modules/events.json")
 	const event = events.find(x => x.id === eventId)
 	event.startAt = new Date(event.startAt)
 
