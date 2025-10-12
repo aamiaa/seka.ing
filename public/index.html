@@ -95,15 +95,6 @@
 		.no-select {
 			user-select: none;
 		}
-
-		.twitter-tweet {
-			margin-top: 0!important;
-			margin-bottom: 0!important;
-		}
-
-		.twitter-tweet p {
-			margin: 0;
-		}
 	</style>
 </head>
 <body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
@@ -1238,20 +1229,8 @@
 		function updateLeaderboard(table, rankings, chapter) {
 			const isBordersView = document.getElementById("showBordersCb").checked
 			const tableBody = table.querySelector("tbody")
-			for(const tr of tableBody.querySelectorAll("tr")) {
-				if(tr.id !== "foo") {
-					tableBody.removeChild(tr)
-				}
-			}
-
-			const sleepy = rankings.find(x => x.hash === "b7fb52e040e63be336d8e3ed8f63ea7d")
-
-			if(document.getElementById("foo")) {
-				if(!sleepy) {
-					document.getElementById("foo").classList.add("d-none")
-				} else {
-					document.getElementById("foo").classList.remove("d-none")
-				}
+			while(tableBody.firstChild) {
+				tableBody.removeChild(tableBody.lastChild)
 			}
 
 			let scrollTo
@@ -1370,16 +1349,7 @@
 					tableRow.appendChild(avgCell)
 				}
 
-				if(slot.hash === "b7fb52e040e63be336d8e3ed8f63ea7d") {
-					tableRow.querySelectorAll("td").forEach(x => {
-						x.style.borderBottom = "none"
-					})
-				}
-				if(sleepy && slot.rank <= sleepy.rank) {
-					tableBody.insertBefore(tableRow, document.getElementById("foo"))
-				} else {
-					tableBody.appendChild(tableRow)
-				}
+				tableBody.appendChild(tableRow)
 
 				tableRow.addEventListener("click", function() {
 					if(isBordersView) {
@@ -1397,18 +1367,6 @@
 						this.classList.add("table-row-tracked")
 					}
 				})
-
-				if(slot.hash === "b7fb52e040e63be336d8e3ed8f63ea7d" && !document.getElementById("foo")) {
-					const foo = document.createElement("tr")
-					foo.id = "foo"
-					foo.innerHTML = `<td colspan="5" class="p-0"><blockquote class="twitter-tweet"><p lang="en" dir="ltr"><a href="https://twitter.com/eepy414/status/1976652910953201737?ref_src=twsrc%5Etfw"></a></blockquote></td>`
-					tableBody.appendChild(foo)
-
-					const bar = document.createElement("script")
-					bar.setAttribute("src", "https://platform.twitter.com/widgets.js")
-					bar.setAttribute("charset", "utf-8")
-					document.body.appendChild(bar)
-				}
 			}
 
 			if(scrollTo) {
@@ -1830,9 +1788,9 @@
 		})
 
 
-		// if(localStorage.getItem("showBorders") === "true") {
-		// 	document.getElementById("showBordersCb").checked = true
-		// }
+		if(localStorage.getItem("showBorders") === "true") {
+			document.getElementById("showBordersCb").checked = true
+		}
 		document.getElementById("showBordersCb").addEventListener("change", async function(event) {
 			localStorage.setItem("showBorders", this.checked.toString())
 			await doUpdate()
