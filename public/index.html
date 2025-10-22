@@ -1547,6 +1547,20 @@
 			const cutoffStats = await cutoffPromise
 			cutoffStats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
 
+			document.getElementById("copyHeatmapBtn").onclick = async function() {
+				const title = `T${cutoff} ${currentEvent.name}${chapter != null ? `, Chapter ${chapter}` : ""}`
+				const subtitle = `${deltaTimeline.length} total games`
+				const leaderCard = profile.cards[0]
+				const iconUrl = `/images/card/leader/${leaderCard.id}.png?level=${leaderCard.level}&mastery=${leaderCard.mastery}&trained=${leaderCard.trained}&image=${leaderCard.image}`
+
+				await copyHeatmap(title, subtitle, profile.name, iconUrl)
+
+				const span = this.querySelector("span")
+				const currentText = span.textContent
+				span.textContent = "Copied!"
+				setTimeout(() => span.textContent = currentText, 2000)
+			}
+
 			// Render points graph
 			const recentGamesByDelta = []
 			const cutoffByDelta = []
@@ -1797,15 +1811,64 @@
 			this.scrollIntoView({behavior: "instant", block: "center"})
 		})
 
-		document.getElementById("copyHeatmapBtn").addEventListener("click", async function(event) {
+		async function copyHeatmap(title, subtitle, playerName, iconUrl) {
 			const scale = 2
-			const heatmapContainer = document.getElementById("heatmapContainer") 
+			const paddingY = 5
+			const titleHeight = 50
+
+			const heatmapContainer = document.getElementById("heatmapContainer")
 			const svgElement = heatmapContainer.cloneNode(true)
 			svgElement.style.backgroundColor = "#212529"
 			svgElement.style.fontFamily = getComputedStyle(heatmapContainer).fontFamily
+			svgElement.setAttribute("viewBox", `${heatmapContainer.viewBox.baseVal.x} ${heatmapContainer.viewBox.baseVal.y - titleHeight - paddingY} ${heatmapContainer.viewBox.baseVal.width} ${heatmapContainer.viewBox.baseVal.height + titleHeight + paddingY*2}`)
+
+			const titleLb = document.createElementNS("http://www.w3.org/2000/svg", "text")
+			titleLb.setAttribute("x", (heatmapContainer.viewBox.baseVal.width/2).toString())
+			titleLb.setAttribute("y", "-25")
+			titleLb.setAttribute("text-anchor", "middle")
+			titleLb.setAttribute("font-size", "24px")
+			titleLb.setAttribute("fill", "#ffffff")
+			titleLb.textContent = title
+			svgElement.appendChild(titleLb)
+
+			const subtitleLb = document.createElementNS("http://www.w3.org/2000/svg", "text")
+			subtitleLb.setAttribute("x", (heatmapContainer.viewBox.baseVal.width/2).toString())
+			subtitleLb.setAttribute("y", "-8")
+			subtitleLb.setAttribute("text-anchor", "middle")
+			subtitleLb.setAttribute("font-size", "14px")
+			subtitleLb.setAttribute("fill", "rgba(255, 255, 255, 0.5)")
+			subtitleLb.textContent = subtitle
+			svgElement.appendChild(subtitleLb)
+
+			const playerNameLb = document.createElementNS("http://www.w3.org/2000/svg", "text")
+			playerNameLb.setAttribute("x", "35")
+			playerNameLb.setAttribute("y", "-20")
+			playerNameLb.setAttribute("font-size", "15px")
+			playerNameLb.setAttribute("fill", "#ffffff")
+			playerNameLb.textContent = playerName
+			svgElement.appendChild(playerNameLb)
+
+			// svg image href has to be set as base64 data string,
+			// as normal url doesn't work outside of document body for some reason 
+			const playerIconData = await fetch(iconUrl).then(res => res.blob())
+			.then(blob => new Promise((resolve, reject) => {
+				const reader = new FileReader()
+				reader.onloadend = () => resolve(reader.result)
+				reader.onerror = reject
+				reader.readAsDataURL(blob)
+			}))
+
+			const playerIcon = document.createElementNS("http://www.w3.org/2000/svg", "image")
+			playerIcon.setAttribute("x", "0")
+			playerIcon.setAttribute("y", "-40")
+			playerIcon.setAttribute("width", "30")
+			playerIcon.setAttribute("height", "30")
+			playerIcon.setAttribute("href", playerIconData)
+			svgElement.appendChild(playerIcon)
+
 			const bbox = heatmapContainer.getBBox()
 			svgElement.setAttribute("width", bbox.width * scale)
-			svgElement.setAttribute("height", bbox.height * scale)
+			svgElement.setAttribute("height", (bbox.height + titleHeight + paddingY*2) * scale)
 
 			const serializer = new XMLSerializer()
 			const svgString = serializer.serializeToString(svgElement)
@@ -1828,12 +1891,7 @@
 
 			const item = new ClipboardItem({"image/png": blob})
 			navigator.clipboard.write([item])
-
-			const span = this.querySelector("span")
-			const currentText = span.textContent
-			span.textContent = "Copied!"
-			setTimeout(() => span.textContent = currentText, 2000)
-		})
+		}
 
 		doUpdate()
 		setInterval(doUpdate, 20 * 1000)
