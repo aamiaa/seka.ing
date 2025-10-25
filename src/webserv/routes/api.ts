@@ -37,7 +37,10 @@ apiRouter.get("/event-stats/:hash",
 	EventController.getPlayerEventStats
 )
 apiRouter.get("/event-cutoff-stats/:cutoff",
-	param("cutoff").isInt({min: 1, max: 100}),
+	param("cutoff").isInt().custom(x => 
+		(x >= 1 && x <= 100) ||
+		[200, 300, 400, 500, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 10000, 20000, 30000, 40000, 50000, 100000, 200000, 300000].includes(parseInt(x))
+	),
 	query("chapter").optional().isInt({min: 1, max: 6}),
 	ValidationMiddleware.sendErrors,
 	EventController.getCutoffStats

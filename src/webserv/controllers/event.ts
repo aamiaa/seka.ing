@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import SekaiMasterDB from "../../providers/sekai-master-db";
 import { PipelineStage } from "mongoose";
 import { SekaiEventType } from "../../interface/event";
-import { RankingSnapshotModel } from "../../models/snapshot/model";
+import { BorderSnapshotModel, RankingSnapshotModel } from "../../models/snapshot/model";
 import { EventProfileModel } from "../../models/event_profile";
 import CacheStore from "../cache";
 import { decryptEventSnowflake } from "../../util/cipher";
@@ -260,8 +260,10 @@ export default class EventController {
 			return res.status(400).send({error: "Cannot specify chapter for non-worldlink events"})
 		}
 
+		const model = cutoff <= 100 ? RankingSnapshotModel : BorderSnapshotModel
+
 		if(!req.query.chapter) {
-			const timeline = await RankingSnapshotModel.getCutoffEventTimeline(currentEvent.id, cutoff)
+			const timeline = await model.getCutoffEventTimeline(currentEvent.id, cutoff)
 			return res.json({timeline})
 		} else {
 			const eventChapter = SekaiMasterDB.getWorldBloomChapter(currentEvent.id, chapter)
@@ -269,7 +271,7 @@ export default class EventController {
 				return res.status(400).json({error: "Specified chapter doesn't exist"})
 			}
 
-			const timeline = await RankingSnapshotModel.getCutoffWorldlinkChapterTimeline(currentEvent.id, cutoff, eventChapter)
+			const timeline = await model.getCutoffWorldlinkChapterTimeline(currentEvent.id, cutoff, eventChapter)
 			return res.json({timeline})
 		}
 	}

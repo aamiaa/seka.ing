@@ -24,6 +24,8 @@ export interface IBorderSnapshotModel extends BorderSnapshot, mongoose.Document 
 
 export interface IBorderSnapshotModelStatic extends mongoose.Model<IBorderSnapshotModel> {
 	// Static methods go here
+	getCutoffEventTimeline(eventId: number, cutoff: number): Promise<{timestamp: Date, score: number}[]>
+	getCutoffWorldlinkChapterTimeline(eventId: number, cutoff: number, chapter: SekaiWorldBloom): Promise<{timestamp: Date, score: number}[]>
 }
 
 export const UserCheerfulCarnivalSchema = new mongoose.Schema<UserRanking["userCheerfulCarnival"]>({
@@ -226,7 +228,86 @@ export const BorderSnapshotSchema = new mongoose.Schema<IBorderSnapshotModel, IB
 	source: {type: String},
 	createdAt: {type: Date, required: true}
 }, {
-	methods: BorderSnapshotMethods
+	methods: BorderSnapshotMethods,
+	statics: {
+		async getCutoffEventTimeline(eventId: number, cutoff: number) {
+			return await this.aggregate([
+				{
+					$match: {
+						eventId: eventId
+					}
+				},
+				{
+					$unwind: {
+						path: "$borderRankings"
+					}
+				},
+				{
+					$match: {
+						"borderRankings.rank": cutoff
+					}
+				},
+				{
+					$project: {
+						timestamp: "$createdAt",
+						score: "$borderRankings.score",
+						_id: 0
+					}
+				},
+				{
+					$sort: {
+						timestamp: 1
+					}
+				}
+			])
+		},
+
+		async getCutoffWorldlinkChapterTimeline(eventId: number, cutoff: number, chapter: SekaiWorldBloom) {
+			return await this.aggregate([
+				{
+					$match: {
+						eventId,
+						createdAt: {
+							$gte: chapter.chapterStartAt,
+							$lte: chapter.aggregateAt
+						}
+					}
+				},
+				{
+					$unwind: {
+						path: "$userWorldBloomChapterRankings"
+					}
+				},
+				{
+					$match: {
+						"userWorldBloomChapterRankings.gameCharacterId": chapter.gameCharacterId
+					}
+				},
+				{
+					$unwind: {
+						path: "$userWorldBloomChapterRankings.borderRankings"
+					}
+				},
+				{
+					$match: {
+						"userWorldBloomChapterRankings.borderRankings.rank": cutoff
+					}
+				},
+				{
+					$project: {
+						timestamp: "$createdAt",
+						_id: 0,
+						score: "$userWorldBloomChapterRankings.borderRankings.score"
+					}
+				},
+				{
+					$sort: {
+						timestamp: 1
+					}
+				}
+			])
+		}
+	}
 })
 
 export const RankingSnapshotModel = mongoose.model<IRankingSnapshotModel, IRankingSnapshotModelStatic>("snapshots", RankingSnapshotSchema)
