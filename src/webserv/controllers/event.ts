@@ -11,6 +11,14 @@ import { UserCardDefaultImage, UserCardSpecialTrainingStatus } from "sekai-api";
 import { getEventDTO } from "../../transformers/event";
 import { calculateEventBonus } from "../../sekai/helpers/event_bonus";
 
+function getEventFromIdStr(eventId: string) {
+	if(eventId === "now") {
+		return SekaiMasterDB.getCurrentEvent()
+	}
+
+	return SekaiMasterDB.getEvent(parseInt(eventId))
+}
+
 export default class EventController {
 	public static async getEvents(req: Request, res: Response, next: NextFunction) {
 		const withHonors = req.query.with_honors === "true"
@@ -250,28 +258,30 @@ export default class EventController {
 	}
 
 	public static async getCutoffStats(req: Request, res: Response, next: NextFunction) {
+		const eventIdStr = req.params.eventId as string || "now" // To be removed after users' cache expires
 		const cutoff = parseInt(req.params.cutoff as string)
 		const chapter = parseInt(req.query.chapter as string)
-		const currentEvent = SekaiMasterDB.getCurrentEvent()
-		if(!currentEvent) {
-			return res.status(400).json({error: "No event in progress"})
+
+		const event = getEventFromIdStr(eventIdStr)
+		if(!event) {
+			return res.status(400).json({error: "Specified event doesn't exist"})
 		}
-		if(req.query.chapter && currentEvent.eventType !== SekaiEventType.WORLD_BLOOM) {
+		if(req.query.chapter && event.eventType !== SekaiEventType.WORLD_BLOOM) {
 			return res.status(400).send({error: "Cannot specify chapter for non-worldlink events"})
 		}
 
 		const model = cutoff <= 100 ? RankingSnapshotModel : BorderSnapshotModel
 
 		if(!req.query.chapter) {
-			const timeline = await model.getCutoffEventTimeline(currentEvent.id, cutoff)
+			const timeline = await model.getCutoffEventTimeline(event.id, cutoff)
 			return res.json({timeline})
 		} else {
-			const eventChapter = SekaiMasterDB.getWorldBloomChapter(currentEvent.id, chapter)
+			const eventChapter = SekaiMasterDB.getWorldBloomChapter(event.id, chapter)
 			if(!eventChapter) {
 				return res.status(400).json({error: "Specified chapter doesn't exist"})
 			}
 
-			const timeline = await model.getCutoffWorldlinkChapterTimeline(currentEvent.id, cutoff, eventChapter)
+			const timeline = await model.getCutoffWorldlinkChapterTimeline(event.id, cutoff, eventChapter)
 			return res.json({timeline})
 		}
 	}

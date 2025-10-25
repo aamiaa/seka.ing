@@ -923,7 +923,7 @@
 		}
 
 		async function getCutoffStats(cutoff, chapter, abortSignal) {
-			const res = await fetch(`/api/event-cutoff-stats/${cutoff}${chapter != null ? `?chapter=${chapter}` : ""}`, {signal: abortSignal})
+			const res = await fetch(`/api/events/now/cutoff-stats/${cutoff}${chapter != null ? `?chapter=${chapter}` : ""}`, {signal: abortSignal})
 			if(!res.ok) {
 				throw new Error("getCutoffStats() failed: " + res.status)
 			}
