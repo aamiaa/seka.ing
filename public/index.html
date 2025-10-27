@@ -1725,7 +1725,7 @@
 			const colors = ["#321b37", "#3b2142", "#45284e", "#4e2e5a", "#563465", "#5e3b70", "#65417b", "#6c4786", "#724e92", "#78549e", "#7d5baa", "#7a65b5", "#7072bd", "#637fc1", "#558cc2", "#5095c2", "#599bc5", "#62a0c9", "#6ba6cc", "#74abd0", "#7eb0d3", "#8cb4d7", "#99b8d9", "#a4bcdb", "#afc0dd", "#b9c4de", "#c8c6e3", "#d7c8e5", "#e5cae4", "#f0cee0", "#fad3db"]
 			const days = []
 			const dt = new Date(startDate.getTime())
-			dt.setHours(dt.getHours() - tzOffset + dt.getTimezoneOffset()/60,0,0,0)
+			dt.setHours(dt.getHours() - tzOffset + new Date().getTimezoneOffset()/60,0,0,0)
 			dt.setHours(0)
 			for(;dt<=new Date(shiftTimestampByTimezone(endDate.getTime(), tzOffset));dt.setDate(dt.getDate()+1)) {
 				days.push(new Date(dt))
