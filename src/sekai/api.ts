@@ -7,5 +7,9 @@ const httpsAgent = HttpsProxyAgent({
 	auth: `${process.env.ProxyUsername}-13:${process.env.ProxyPassword}`,
 })
 
-const client = new SekaiApiClient({httpsAgent})
+const client = new SekaiApiClient({
+	httpsAgent,
+	deviceModel: process.env.SEKAI_DEVICE_MODEL,
+	deviceOS: process.env.SEKAI_DEVICE_OS
+})
 export default client
