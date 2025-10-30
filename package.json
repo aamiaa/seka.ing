@@ -11,7 +11,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
     "express-async-errors": "^3.1.1",
-    "express-validator": "^7.2.0",
+    "express-validator": "^7.3.0",
     "https-proxy-agent": "^5.0.1",
     "mongoose": "^8.9.5",
     "pythonia": "^1.2.2",
