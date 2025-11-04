@@ -54,6 +54,19 @@ async function main() {
 	const afterDate = new Date(await ask("Enter the starting date: "))
 	const beforeDate = new Date(await ask("Enter the ending date: "))
 
+	if(isNaN(eventId)) {
+		throw new Error("Invalid event id!")
+	}
+	if(isNaN(afterDate.getTime())) {
+		throw new Error("Invalid starting date!")
+	}
+	if(isNaN(beforeDate.getTime())) {
+		throw new Error("Invalid ending date!")
+	}
+	if(beforeDate.getTime() < afterDate.getTime()) {
+		throw new Error("Invalid date range!")
+	}
+
 	process.env.NODE_ENV = "production"
 	await Database.init()
 
@@ -66,6 +79,9 @@ async function main() {
 
 	const {data: events} = await axios.get<SekaiEvent[]>("https://raw.githubusercontent.com/aamiaa/sekai-en-diff/refs/heads/main/modules/events.json")
 	const event = events.find(x => x.id === eventId)
+	if(!event) {
+		throw new Error("Event not found!")
+	}
 	event.startAt = new Date(event.startAt)
 
 	console.log("Initiating data import for event", event.name)
@@ -214,5 +230,9 @@ async function main() {
 	await BorderSnapshotModel.insertMany(dedupedBordersnapshots)
 
 	console.log("Finished!")
+
+	fs.unlinkSync("snapshots.json")
+	fs.unlinkSync("borderSnapshots.json")
+	process.exit()
 }
 main()
