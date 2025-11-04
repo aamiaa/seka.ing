@@ -10,10 +10,14 @@ export default class MaintenanceTracker {
 	}
 
 	private static async updateMaintenance() {
-		const active = await this.getActiveMaintenance()
-		CacheStore.set("active_maintenance", active)
+		try {
+			const active = await this.getActiveMaintenance()
+			CacheStore.set("active_maintenance", active)
 
-		console.log("[MaintenanceTracker] Updated!")
+			console.log("[MaintenanceTracker] Updated!")
+		} catch(ex) {
+			console.error(`[MaintenanceTracker] Failed to update: ${ex.message}`)
+		}
 	}
 
 	private static async getActiveMaintenance() {
