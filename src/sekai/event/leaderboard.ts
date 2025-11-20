@@ -183,7 +183,7 @@ export default class LeaderboardTracker {
 		const nextEvent = SekaiMasterDB.getNextEvent()
 		if(!currentEvent) {
 			CacheStore.set("leaderboard", {
-				event: {},
+				event: null,
 				rankings: [],
 				updated_at: now
 			})
