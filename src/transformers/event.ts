@@ -1,6 +1,7 @@
 import { SekaiEvent, SekaiEventType } from "../interface/event";
 import SekaiMasterDB from "../providers/sekai-master-db";
 import { EventDTO } from "../webserv/dto/event";
+import { getTimezoneOffsetAtDate } from "../util/time";
 
 export function getEventDTO(event: SekaiEvent, options?: {withHonors?: boolean}): EventDTO {
 	const dto: EventDTO = {
@@ -10,7 +11,11 @@ export function getEventDTO(event: SekaiEvent, options?: {withHonors?: boolean})
 		type: event.eventType,
 		starts_at: event.startAt,
 		ends_at: event.aggregateAt,
-		titles_at: event.distributionStartAt
+		titles_at: event.distributionStartAt,
+		start_tz_offsets: {
+			et: getTimezoneOffsetAtDate("America/New_York", event.startAt),
+			pt: getTimezoneOffsetAtDate("America/Los_Angeles", event.startAt),
+		}
 	}
 
 	if(options?.withHonors) {

@@ -5,6 +5,7 @@ export interface EventDTO {
 	type: string,
 	starts_at?: Date,
 	ends_at?: Date,
+	start_tz_offsets?: Record<string, number>,
 	titles_at?: Date,
 	chapters?: {
 		title: string,
