@@ -659,11 +659,11 @@
 	<div class="mt-3">
 		<div class="form-check form-switch">
 			<input class="form-check-input" type="checkbox" role="switch" id="showBordersCb">
-			<label class="form-check-label" for="showBordersCb">Show Highlights</label>
+			<label class="form-check-label" for="showBordersCb" id="showBordersCbLabel">Show Highlights</label>
 		</div>
 		<div class="form-check form-switch">
 			<input class="form-check-input" type="checkbox" role="switch" id="compactModeCb">
-			<label class="form-check-label" for="compactModeCb">Compact Mode</label>
+			<label class="form-check-label" for="compactModeCb" id="compactModeCbLabel">Compact Mode</label>
 		</div>
 		<div class="form-check form-switch d-none">
 			<input class="form-check-input" type="checkbox" role="switch" id="showCCAnnounceCb" checked>
@@ -720,7 +720,7 @@
 									<span>Copy</span>
 								</button>
 							</div>
-							<div class="d-flex gap-2 justify-content-center mt-1">
+							<div id="heatmapTimezoneCbContainer" class="d-flex gap-2 justify-content-center mt-1">
 								<label class="form-check-label" for="heatmapTimezoneCb">ET (NeneRobo)</label>
 								<div class="form-check form-switch">
 									<input class="form-check-input" type="checkbox" role="switch" id="heatmapTimezoneCb">
@@ -740,10 +740,18 @@
 	</div>
 
 	<footer class="py-3">
-		<span>Contact: <a id="contactBtn" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#contactModal">Show</a></span>
+		<span id="contactLb">Contact: <a id="contactBtn" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#contactModal">Show</a></span>
 	</footer>
 
 	<script>
+		if(document.location.hostname.startsWith("jp.")) {
+			document.title = `プロセカイベントトラッカー　｜　Sekaing`
+			document.getElementById("showBordersCbLabel").textContent = `ハイライトを表示する`
+			document.getElementById("compactModeCbLabel").textContent = `コンパｋトモード`
+			document.getElementById("heatmapTimezoneCbContainer").classList.add("d-none")
+			document.getElementById("contactLb").classList.add("d-none")
+		}
+
 		document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(x => new bootstrap.Tooltip(x))
 	
 		function switchTab(idx) {
