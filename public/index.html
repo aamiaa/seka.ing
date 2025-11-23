@@ -689,6 +689,8 @@
 								<p id="eventProfileItemTalentLb" class="mb-0">Decoration Bonus:</p>
 								<p id="eventProfileCRTalentLb" class="mb-0">Character Rank Bonus:</p>
 								<p id="eventProfileTitleTalentLb" class="mb-0">Title Bonus:</p>
+								<p id="eventProfileGateTalentLb" class="mb-0" style="display: none;">MySekai Gate Bonus:</p>
+								<p id="eventProfileFurnitureTalentLb" class="mb-0" style="display: none;">MySekai Furniture Bonus:</p>
 							</details>
 						</div>
 						<p>Event Bonus: <span id="eventProfileBonusLb" class="fw-bold"></span></p>
@@ -1391,6 +1393,8 @@
 			document.getElementById("eventProfileItemTalentLb").textContent = "Decoration Bonus:"
 			document.getElementById("eventProfileCRTalentLb").textContent = "Character Rank Bonus:"
 			document.getElementById("eventProfileTitleTalentLb").textContent = "Title Bonus:"
+			document.getElementById("eventProfileGateTalentLb").textContent = "MySekai Gate Bonus:"
+			document.getElementById("eventProfileFurnitureTalentLb").textContent = "MySekai Furniture Bonus:"
 			document.getElementById("eventProfileBonusLb").textContent = ""
 			lastCharts.forEach(x => {
 				x.clear()
@@ -1444,6 +1448,13 @@
 			document.getElementById("eventProfileItemTalentLb").textContent = `Decoration Bonus: ${formatNumber(profile.talent.area_item_bonus)}`
 			document.getElementById("eventProfileCRTalentLb").textContent = `Character Rank Bonus: ${formatNumber(profile.talent.character_rank_bonus)}`
 			document.getElementById("eventProfileTitleTalentLb").textContent = `Title Bonus: ${formatNumber(profile.talent.honor_bonus)}`
+			if(profile.talent.mysekai_gate_bonus != null && profile.talent.mysekai_furniture_bonus != null) {
+				document.getElementById("eventProfileGateTalentLb").style.display = ""
+				document.getElementById("eventProfileFurnitureTalentLb").style.display = ""
+
+				document.getElementById("eventProfileGateTalentLb").textContent = `MySekai Gate Bonus: ${formatNumber(profile.talent.mysekai_gate_bonus)}`
+				document.getElementById("eventProfileFurnitureTalentLb").textContent = `MySekai Furniture Bonus: ${formatNumber(profile.talent.mysekai_furniture_bonus)}`
+			}
 
 			// Render event bonus
 			document.getElementById("eventProfileBonusLb").textContent = profile.event_bonus != null ? `${profile.event_bonus}%` : "¯\\_(ツ)_/¯"

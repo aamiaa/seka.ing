@@ -215,6 +215,8 @@ export default class EventController {
 				area_item_bonus: profile.totalPower.areaItemBonus,
 				character_rank_bonus: profile.totalPower.characterRankBonus,
 				honor_bonus: profile.totalPower.honorBonus,
+				mysekai_gate_bonus: profile.totalPower.mysekaiGateLevelBonus,
+				mysekai_furniture_bonus: profile.totalPower.mysekaiFixtureGameCharacterPerformanceBonus,
 				total_talent: profile.totalPower.totalPower
 			},
 			event_bonus: event.eventType !== SekaiEventType.WORLD_BLOOM ? calculateEventBonus(eventId, cards) : undefined

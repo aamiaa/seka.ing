@@ -80,7 +80,9 @@ export const EventProfileSchema = new mongoose.Schema<IEventProfileModel, IEvent
 		basicCardTotalPower: {type: Number, required: true},
 		areaItemBonus: {type: Number, required: true},
 		characterRankBonus: {type: Number, required: true},
+		mysekaiGateLevelBonus: {type: Number},
 		honorBonus: {type: Number, required: true},
+		mysekaiFixtureGameCharacterPerformanceBonus: {type: Number}
 	},
 	wasTop100: {type: Boolean, required: true, default: false},
 	fullProfileFetched: {type: Boolean, required: true, default: false},
