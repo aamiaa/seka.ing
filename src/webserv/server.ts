@@ -13,7 +13,7 @@ class ExpressServer {
 	}
 
 	public init() {
-		this.server = this.express.listen(6979, "127.0.0.1", () => console.log("[Express] Webserv started!"));
+		this.server = this.express.listen(parseInt(process.env.WEBSERV_PORT), "127.0.0.1", () => console.log("[Express] Webserv started!"));
 
 		this.express.disable("x-powered-by")
 		this.express.set("trust proxy", "loopback")

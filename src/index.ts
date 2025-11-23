@@ -32,7 +32,8 @@ async function main() {
 
 	LeaderboardTracker.init()
 	CheerfulCarnivalTracker.init()
-	MaintenanceTracker.init()
+	if(process.env.SEKAI_SERVER === "en")
+		MaintenanceTracker.init()
 	ExpressServer.init()
 }
 main()
