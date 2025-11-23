@@ -8,6 +8,7 @@ const httpsAgent = HttpsProxyAgent({
 })
 
 const client = new SekaiApiClient({
+	server: process.env.SEKAI_SERVER as "en" | "jp",
 	httpsAgent,
 	deviceModel: process.env.SEKAI_DEVICE_MODEL,
 	deviceOS: process.env.SEKAI_DEVICE_OS
