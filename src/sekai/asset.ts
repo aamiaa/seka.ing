@@ -55,7 +55,7 @@ export async function ensureEventAssetsExist() {
 				await downloadImageAssets({
 					assetPath: `home/banner/${abName}`,
 					nameDestMap: {
-						[event.assetbundleName]: filePath
+						[abName]: filePath
 					}
 				})
 			} catch(ex) {
@@ -127,7 +127,8 @@ export async function ensureEventAssetsExist() {
 			for(const assetbundleName of rankAssets) {
 				const folderPath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", assetbundleName)
 				try {
-					await fs.promises.stat(folderPath)
+					await fs.promises.stat(path.join(folderPath, "rank_main"))
+					await fs.promises.stat(path.join(folderPath, "rank_sub"))
 				} catch(ex) {
 					console.log("[SekaiAsset] Downloading missing event title rank:", assetbundleName)
 					await fs.promises.mkdir(path.join(folderPath, "rank_main"), {recursive: true})
