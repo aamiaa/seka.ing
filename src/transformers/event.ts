@@ -15,6 +15,7 @@ export function getEventDTO(event: SekaiEvent, options?: {withHonors?: boolean})
 		start_tz_offsets: {
 			et: getTimezoneOffsetAtDate("America/New_York", event.startAt),
 			pt: getTimezoneOffsetAtDate("America/Los_Angeles", event.startAt),
+			jst: getTimezoneOffsetAtDate("Asia/Tokyo", event.startAt),
 		}
 	}
 
