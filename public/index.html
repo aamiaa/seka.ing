@@ -680,7 +680,7 @@
 				</div>
 				<div class="modal-body d-flex flex-column gap-3">
 					<div>
-						<h4>Current Team</h4>
+						<h4 id="eventProfileDeckLb">Current Team</h4>
 						<div id="eventProfileDeck" class="d-flex gap-2 no-select mb-3"></div>
 						<div>
 							<details id="eventProfileTalentDetails">
@@ -1412,6 +1412,12 @@
 
 			if(localStorage.getItem("heatmapTimezone") === "true") {
 				document.getElementById("heatmapTimezoneCb").checked = true
+			}
+
+			if(Date.now() > new Date(currentEvent.ends_at).getTime()) {
+				document.getElementById("eventProfileDeckLb").textContent = "Event Team"
+			} else {
+				document.getElementById("eventProfileDeckLb").textContent = "Current Team"
 			}
 
 			const profile = await getUserEventProfile(hash, profileModalAbort.signal)
