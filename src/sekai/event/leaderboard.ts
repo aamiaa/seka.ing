@@ -205,9 +205,8 @@ export default class LeaderboardTracker {
 			} catch(ex) {
 				console.error("[LeaderboardTracker] Update failed:", ex)
 
-				// The error message might possibly be "maintenance " with a trailing space (TODO: verify)
-				// It might also be a regular Error in case of 426 fallback getting a 503
-				if(ex instanceof SekaiError && ex.statusCode === 503 && ex.errorMessage.includes("maintenance")) {
+				const system = await ApiClient.getSystemInfo()
+				if(system.maintenanceStatus === "maintenance_in") {
 					CacheStore.get<LeaderboardDTO>("leaderboard").update_error = "maintenance"
 				}
 			}

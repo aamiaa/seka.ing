@@ -17,6 +17,20 @@ export function dateFromPTString(timeStr: string) {
 	return new Date(m.unix() * 1000)
 }
 
+export function dateFromJSTString(timeStr: string) {
+	const [_, month, day, hour, minute] = timeStr.match(/(\d+)月(\d+)日(\d+)時(\d+)分/)
+
+	const year = new Date().getFullYear()
+	const monthP = month.padStart(2, "0")
+	const dayP = day.padStart(2, "0")
+	const hourP = hour.padStart(2, "0")
+	const minuteP = minute.padStart(2, "0")
+
+	const formatted = `${year}-${monthP}-${dayP} ${hourP}:${minuteP}:00`
+	const m = moment.tz(formatted, "Asia/Tokyo")
+	return new Date(m.unix() * 1000)
+}
+
 export function getTimezoneOffsetAtDate(timezone: string, date: Date) {
 	return moment.tz.zone(timezone).utcOffset(Math.floor(date.getTime()/1000))
 }

@@ -1044,9 +1044,6 @@
 				}
 				return
 			}
-			if(!data.event) { // Backend restarting
-				return
-			}
 			lastUpdatedAt = data.updated_at && new Date(data.updated_at)
 			
 			toggleFailureMessage(false)
@@ -1072,6 +1069,10 @@
 				toggleIssuesBanner(true, "We're experiencing issues. The leaderboard might not be up to date!")
 			} else {
 				toggleIssuesBanner(false)
+			}
+
+			if(!data.event) { // Backend restarting
+				return
 			}
 			
 			const eventData = currentEvent = data.event
