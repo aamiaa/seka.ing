@@ -208,6 +208,8 @@ export default class LeaderboardTracker {
 				const system = await ApiClient.getSystemInfo()
 				if(system.maintenanceStatus === "maintenance_in") {
 					CacheStore.get<LeaderboardDTO>("leaderboard").update_error = "maintenance"
+				} else {
+					delete CacheStore.get<LeaderboardDTO>("leaderboard").update_error
 				}
 			}
 		}
