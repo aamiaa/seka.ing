@@ -396,6 +396,9 @@ export default class LeaderboardTracker {
 							userDeck: profile.userDeck,
 							userCards: profile.userCards,
 							userCharacters: profile.userCharacters,
+							userMusicDifficultyClearCount: profile.userMusicDifficultyClearCount,
+							userMultiLiveTopScoreCount: profile.userMultiLiveTopScoreCount,
+							playerRank: profile.user.rank,
 							totalPower: profile.totalPower,
 							fullProfileFetched: true,
 							fullProfileFetchedAt: now

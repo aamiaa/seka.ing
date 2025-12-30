@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import PlayerEventProfile from "../interface/models/event_profile";
-import { UserCardDefaultImage, UserCardSpecialTrainingStatus } from "sekai-api";
+import { MusicDifficulty, UserCardDefaultImage, UserCardSpecialTrainingStatus } from "sekai-api";
 
 export interface IEventProfileModel extends PlayerEventProfile, mongoose.Document {
 	// Methods and fields which need the model type go here
@@ -75,6 +75,21 @@ export const EventProfileSchema = new mongoose.Schema<IEventProfileModel, IEvent
 		}],
 		default: undefined
 	},
+	userMusicDifficultyClearCount: {
+		type: [{
+			_id: false,
+			musicDifficultyType: {type: String, required: true, enum: MusicDifficulty},
+			liveClear: {type: Number, required: true},
+			fullCombo: {type: Number, required: true},
+			allPerfect: {type: Number, required: true},
+		}],
+		default: undefined
+	},
+	userMultiLiveTopScoreCount: {
+		mvp: {type: Number, required: true},
+		superStar: {type: Number, required: true}
+	},
+	playerRank: {type: Number},
 	totalPower: {
 		totalPower: {type: Number, required: true},
 		basicCardTotalPower: {type: Number, required: true},
