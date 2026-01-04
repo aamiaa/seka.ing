@@ -13,7 +13,7 @@ export interface LeaderboardDTO {
 	update_error?: string
 }
 
-interface UserRankingDTO {
+export interface UserRankingDTO {
 	name: string,
 	score: number,
 	rank: number,
