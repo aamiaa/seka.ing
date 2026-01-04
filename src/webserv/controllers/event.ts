@@ -75,7 +75,7 @@ export default class EventController {
 					borderSnapshot?.userWorldBloomChapterRankingBorders?.flatMap(x => 
 						x.borderRankings.map(y => y.userId)
 					)
-				)
+				).filter(x => x != null)
 			const profiles = await EventProfileModel.find({eventId: event.id, userId: {$in: userIds}}).lean()
 
 			return res.json(getLeaderboardDTO(event, profiles, snapshot, borderSnapshot))
