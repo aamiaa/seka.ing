@@ -19,6 +19,13 @@ apiRouter.get("/leaderboard",
 	ValidationMiddleware.sendErrors,
 	EventController.getLeaderboard
 )
+apiRouter.get("/events/:eventId/leaderboard",
+	param("eventId").custom(x => x === "now" || /^\d+$/.test(x)),
+	query("timestamp").optional().isDate(),
+	query("nocache").optional().isBoolean(),
+	ValidationMiddleware.sendErrors,
+	EventController.getEventLeaderboard
+)
 apiRouter.get("/cc-announcements", EventController.getAnnouncements)
 apiRouter.get("/wl-graph",
 	query("all").optional().isBoolean(),

@@ -10,6 +10,7 @@ import { EventProfileDTO } from "../dto/event_profile";
 import { UserCardDefaultImage, UserCardSpecialTrainingStatus } from "sekai-api";
 import { getEventDTO } from "../../transformers/event";
 import { calculateEventBonus } from "../../sekai/helpers/event_bonus";
+import { getLeaderboardDTO } from "../../transformers/leaderboard";
 
 function getEventFromIdStr(eventId: string) {
 	if(eventId === "now") {
@@ -32,6 +33,56 @@ export default class EventController {
 			res.set("Cache-Control", "no-store")
 		}
 		return res.json(CacheStore.get("leaderboard"))
+	}
+
+	public static async getEventLeaderboard(req: Request, res: Response, next: NextFunction) {
+		const eventIdStr = req.params.eventId as string
+		const timestamp = req.query.timestamp as string
+
+		const event = getEventFromIdStr(eventIdStr)
+		if(!event) {
+			return res.status(400).json({error: "Specified event doesn't exist"})
+		}
+
+		// For current event, return the cache unless timestamp is provided
+		const currentEvent = SekaiMasterDB.getCurrentEvent()
+		if(!timestamp && event.id === currentEvent?.id) {
+			if(req.query.nocache) {
+				res.set("Cache-Control", "no-store")
+			}
+			return res.json(CacheStore.get("leaderboard"))
+		}
+
+		// For a past event without timestamp, return the final snapshot
+		if(!timestamp) {
+			const snapshot = await RankingSnapshotModel.findOne({eventId: event.id, final: true})
+			const borderSnapshot = await BorderSnapshotModel.findOne({eventId: event.id, final: true})
+			if(!snapshot) {
+				return res.status(400).json({error: "Specified event was not recorded"})
+			}
+
+			const userIds =
+				snapshot.rankings.map(x => x.userId)
+				.concat(
+					borderSnapshot?.borderRankings?.map(x => x.userId)
+				)
+				.concat(
+					snapshot.userWorldBloomChapterRankings.flatMap(x => 
+						x.rankings.map(y => y.userId)
+					)
+				)
+				.concat(
+					borderSnapshot?.userWorldBloomChapterRankingBorders?.flatMap(x => 
+						x.borderRankings.map(y => y.userId)
+					)
+				)
+			const profiles = await EventProfileModel.find({eventId: event.id, userId: {$in: userIds}}).lean()
+
+			return res.json(getLeaderboardDTO(event, profiles, snapshot, borderSnapshot))
+		}
+
+		// For current and past events with timestamp
+		// TODO
 	}
 
 	public static async getAnnouncements(req: Request, res: Response, next: NextFunction) {
