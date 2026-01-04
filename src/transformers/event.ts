@@ -1,6 +1,6 @@
-import { SekaiEvent, SekaiEventType } from "../interface/event";
+import { SekaiEvent, SekaiEventType, SekaiWorldBloom } from "../interface/event";
 import SekaiMasterDB from "../providers/sekai-master-db";
-import { EventDTO } from "../webserv/dto/event";
+import { EventDTO, WorldlinkChapterDTO } from "../webserv/dto/event";
 import { getTimezoneOffsetAtDate } from "../util/time";
 
 export function getEventDTO(event: SekaiEvent, options?: {withHonors?: boolean}): EventDTO {
@@ -16,6 +16,18 @@ export function getEventDTO(event: SekaiEvent, options?: {withHonors?: boolean})
 			et: getTimezoneOffsetAtDate("America/New_York", event.startAt),
 			pt: getTimezoneOffsetAtDate("America/Los_Angeles", event.startAt),
 			jst: getTimezoneOffsetAtDate("Asia/Tokyo", event.startAt),
+		}
+	}
+
+	if(event.eventType === SekaiEventType.WORLD_BLOOM) {
+		const chapters = SekaiMasterDB.getWorldBloomChapters(event.id)
+		dto.chapters = chapters.map(getWorldlinkChapterDTO)
+
+		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
+		if(currentChapter) {
+			dto.chapter_num = currentChapter.chapterNo
+			dto.chapter_character = currentChapter.gameCharacterId
+			dto.ends_at = currentChapter.aggregateAt
 		}
 	}
 
@@ -39,6 +51,19 @@ export function getEventDTO(event: SekaiEvent, options?: {withHonors?: boolean})
 		}
 
 		dto.honors = honors
+	}
+
+	return dto
+}
+
+export function getWorldlinkChapterDTO(chapter: SekaiWorldBloom): WorldlinkChapterDTO {
+	const dto: WorldlinkChapterDTO = {
+		title: SekaiMasterDB.getGameCharacter(chapter.gameCharacterId).givenName,
+		num: chapter.chapterNo,
+		character_id: chapter.gameCharacterId,
+		color: SekaiMasterDB.getCharacterColor(chapter.gameCharacterId),
+		starts_at: new Date(chapter.chapterStartAt),
+		ends_at: new Date(chapter.aggregateAt)
 	}
 
 	return dto
