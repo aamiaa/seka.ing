@@ -6,10 +6,21 @@ import { encryptEventSnowflake } from "../util/cipher";
 import { LeaderboardDTO, UserRankingDTO } from "../webserv/dto/leaderboard";
 import { getEventDTO } from "./event";
 
-export function getLeaderboardDTO(event: SekaiEvent, profiles: PlayerEventProfile[], snapshot: RankingSnapshot, borderSnapshot?: BorderSnapshot): LeaderboardDTO {
+export function getLeaderboardDTO({event, profiles, snapshot, borderSnapshot, pastRankings, pastBorders}: {
+	event: SekaiEvent,
+	profiles: PlayerEventProfile[],
+	snapshot: RankingSnapshot,
+	borderSnapshot?: BorderSnapshot,
+	pastRankings?: RankingEntry[][],
+	pastBorders?: RankingEntry[][]
+}): LeaderboardDTO {
 	const dto: LeaderboardDTO = {
 		event: getEventDTO(event),
-		rankings: snapshot.rankings.map(x => getUserRankingDTO(event.id, x, profiles.find(y => y.userId === x.userId))),
+		rankings: snapshot.rankings.map(entry => {
+			const profile = profiles.find(y => y.userId === entry.userId)
+			const pastRankingsForUser = pastRankings?.map(ranking => ranking.find(lEntry => lEntry.userId === entry.userId)).filter(x => x != null)
+			return getUserRankingDTOWithDifference(event.id, entry, pastRankingsForUser, profile)
+		}),
 		borders: borderSnapshot?.borderRankings?.map(x => getUserRankingDTO(event.id, x, profiles.find(y => y.userId === x.userId), false)),
 		updated_at: snapshot.createdAt
 	}
@@ -52,4 +63,19 @@ export function getUserRankingDTO(eventId: number, entry: RankingEntry, profile?
 	}
 
 	return dto
+}
+
+export function getUserRankingDTOWithDifference(eventId: number, entry: RankingEntry, pastRankings: RankingEntry[], profile?: PlayerEventProfile): UserRankingDTO {
+	const base = getUserRankingDTO(eventId, entry, profile)
+
+	const earliest = pastRankings[0].score
+	const differentValues = new Set<number>(pastRankings.map(x => x.score))
+	const count = differentValues.size - 1
+	const average = (entry.score - earliest)/count
+
+	return {
+		...base,
+		delta: entry.score - earliest,
+		average
+	}
 }
