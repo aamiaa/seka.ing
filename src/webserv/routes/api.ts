@@ -21,7 +21,7 @@ apiRouter.get("/leaderboard",
 )
 apiRouter.get("/events/:eventId/leaderboard",
 	param("eventId").custom(x => x === "now" || /^\d+$/.test(x)),
-	query("timestamp").optional().isDate(),
+	query("timestamp").optional().isISO8601(),
 	query("nocache").optional().isBoolean(),
 	ValidationMiddleware.sendErrors,
 	EventController.getEventLeaderboard
