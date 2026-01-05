@@ -6,14 +6,16 @@ import { encryptEventSnowflake } from "../util/cipher";
 import { LeaderboardDTO, UserRankingDTO } from "../webserv/dto/leaderboard";
 import { getEventDTO } from "./event";
 
-export function getLeaderboardDTO({event, profiles, snapshot, borderSnapshot, pastRankings, pastBorders}: {
+export function getLeaderboardDTO({event, profiles, snapshot, borderSnapshot, pastSnapshots, pastBorderSnapshots}: {
 	event: SekaiEvent,
 	profiles: PlayerEventProfile[],
 	snapshot: RankingSnapshot,
 	borderSnapshot?: BorderSnapshot,
-	pastRankings?: RankingEntry[][],
-	pastBorders?: RankingEntry[][]
+	pastSnapshots?: RankingSnapshot[],
+	pastBorderSnapshots?: BorderSnapshot[]
 }): LeaderboardDTO {
+	const pastRankings = pastSnapshots?.map(x => x.rankings)
+
 	const dto: LeaderboardDTO = {
 		event: getEventDTO(event),
 		rankings: snapshot.rankings.map(entry => {
@@ -27,7 +29,17 @@ export function getLeaderboardDTO({event, profiles, snapshot, borderSnapshot, pa
 
 	if(event.eventType === SekaiEventType.WORLD_BLOOM) {
 		dto.chapter_rankings = snapshot.userWorldBloomChapterRankings.map(chapter => {
-			return chapter.rankings.map(x => getUserRankingDTO(event.id, x, profiles.find(y => y.userId === x.userId)))
+			const pastChapterRankings = pastSnapshots?.map(snapshot =>
+				snapshot.userWorldBloomChapterRankings.find(lChapter =>
+					lChapter.gameCharacterId === chapter.gameCharacterId
+				)?.rankings
+			)?.filter(x => x != null)
+
+			return chapter.rankings.map(entry => {
+				const profile = profiles.find(y => y.userId === entry.userId)
+				const pastRankingsForUser = pastChapterRankings?.map(ranking => ranking.find(lEntry => lEntry.userId === entry.userId)).filter(x => x != null)
+				return getUserRankingDTOWithDifference(event.id, entry, pastRankingsForUser, profile)
+			})
 		})
 		dto.chapter_borders = borderSnapshot?.userWorldBloomChapterRankingBorders?.map(chapter => {
 			return chapter.borderRankings.map(x => getUserRankingDTO(event.id, x, profiles.find(y => y.userId === x.userId), false))

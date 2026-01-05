@@ -116,8 +116,8 @@ export default class EventController {
 			profiles,
 			snapshot,
 			borderSnapshot,
-			pastRankings: rankingsPastHour.map(x => x.rankings),
-			pastBorders: bordersPastHour.map(x => x.borderRankings)
+			pastSnapshots: rankingsPastHour,
+			pastBorderSnapshots: bordersPastHour
 		}))
 	}
 
