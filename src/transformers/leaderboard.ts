@@ -76,13 +76,7 @@ export function getUserRankingDTO(eventId: number, entry: RankingEntry, profile?
 			mastery: profile.userCard.masterRank,
 			trained: profile.userCard.specialTrainingStatus === UserCardSpecialTrainingStatus.DONE,
 			image: profile.userCard.defaultImage === UserCardDefaultImage.SPECIAL_TRAINING ? 1 : 0
-		} : {
-			id: 1,
-			level: 0,
-			mastery: 0,
-			trained: false,
-			image: 0
-		}
+		} : null
 	}
 
 	if(withHash) {

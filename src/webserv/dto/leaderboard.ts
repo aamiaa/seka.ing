@@ -15,10 +15,10 @@ export interface LeaderboardDTO {
 
 export interface UserRankingDTO {
 	name: string,
-	team?: number,
 	score: number,
 	rank: number,
-	card: CardDTO,
+	team?: number,
+	card?: CardDTO,
 	hash?: string,
 	delta?: number,
 	rank_delta?: number,
