@@ -29,6 +29,7 @@ export function getLeaderboardDTO(event: SekaiEvent, profiles: PlayerEventProfil
 export function getUserRankingDTO(eventId: number, entry: RankingEntry, profile?: PlayerEventProfile, withHash = true): UserRankingDTO {
 	const dto: UserRankingDTO = {
 		name: entry.name,
+		team: entry.userCheerfulCarnival?.cheerfulCarnivalTeamId,
 		score: entry.score,
 		rank: entry.rank,
 		card: profile ? {

@@ -4,7 +4,12 @@ export interface RankingEntry {
 	userId: string,
 	score: number,
 	rank: number,
-	name?: string
+	name?: string,
+	userCheerfulCarnival?: {
+		cheerfulCarnivalTeamId: number,
+		teamChangeCount: number,
+		registerAt: Date
+	}
 }
 
 export interface RankingSnapshot {
