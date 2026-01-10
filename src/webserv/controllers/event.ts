@@ -374,4 +374,17 @@ export default class EventController {
 			return res.json({timeline})
 		}
 	}
+
+	public static async getSnapshotsList(req: Request, res: Response, next: NextFunction) {
+		const eventIdStr = req.params.eventId as string
+		const event = getEventFromIdStr(eventIdStr)
+		if(!event) {
+			return res.status(404).json({error: "Specified event doesn't exist"})
+		}
+
+		const snapshots = await RankingSnapshotModel.find({eventId: event.id}, {_id: 0, timestamp: "$createdAt"}, {sort: {createdAt: 1}})
+		return res.json({
+			timeline: snapshots
+		})
+	}
 }

@@ -53,6 +53,11 @@ apiRouter.get("/events/:eventId/cutoff-stats/:cutoff",
 	ValidationMiddleware.sendErrors,
 	EventController.getCutoffStats
 )
+apiRouter.get("/events/:eventId/snapshots",
+	param("eventId").custom(x => x === "now" || /^\d+$/.test(x)),
+	ValidationMiddleware.sendErrors,
+	EventController.getSnapshotsList
+)
 // To be removed after users' cache expires
 apiRouter.get("/event-cutoff-stats/:cutoff",
 	param("cutoff").isInt().custom(x => 
