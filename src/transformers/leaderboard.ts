@@ -90,7 +90,7 @@ export function getUserRankingDTOWithDifference(eventId: number, entry: RankingE
 	const base = getUserRankingDTO(eventId, entry, profile)
 
 	const earliest = pastRankings?.[0]?.score ?? entry.score
-	const differentValues = new Set<number>(pastRankings.map(x => x.score))
+	const differentValues = new Set<number>(pastRankings?.map(x => x.score))
 	const count = differentValues.size - 1
 	const average = (entry.score - earliest)/count
 
