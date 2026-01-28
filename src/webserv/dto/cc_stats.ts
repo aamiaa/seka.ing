@@ -8,5 +8,5 @@ export interface CheerfulCarnivalStatsDTO {
 			seq: number
 		}
 	}[],
-	updated_at: Date
+	updated_at?: Date
 }
