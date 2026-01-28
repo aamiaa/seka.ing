@@ -1022,24 +1022,6 @@
 				return
 			}
 
-			// Check for game maintenances
-			if(!lastMaintCheck || (Date.now() - lastMaintCheck.getTime() >= 10 * 60 * 1000)) {
-				lastMaintRes = await getGameMaintenance()
-				lastMaintCheck = new Date()
-			}
-
-			if(document.getElementById("gameMaintenanceBanner") != null) { // If banner wasn't dismissed
-				const next = lastMaintRes.planned_maintenances.find(x => {
-					const startsAt = new Date(x.starts_at).getTime()
-					return startsAt > Date.now() && (startsAt - Date.now() < 4 * 3600 * 1000)
-				})
-				if(next) {
-					toggleMaintenanceBanner(true, next)
-				} else {
-					toggleMaintenanceBanner(false)
-				}
-			}
-
 			const {data, errorType} = await getLeaderboard(!timerStarted)
 			if(!data) {
 				if(errorType === "challenge") {
@@ -1065,6 +1047,24 @@
 				return
 			}
 			lastUpdatedAt = data.updated_at && new Date(data.updated_at)
+
+			// Check for game maintenances
+			if(!lastMaintCheck || (Date.now() - lastMaintCheck.getTime() >= 10 * 60 * 1000)) {
+				lastMaintRes = await getGameMaintenance()
+				lastMaintCheck = new Date()
+			}
+
+			if(document.getElementById("gameMaintenanceBanner") != null) { // If banner wasn't dismissed
+				const next = lastMaintRes.planned_maintenances.find(x => {
+					const startsAt = new Date(x.starts_at).getTime()
+					return startsAt > Date.now() && (startsAt - Date.now() < 4 * 3600 * 1000)
+				})
+				if(next) {
+					toggleMaintenanceBanner(true, next)
+				} else {
+					toggleMaintenanceBanner(false)
+				}
+			}
 			
 			toggleFailureMessage(false)
 			if(data.aggregate_until) {
