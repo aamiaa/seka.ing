@@ -882,7 +882,7 @@
 
 		async function getLeaderboard(noCache) {
 			try {
-				const res = await fetch("/api/leaderboard" + (noCache ? "?nocache=true" : ""))
+				const res = await fetch("/api/events/now/leaderboard" + (noCache ? "?nocache=true" : ""))
 				if(!res.ok) {
 					console.error("getLeaderboard() failed (1):", res.status)
 
