@@ -913,7 +913,9 @@
 			if(!snapshotsTimeline) {
 				snapshotsTimeline = (await getSnapshots()).timeline.map(x => new Date(x.timestamp))
 				offsetToReduceIntSize = snapshotsTimeline[0].getTime()
-				currentTimeTravelTimestamp = snapshotsTimeline.at(-1).getTime()
+				if(!currentTimeTravelTimestamp) {
+					currentTimeTravelTimestamp = snapshotsTimeline.at(-1).getTime()
+				}
 
 				const timeTravelRange = document.getElementById("timeTravelRange")
 
@@ -1029,7 +1031,7 @@
 					tbl.style.setProperty("--bs-table-hover-bg", hoverColor)
 
 					const chapterStart = new Date(chapter.starts_at)
-					if(chapterStart.getTime() > Date.now()) {
+					if(chapterStart.getTime() > currentTimeTravelTimestamp) {
 						tbl.style.display = "none"
 						document.getElementById(`eventTableChapter${chapter.num}Countdown`).style.display = ""
 						document.getElementById(`eventTableChapter${chapter.num}CountdownLabel`).innerText = chapterStart.toLocaleString()
@@ -1582,7 +1584,7 @@
 				document.getElementById("heatmapContainer").appendChild(text)
 			}
 
-			const effectiveDays = days.filter(x => x.getTime() <= shiftTimestampByTimezone(Date.now(), tzOffset))
+			const effectiveDays = days.filter(x => x.getTime() <= shiftTimestampByTimezone(currentTimeTravelTimestamp, tzOffset))
 			document.getElementById("heatmapContainer").setAttribute("viewBox", `${XOffsetStart} 0 ${BoxWidthHeight * 24 + XOffsetEnd} ${BoxWidthHeight * effectiveDays.length + BoxStrokeSize + HourLabelHeight + HourLabelPadding}`)
 
 			for(const [dayIdx, day] of days.entries()) {
@@ -1590,7 +1592,7 @@
 					const dateAt = new Date(day.getTime() + i * 3600 * 1000)
 					const dateIn1h = new Date(day.getTime() + (i + 1) * 3600 * 1000)
 
-					if(dateAt.getTime() > shiftTimestampByTimezone(Date.now(), tzOffset)) {
+					if(dateAt.getTime() > shiftTimestampByTimezone(currentTimeTravelTimestamp, tzOffset)) {
 						continue
 					}
 
@@ -1607,7 +1609,7 @@
 					text.setAttribute("y", (dayIdx * BoxWidthHeight + HourLabelHeight + HourLabelPadding + BoxWidthHeight/2).toString())
 					text.setAttribute("text-anchor", "middle")
 					text.setAttribute("dominant-baseline", "central")
-					if(dateAt.getTime() >= shiftTimestampByTimezone(startDate.getTime(), tzOffset) && dateAt.getTime() < shiftTimestampByTimezone(endDate.getTime(), tzOffset) && dateAt.getTime() <= shiftTimestampByTimezone(Date.now(), tzOffset)) {
+					if(dateAt.getTime() >= shiftTimestampByTimezone(startDate.getTime(), tzOffset) && dateAt.getTime() < shiftTimestampByTimezone(endDate.getTime(), tzOffset) && dateAt.getTime() <= shiftTimestampByTimezone(currentTimeTravelTimestamp, tzOffset)) {
 						const amountOfGames = timeline.filter(x => shiftTimestampByTimezone(x.timestamp.getTime(), tzOffset) >= dateAt.getTime() && shiftTimestampByTimezone(x.timestamp.getTime(), tzOffset) < dateIn1h.getTime()).length
 						text.textContent = amountOfGames
 						rect.setAttribute("fill", colors[Math.min(amountOfGames, colors.length-1)])
@@ -1733,10 +1735,8 @@
 		const urlTimestamp = new URL(document.location.href).searchParams.get("t")
 		const urlDate = new Date(parseInt(urlTimestamp))
 		if(!isNaN(urlDate.getTime())) {
-			doUpdate(urlDate).then(() => {
-				updateTimeTravelValues(urlDate)
-				currentTimeTravelTimestamp = urlDate.getTime()
-			})
+			currentTimeTravelTimestamp = urlDate.getTime()
+			doUpdate(urlDate).then(() => updateTimeTravelValues(urlDate))
 		} else {
 			doUpdate()
 		}
