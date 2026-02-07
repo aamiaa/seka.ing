@@ -634,6 +634,7 @@
 						</div>
 						<p>Event Bonus: <span id="eventProfileBonusLb" class="fw-bold"></span></p>
 					</div>
+					<div class="alert alert-info text-center" role="alert">The data below reflects the point in time you're currently viewing!</div>
 					<div>
 						<h4>Recent Games</h4>
 						<div style="height: 6rem; width: 100%;">
@@ -854,6 +855,7 @@
 		let lbCache
 		let snapshotsTimeline
 		let offsetToReduceIntSize
+		let currentTimeTravelTimestamp
 
 		function updateTimeTravelValues(snapshotDate) {
 			// update clock
@@ -882,16 +884,11 @@
 			}
 		}
 
-		let oldTimeTravelTimestamp
 		async function timeTravel(snapshotDate) {
-			if(!oldTimeTravelTimestamp) {
-				oldTimeTravelTimestamp = snapshotsTimeline.at(-1).getTime()
-			}
-
-			if(snapshotDate.getTime() === oldTimeTravelTimestamp) {
+			if(snapshotDate.getTime() === currentTimeTravelTimestamp) {
 				return
 			}
-			oldTimeTravelTimestamp = snapshotDate.getTime()
+			currentTimeTravelTimestamp = snapshotDate.getTime()
 
 			updateTimeTravelValues(snapshotDate)
 			toggleTimeTravelInput(false)
@@ -916,6 +913,7 @@
 			if(!snapshotsTimeline) {
 				snapshotsTimeline = (await getSnapshots()).timeline.map(x => new Date(x.timestamp))
 				offsetToReduceIntSize = snapshotsTimeline[0].getTime()
+				currentTimeTravelTimestamp = snapshotsTimeline.at(-1).getTime()
 
 				const timeTravelRange = document.getElementById("timeTravelRange")
 
@@ -1275,6 +1273,7 @@
 
 			const stats = await statsPromise
 			stats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
+			stats.timeline = stats.timeline.filter(x => x.timestamp.getTime() <= currentTimeTravelTimestamp)
 			const deltaTimeline = []
 			for(const [idx, val] of stats.timeline.entries()) {
 				if(idx === 0 || stats.timeline[idx-1].score !== val.score) {
@@ -1283,7 +1282,7 @@
 			}
 
 			// Render recent games
-			const hourAgo = new Date(Date.now() - 3600 * 1000)
+			const hourAgo = new Date(currentTimeTravelTimestamp - 3600 * 1000)
 			const recentGames = []
 			for(const [idx, dataPoint] of deltaTimeline.entries()) {
 				if(dataPoint.timestamp >= hourAgo && (recentGames.length === 0 || (deltaTimeline[idx-1]?.score || 0) < dataPoint.score)) {
@@ -1322,9 +1321,6 @@
 							},
 							ticks: {
 								callback: function(value, index, values) {
-									if(value === 60) {
-										return "Now"
-									}
 									return new Date(hourAgo.getTime() + value * 60 * 1000).toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
 								}
 							}
@@ -1376,6 +1372,7 @@
 
 			const cutoffStats = await cutoffPromise
 			cutoffStats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
+			cutoffStats.timeline = cutoffStats.timeline.filter(x => x.timestamp.getTime() <= currentTimeTravelTimestamp)
 
 			document.getElementById("copyHeatmapBtn").onclick = async function() {
 				const title = `T${cutoff} ${currentEvent.name}${chapter != null ? `, Chapter ${chapter}` : ""}`
@@ -1724,7 +1721,10 @@
 		const urlTimestamp = new URL(document.location.href).searchParams.get("t")
 		const urlDate = new Date(parseInt(urlTimestamp))
 		if(!isNaN(urlDate.getTime())) {
-			doUpdate(urlDate).then(() => updateTimeTravelValues(urlDate))
+			doUpdate(urlDate).then(() => {
+				updateTimeTravelValues(urlDate)
+				currentTimeTravelTimestamp = urlDate.getTime()
+			})
 		} else {
 			doUpdate()
 		}
