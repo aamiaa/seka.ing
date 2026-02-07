@@ -600,7 +600,7 @@
 	<p id="errorMsg" style="display: none;">Failed to fetch updated leaderboard. Try again later.</p>
 
 	<div>
-		<div class="form-check form-switch">
+		<div id="showBordersDiv" class="form-check form-switch">
 			<input class="form-check-input" type="checkbox" role="switch" id="showBordersCb">
 			<label class="form-check-label" for="showBordersCb" id="showBordersCbLabel">Show Highlights</label>
 		</div>
@@ -685,7 +685,10 @@
 	</footer>
 
 	<script>
-		const eventId = document.location.href.match(/\/events\/(\d+)/)?.[1]
+		const eventId = parseInt(document.location.href.match(/\/events\/(\d+)/)?.[1])
+		if(eventId < 120) {
+			document.getElementById("showBordersDiv").classList.add("d-none")
+		}
 
 		let heatmapTimezone = "et"
 		if(document.location.hostname.startsWith("jp.")) {
