@@ -909,13 +909,16 @@
 		}
 
 		async function doUpdate(snapshotDate) {
-			const res = lbCache ?? (await getLeaderboard(snapshotDate?.toISOString()))
-			const data = res.data
-			if(!data) {
-				toggleFailureMessage(true, res.errorMsg)
-				return
+			if(!lbCache) {
+				const res = await getLeaderboard(snapshotDate?.toISOString())
+				if(!res.data) {
+					toggleFailureMessage(true, res.errorMsg)
+					return
+				}
+				lbCache = res.data
 			}
-			lbCache = data
+
+			const data = lbCache
 
 			if(!snapshotsTimeline) {
 				snapshotsTimeline = (await getSnapshots()).timeline.map(x => new Date(x.timestamp))
