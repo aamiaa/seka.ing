@@ -1037,6 +1037,7 @@
 						document.getElementById(`eventTableChapter${chapter.num}CountdownLabel`).innerText = chapterStart.toLocaleString()
 					} else {
 						tbl.style.display = ""
+						document.getElementById(`eventTableChapter${chapter.num}Countdown`).style.display = "none"
 					}
 				}
 				
@@ -1244,39 +1245,39 @@
 				document.getElementById("eventProfileDataContainer").style.display = ""
 
 				// Render cards
-			for(const [idx, card] of profile.cards.entries()) {
-				const img = document.createElement("img")
-				img.style.minWidth = "80px"
-				img.style.width = "100%"
-				img.style.maxWidth = "128px"
-				img.src = `/images/card/deck/${card.id}.png?level=${card.level}&mastery=${card.mastery}&trained=${card.trained}&image=${card.image}&slot=${idx}`
-				img.alt = img.title = card.description
+				for(const [idx, card] of profile.cards.entries()) {
+					const img = document.createElement("img")
+					img.style.minWidth = "80px"
+					img.style.width = "100%"
+					img.style.maxWidth = "128px"
+					img.src = `/images/card/deck/${card.id}.png?level=${card.level}&mastery=${card.mastery}&trained=${card.trained}&image=${card.image}&slot=${idx}`
+					img.alt = img.title = card.description
 
-				const a = document.createElement("a")
-				a.href = `https://sekai.best/card/${card.id}`
-				a.target = "_blank"
-				a.appendChild(img)
+					const a = document.createElement("a")
+					a.href = `https://sekai.best/card/${card.id}`
+					a.target = "_blank"
+					a.appendChild(img)
 
-				const div = document.createElement("div")
-				div.style.aspectRatio = "312/510"
-				div.style.maxWidth = "20%"
-				div.appendChild(a)
+					const div = document.createElement("div")
+					div.style.aspectRatio = "312/510"
+					div.style.maxWidth = "20%"
+					div.appendChild(a)
 
-				document.getElementById("eventProfileDeck").appendChild(div)
-			}
+					document.getElementById("eventProfileDeck").appendChild(div)
+				}
 
-			// Render talent
-			document.getElementById("eventProfileTalentLb").textContent = formatNumber(profile.talent.total_talent)
-			document.getElementById("eventProfileBaseTalentLb").textContent = `Base Talent: ${formatNumber(profile.talent.basic_talent)}`
-			document.getElementById("eventProfileItemTalentLb").textContent = `Decoration Bonus: ${formatNumber(profile.talent.area_item_bonus)}`
-			document.getElementById("eventProfileCRTalentLb").textContent = `Character Rank Bonus: ${formatNumber(profile.talent.character_rank_bonus)}`
-			document.getElementById("eventProfileTitleTalentLb").textContent = `Title Bonus: ${formatNumber(profile.talent.honor_bonus)}`
-			if(profile.talent.mysekai_gate_bonus != null && profile.talent.mysekai_furniture_bonus != null) {
-				document.getElementById("eventProfileGateTalentLb").style.display = ""
-				document.getElementById("eventProfileFurnitureTalentLb").style.display = ""
+				// Render talent
+				document.getElementById("eventProfileTalentLb").textContent = formatNumber(profile.talent.total_talent)
+				document.getElementById("eventProfileBaseTalentLb").textContent = `Base Talent: ${formatNumber(profile.talent.basic_talent)}`
+				document.getElementById("eventProfileItemTalentLb").textContent = `Decoration Bonus: ${formatNumber(profile.talent.area_item_bonus)}`
+				document.getElementById("eventProfileCRTalentLb").textContent = `Character Rank Bonus: ${formatNumber(profile.talent.character_rank_bonus)}`
+				document.getElementById("eventProfileTitleTalentLb").textContent = `Title Bonus: ${formatNumber(profile.talent.honor_bonus)}`
+				if(profile.talent.mysekai_gate_bonus != null && profile.talent.mysekai_furniture_bonus != null) {
+					document.getElementById("eventProfileGateTalentLb").style.display = ""
+					document.getElementById("eventProfileFurnitureTalentLb").style.display = ""
 
-				document.getElementById("eventProfileGateTalentLb").textContent = `MySekai Gate Bonus: ${formatNumber(profile.talent.mysekai_gate_bonus)}`
-				document.getElementById("eventProfileFurnitureTalentLb").textContent = `MySekai Furniture Bonus: ${formatNumber(profile.talent.mysekai_furniture_bonus)}`
+					document.getElementById("eventProfileGateTalentLb").textContent = `MySekai Gate Bonus: ${formatNumber(profile.talent.mysekai_gate_bonus)}`
+					document.getElementById("eventProfileFurnitureTalentLb").textContent = `MySekai Furniture Bonus: ${formatNumber(profile.talent.mysekai_furniture_bonus)}`
 				}
 
 				// Render event bonus
