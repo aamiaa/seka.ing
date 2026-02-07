@@ -618,7 +618,7 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body d-flex flex-column gap-3">
-					<div>
+					<div id="eventProfileDataContainer">
 						<h4 id="eventProfileDeckLb">Last Saved Team</h4>
 						<div id="eventProfileDeck" class="d-flex gap-2 no-select mb-3"></div>
 						<div>
@@ -1095,7 +1095,7 @@
 							event.preventDefault()
 							event.stopPropagation()
 							new bootstrap.Modal("#eventProfileModal").show()
-							loadEventProfileModal(slot.hash, slot.rank, chapter)
+							loadEventProfileModal(slot.name, slot.hash, slot.rank, chapter)
 						})
 					}
 
@@ -1121,7 +1121,7 @@
 						event.preventDefault()
 						event.stopPropagation()
 						new bootstrap.Modal("#eventProfileModal").show()
-						loadEventProfileModal(slot.hash, slot.rank, chapter)
+						loadEventProfileModal(slot.name, slot.hash, slot.rank, chapter)
 					})
 				}
 				nameCellDiv.appendChild(nameLabel)
@@ -1195,7 +1195,7 @@
 
 		let lastCharts = []
 		let profileModalAbort
-		async function loadEventProfileModal(hash, cutoff, chapter) {
+		async function loadEventProfileModal(name, hash, cutoff, chapter) {
 			// Clear old values
 			eventProfileDeck.innerHTML = ""
 			document.getElementById("eventProfileTalentDetails").open = false
@@ -1225,14 +1225,23 @@
 				document.getElementById("heatmapTimezoneCb").checked = true
 			}
 
-			const profile = await getUserEventProfile(hash, profileModalAbort.signal)
+			let profile
+			try {
+				profile = await getUserEventProfile(hash, profileModalAbort.signal)
+			} catch(ex) {
+				console.error("Profile fetch failed:", ex)
+			}
+
 			const statsPromise = getUserEventStats(hash, chapter, profileModalAbort.signal)
 			const cutoffPromise = getCutoffStats(cutoff, chapter, profileModalAbort.signal)
 
 			// Render name
-			document.getElementById("eventProfileModalLabel").textContent = removeTMPTags(profile.name)
+			document.getElementById("eventProfileModalLabel").textContent = removeTMPTags(name)
 
-			// Render cards
+			if(profile) {
+				document.getElementById("eventProfileDataContainer").style.display = ""
+
+				// Render cards
 			for(const [idx, card] of profile.cards.entries()) {
 				const img = document.createElement("img")
 				img.style.minWidth = "80px"
@@ -1266,10 +1275,13 @@
 
 				document.getElementById("eventProfileGateTalentLb").textContent = `MySekai Gate Bonus: ${formatNumber(profile.talent.mysekai_gate_bonus)}`
 				document.getElementById("eventProfileFurnitureTalentLb").textContent = `MySekai Furniture Bonus: ${formatNumber(profile.talent.mysekai_furniture_bonus)}`
-			}
+				}
 
-			// Render event bonus
-			document.getElementById("eventProfileBonusLb").textContent = profile.event_bonus != null ? `${profile.event_bonus}%` : "¯\\_(ツ)_/¯"
+				// Render event bonus
+				document.getElementById("eventProfileBonusLb").textContent = profile.event_bonus != null ? `${profile.event_bonus}%` : "¯\\_(ツ)_/¯"
+			} else {
+				document.getElementById("eventProfileDataContainer").style.display = "none"
+			}
 
 			const stats = await statsPromise
 			stats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
@@ -1430,7 +1442,7 @@
 					labels: labels,
 					datasets: [
 						{
-							label: removeTMPTags(profile.name),
+							label: removeTMPTags(name),
 							data: recentGamesByDelta.map(x => x.y),
 							spanGaps: true,
 							pointRadius: 0,
