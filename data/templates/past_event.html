@@ -850,9 +850,61 @@
 		let clockOffset = 0
 		let lbCache
 		let snapshotsTimeline
+		let offsetToReduceIntSize
 
-		async function doUpdate(timestamp) {
-			const data = lbCache ?? (await getLeaderboard(timestamp)).data
+		function updateTimeTravelValues(snapshotDate) {
+			// update clock
+			const diff = new Date(currentEvent.ends_at).getTime() - snapshotDate.getTime()
+			flipdown.epoch = Math.floor((Date.now() + diff)/1000)
+			flipdown._tick()
+
+			// update date picker
+			document.getElementById("timeTravelDatePicker").value = `${snapshotDate.getFullYear()}-${(snapshotDate.getMonth() + 1).toString().padStart(2, "0")}-${snapshotDate.getDate().toString().padStart(2, "0")}T${snapshotDate.getHours().toString().padStart(2, "0")}:${snapshotDate.getMinutes().toString().padStart(2, "0")}`
+
+			// update slider
+			document.getElementById("timeTravelRange").value = snapshotDate.getTime() - offsetToReduceIntSize
+		}
+
+		function toggleTimeTravelInput(enabled) {
+			if(!enabled) {
+				document.getElementById("timeTravelRange").setAttribute("disabled", "true")
+				document.getElementById("timeTravelDatePicker").setAttribute("disabled", "true")
+				document.getElementById("showBordersCb").setAttribute("disabled", "true")
+				document.getElementById("compactModeCb").setAttribute("disabled", "true")
+			} else {
+				document.getElementById("timeTravelRange").removeAttribute("disabled")
+				document.getElementById("timeTravelDatePicker").removeAttribute("disabled")
+				document.getElementById("showBordersCb").removeAttribute("disabled")
+				document.getElementById("compactModeCb").removeAttribute("disabled")
+			}
+		}
+
+		let oldTimeTravelTimestamp
+		async function timeTravel(snapshotDate) {
+			if(!oldTimeTravelTimestamp) {
+				oldTimeTravelTimestamp = snapshotsTimeline.at(-1).getTime()
+			}
+
+			if(snapshotDate.getTime() === oldTimeTravelTimestamp) {
+				return
+			}
+			oldTimeTravelTimestamp = snapshotDate.getTime()
+
+			updateTimeTravelValues(snapshotDate)
+			toggleTimeTravelInput(false)
+			lbCache = null
+			if(snapshotDate.getTime() === snapshotsTimeline.at(-1).getTime()) {
+				await doUpdate()
+				history.replaceState(null, "", document.location.pathname)
+			} else {
+				history.replaceState(null, "", document.location.pathname + "?t=" + snapshotDate.getTime())
+				await doUpdate(snapshotDate)
+			}
+			toggleTimeTravelInput(true)
+		}
+
+		async function doUpdate(snapshotDate) {
+			const data = lbCache ?? (await getLeaderboard(snapshotDate?.toISOString())).data
 			if(!data) {
 				toggleFailureMessage(true)
 			}
@@ -860,101 +912,53 @@
 
 			if(!snapshotsTimeline) {
 				snapshotsTimeline = (await getSnapshots()).timeline.map(x => new Date(x.timestamp))
+				offsetToReduceIntSize = snapshotsTimeline[0].getTime()
 
-				const offsetToReduceIntSize = snapshotsTimeline[0].getTime()
-				document.getElementById("timeTravelRange").min = snapshotsTimeline[0].getTime() - offsetToReduceIntSize
-				document.getElementById("timeTravelRange").max = snapshotsTimeline.at(-1).getTime() - offsetToReduceIntSize
-				document.getElementById("timeTravelRange").value = document.getElementById("timeTravelRange").max
-				document.getElementById("timeTravelRange").removeAttribute("disabled")
+				const timeTravelRange = document.getElementById("timeTravelRange")
+
+				timeTravelRange.min = snapshotsTimeline[0].getTime() - offsetToReduceIntSize
+				timeTravelRange.max = snapshotsTimeline.at(-1).getTime() - offsetToReduceIntSize
+				timeTravelRange.value = timeTravelRange.max
+				timeTravelRange.removeAttribute("disabled")
 				document.getElementById("timeTravelDatePicker").value = `${snapshotsTimeline.at(-1).getFullYear()}-${(snapshotsTimeline.at(-1).getMonth() + 1).toString().padStart(2, "0")}-${snapshotsTimeline.at(-1).getDate().toString().padStart(2, "0")}T${snapshotsTimeline.at(-1).getHours().toString().padStart(2, "0")}:${snapshotsTimeline.at(-1).getMinutes().toString().padStart(2, "0")}`
 				document.getElementById("timeTravelDatePicker").removeAttribute("disabled")
 
 				const values = snapshotsTimeline.map(x => x.getTime() - offsetToReduceIntSize)
-				document.getElementById("timeTravelRange").addEventListener("input", function() {
-					const value = parseInt(this.value)
+				timeTravelRange.addEventListener("input", function() {
+					let value = parseInt(this.value)
+
+					// constrain values to the available ones
 					if(!values.includes(value)) {
 						const prevVal = values.findLast(x => x < value)
 						const nextVal = values.find(x => x > value)
 
 						const percent = 1 - (nextVal-value)/(nextVal-prevVal)
 						if(percent >= 0.5) {
-							this.value = nextVal
+							value = this.value = nextVal
 						} else {
-							this.value = prevVal
+							value = this.value = prevVal
 						}
 					}
 
-					const timestamp = value + offsetToReduceIntSize
-
-					// update clock
-					const diff = new Date(currentEvent.ends_at).getTime() - timestamp
-					flipdown.epoch = Math.floor((Date.now() + diff)/1000)
-					flipdown._tick()
-
-					// update date picker
-					const date = new Date(timestamp)
-					document.getElementById("timeTravelDatePicker").value = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}T${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`
+					const date = new Date(value + offsetToReduceIntSize)
+					updateTimeTravelValues(date)
 				})
-				let oldValue = snapshotsTimeline.at(-1).getTime()
+
 				document.getElementById("timeTravelDatePicker").addEventListener("focusout", async function() {
-					const val = new Date(this.value)
-					const nearest = snapshotsTimeline.findLast(x => Math.abs(x.getTime() - val.getTime()) < 60_000 || (x.getTime() <= val.getTime())) ?? snapshotsTimeline[0]
+					const value = new Date(this.value)
+					const nearest = snapshotsTimeline.findLast(x => Math.abs(x.getTime() - value.getTime()) < 60_000 || (x.getTime() <= value.getTime())) ?? snapshotsTimeline[0]
 
-					if(nearest.getTime() === oldValue) {
-						return
-					}
-					oldValue = nearest.getTime()
-
-					this.value = `${nearest.getFullYear()}-${(nearest.getMonth() + 1).toString().padStart(2, "0")}-${nearest.getDate().toString().padStart(2, "0")}T${nearest.getHours().toString().padStart(2, "0")}:${nearest.getMinutes().toString().padStart(2, "0")}`
-
-					document.getElementById("timeTravelRange").value = nearest.getTime() - offsetToReduceIntSize
-
-					document.getElementById("timeTravelRange").setAttribute("disabled", "true")
-					document.getElementById("timeTravelDatePicker").setAttribute("disabled", "true")
-					document.getElementById("showBordersCb").setAttribute("disabled", "true")
-					document.getElementById("compactModeCb").setAttribute("disabled", "true")
-					lbCache = null
-					if(nearest === snapshotsTimeline.at(-1)) {
-						await doUpdate()
-						history.replaceState(null, "", document.location.pathname)
-					} else {
-						history.replaceState(null, "", document.location.pathname + "?t=" + nearest.getTime())
-						await doUpdate(nearest.toISOString())
-					}
-					document.getElementById("timeTravelRange").removeAttribute("disabled")
-					document.getElementById("timeTravelDatePicker").removeAttribute("disabled")
-					document.getElementById("showBordersCb").removeAttribute("disabled")
-					document.getElementById("compactModeCb").removeAttribute("disabled")
+					await timeTravel(nearest)
 				})
 
-				let handler = async function() {
+				const handler = async function() {
 					const value = parseInt(this.value)
 					const date = new Date(value + offsetToReduceIntSize)
 
-					if(date.getTime() === oldValue) {
-						return
-					}
-					oldValue = date.getTime()
-
-					document.getElementById("timeTravelRange").setAttribute("disabled", "true")
-					document.getElementById("timeTravelDatePicker").setAttribute("disabled", "true")
-					document.getElementById("showBordersCb").setAttribute("disabled", "true")
-					document.getElementById("compactModeCb").setAttribute("disabled", "true")
-					lbCache = null
-					if(value == this.max) {
-						await doUpdate()
-						history.replaceState(null, "", document.location.pathname)
-					} else {
-						history.replaceState(null, "", document.location.pathname + "?t=" + date.getTime())
-						await doUpdate(date.toISOString())
-					}
-					document.getElementById("timeTravelRange").removeAttribute("disabled")
-					document.getElementById("timeTravelDatePicker").removeAttribute("disabled")
-					document.getElementById("showBordersCb").removeAttribute("disabled")
-					document.getElementById("compactModeCb").removeAttribute("disabled")
+					await timeTravel(date)
 				}
-				document.getElementById("timeTravelRange").addEventListener("mouseup", handler)
-				document.getElementById("timeTravelRange").addEventListener("touchend", handler)
+				timeTravelRange.addEventListener("mouseup", handler)
+				timeTravelRange.addEventListener("touchend", handler)
 			}
 			
 			const eventData = currentEvent = data.event
