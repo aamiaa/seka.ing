@@ -597,7 +597,7 @@
 		</div>
 	</div>
 	
-	<p id="errorMsg" style="display: none;">Failed to fetch updated leaderboard. Try again later.</p>
+	<p id="errorMsg" style="display: none;">Failed to fetch the snapshot. Try again later.</p>
 
 	<div>
 		<div id="showBordersDiv" class="form-check form-switch">
@@ -761,7 +761,7 @@
 			return name.replace(/[<‹]\/?(?:#|a|align|allcaps|alpha|b|color|cspace|font|font-weight|gradient|i|indent|line-height|line-indent|link|lowercase|margin|mark|mspace|nobr|noparse|page|pos|rotate|s|size|smallcaps|space|sprite|style|sub|sup|u|uppercase|voffset|width).*?[>›]/gi, "")
 		}
 
-		function toggleFailureMessage(toggled) {
+		function toggleFailureMessage(toggled, errorText) {
 			const rankingContainer = document.getElementById("rankingContainer")
 			const logoContainer = document.getElementById("logoContainer")
 			const logoPlaceholder = document.getElementById("eventCountdownPlaceholder")
@@ -772,6 +772,10 @@
 				logoContainer.style.setProperty("display", "none", "important")
 				logoPlaceholder.style.setProperty("display", "none", "important")
 				errorMsg.style.display = ""
+
+				if(errorText) {
+					errorMsg.textContent = `Failed to fetch the snapshot: ${errorText}`
+				}
 			} else {
 				rankingContainer.style.display = logoContainer.style.display = ""
 				errorMsg.style.display = "none"
@@ -797,7 +801,8 @@
 					if(res.headers.get("cf-mitigated") === "challenge") {
 						return {errorType: "challenge"}
 					}
-					return {errorType: "backend"}
+					const errorMsg = await res.json().then(x => x.error).catch(x => null)
+					return {errorType: "backend", errorMsg}
 				}
 
 				const json = await res.json()
@@ -904,9 +909,11 @@
 		}
 
 		async function doUpdate(snapshotDate) {
-			const data = lbCache ?? (await getLeaderboard(snapshotDate?.toISOString())).data
+			const res = lbCache ?? (await getLeaderboard(snapshotDate?.toISOString()))
+			const data = res.data
 			if(!data) {
-				toggleFailureMessage(true)
+				toggleFailureMessage(true, res.errorMsg)
+				return
 			}
 			lbCache = data
 
