@@ -82,7 +82,7 @@ export default class ImageGenController {
 
 		const eventKeyPart = eventKey.match(/^(event_\w+)_20\d{2}$/)?.[1]
 		if(!eventKeyPart) {
-			return res.status(400).json({error: "Specified event doesn't exist"})
+			return res.status(400).json({error: "Invalid event key"})
 		}
 
 		const event = SekaiMasterDB.getEventByKey(eventKey)
@@ -94,7 +94,7 @@ export default class ImageGenController {
 		try {
 			await fs.promises.stat(backgroundImagePath)
 		} catch(ex) {
-			return res.status(400).json({error: "Specified event doesn't exist"})
+			return res.status(400).json({error: "Background asset doesn't exist"})
 		}
 
 		const assetbundleName = "honor_top_" + "0".repeat(6 - rank.toString().length) + rank + (rank === 10 ? "_v2" : "") + (chapter ? `_${eventKeyPart}_cp${chapter}` : "")
@@ -102,7 +102,7 @@ export default class ImageGenController {
 		try {
 			await fs.promises.stat(rankImagePath)
 		} catch(ex) {
-			return res.status(400).json({error: "Specified rank doesn't exist"})
+			return res.status(400).json({error: "Rank asset doesn't exist"})
 		}
 
 		const backgroundImage = await fs.promises.readFile(backgroundImagePath)
@@ -148,20 +148,20 @@ export default class ImageGenController {
 				case "rarity_1":
 				case "rarity_2":
 				case "rarity_birthday":
-					return res.status(400).json({error: "Impossible combination"})
+					return res.status(400).json({error: "Impossible combination: birthday cards cannot be trained"})
 				case "rarity_3":
 					if(level < 40) {
-						return res.status(400).json({error: "Impossible combination"})
+						return res.status(400).json({error: "Impossible combination: card level too low to be trained"})
 					}
 					break
 				case "rarity_4":
 					if(level < 50) {
-						return res.status(400).json({error: "Impossible combination"})
+						return res.status(400).json({error: "Impossible combination: card level too low to be trained"})
 					}
 					break
 			}
 		} else if(!trained && imageType === 1) {
-			return res.status(400).json({error: "Impossible combination"})
+			return res.status(400).json({error: "Impossible combination: untrained card cannot use trained image"})
 		}
 
 		const assetbundleName = card.assetbundleName + (imageType === 0 ? "_normal" : "_after_training")
@@ -169,7 +169,7 @@ export default class ImageGenController {
 		try {
 			await fs.promises.stat(backgroundImagePath)
 		} catch(ex) {
-			return res.status(400).json({error: "Specified card doesn't exist"})
+			return res.status(400).json({error: "Background asset doesn't exist"})
 		}
 
 		const backgroundImage = await fs.promises.readFile(backgroundImagePath)
@@ -204,27 +204,27 @@ export default class ImageGenController {
 				case "rarity_1":
 				case "rarity_2":
 				case "rarity_birthday":
-					return res.status(400).json({error: "Impossible combination"})
+					return res.status(400).json({error: "Impossible combination: birthday cards cannot be trained"})
 				case "rarity_3":
 					if(level < 40) {
-						return res.status(400).json({error: "Impossible combination"})
+						return res.status(400).json({error: "Impossible combination: card level too low to be trained"})
 					}
 					break
 				case "rarity_4":
 					if(level < 50) {
-						return res.status(400).json({error: "Impossible combination"})
+						return res.status(400).json({error: "Impossible combination: card level too low to be trained"})
 					}
 					break
 			}
 		} else if(!trained && imageType === 1) {
-			return res.status(400).json({error: "Impossible combination"})
+			return res.status(400).json({error: "Impossible combination: untrained card cannot use trained image"})
 		}
 
 		const backgroundImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/character/member_cutout", card.assetbundleName, (imageType === 0 ? "normal" : "after_training"), "deck.png")
 		try {
 			await fs.promises.stat(backgroundImagePath)
 		} catch(ex) {
-			return res.status(400).json({error: "Specified card doesn't exist"})
+			return res.status(400).json({error: "Background asset doesn't exist"})
 		}
 
 		const backgroundImage = await fs.promises.readFile(backgroundImagePath)

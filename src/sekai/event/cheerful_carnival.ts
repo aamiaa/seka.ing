@@ -39,7 +39,7 @@ export default class CheerfulCarnivalTracker {
 		CacheStore.set("cc_announce", {
 			announcements: [],
 			team_stats: [],
-			updated_at: new Date(0)
+			updated_at: null
 		} as CheerfulCarnivalStatsDTO)
 
 		this.updateLoop()

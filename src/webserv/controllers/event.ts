@@ -29,10 +29,15 @@ export default class EventController {
 	}
 
 	public static async getLeaderboard(req: Request, res: Response, next: NextFunction) {
+		const data = CacheStore.get("leaderboard")
+		if(!data) {
+			return res.status(503).json({error: "Leaderboard Tracker not started"})
+		}
+
 		if(req.query.nocache) {
 			res.set("Cache-Control", "no-store")
 		}
-		return res.json(CacheStore.get("leaderboard"))
+		return res.json(data)
 	}
 
 	public static async getEventLeaderboard(req: Request, res: Response, next: NextFunction) {
@@ -122,8 +127,13 @@ export default class EventController {
 	}
 
 	public static async getAnnouncements(req: Request, res: Response, next: NextFunction) {
+		const data = CacheStore.get("cc_announce")
+		if(!data) {
+			return res.status(503).json({error: "Cheerful Carnival Tracker not started"})
+		}
+
 		res.set("Cache-Control", "no-store")
-		return res.json(CacheStore.get("cc_announce"))
+		return res.json(data)
 	}
 
 	public static async getWorldlinkGraph(req: Request, res: Response, next: NextFunction) {
@@ -265,7 +275,7 @@ export default class EventController {
 
 		const event = SekaiMasterDB.getEvent(eventId)
 		if(!event) {
-			return res.status(404).send({error: "Invalid event"})
+			return res.status(400).send({error: "Invalid event"})
 		}
 
 		const profile = await EventProfileModel.findOne({eventId, userId}).lean()
@@ -353,7 +363,7 @@ export default class EventController {
 
 		const event = getEventFromIdStr(eventIdStr)
 		if(!event) {
-			return res.status(400).json({error: "Specified event doesn't exist"})
+			return res.status(404).json({error: "Specified event doesn't exist"})
 		}
 		if(req.query.chapter && event.eventType !== SekaiEventType.WORLD_BLOOM) {
 			return res.status(400).send({error: "Cannot specify chapter for non-worldlink events"})
