@@ -1721,7 +1721,13 @@
 			navigator.clipboard.write([item])
 		}
 
-		doUpdate()
+		const urlTimestamp = new URL(document.location.href).searchParams.get("t")
+		const urlDate = new Date(parseInt(urlTimestamp))
+		if(!isNaN(urlDate.getTime())) {
+			doUpdate(urlDate).then(() => updateTimeTravelValues(urlDate))
+		} else {
+			doUpdate()
+		}
 
 		document.getElementById("contactBtn").addEventListener("click", async function(event) {
 			const contactBody = document.getElementById("contactModalBody")
