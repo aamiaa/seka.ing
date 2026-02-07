@@ -885,12 +885,12 @@
 		}
 
 		async function timeTravel(snapshotDate) {
+			updateTimeTravelValues(snapshotDate) // this is needed here to constrain the date picker
 			if(snapshotDate.getTime() === currentTimeTravelTimestamp) {
 				return
 			}
 			currentTimeTravelTimestamp = snapshotDate.getTime()
 
-			updateTimeTravelValues(snapshotDate)
 			toggleTimeTravelInput(false)
 			lbCache = null
 			if(snapshotDate.getTime() === snapshotsTimeline.at(-1).getTime()) {
@@ -1098,7 +1098,7 @@
 							event.preventDefault()
 							event.stopPropagation()
 							new bootstrap.Modal("#eventProfileModal").show()
-							loadEventProfileModal(slot.name, slot.hash, slot.rank, chapter)
+							loadEventProfileModal(slot, chapter)
 						})
 					}
 
@@ -1124,7 +1124,7 @@
 						event.preventDefault()
 						event.stopPropagation()
 						new bootstrap.Modal("#eventProfileModal").show()
-						loadEventProfileModal(slot.name, slot.hash, slot.rank, chapter)
+						loadEventProfileModal(slot, chapter)
 					})
 				}
 				nameCellDiv.appendChild(nameLabel)
@@ -1198,7 +1198,8 @@
 
 		let lastCharts = []
 		let profileModalAbort
-		async function loadEventProfileModal(name, hash, cutoff, chapter) {
+		async function loadEventProfileModal(slot, chapter) {
+			const {name, hash, card, rank: cutoff} = slot
 			// Clear old values
 			eventProfileDeck.innerHTML = ""
 			document.getElementById("eventProfileTalentDetails").open = false
@@ -1392,10 +1393,10 @@
 			document.getElementById("copyHeatmapBtn").onclick = async function() {
 				const title = `T${cutoff} ${currentEvent.name}${chapter != null ? `, Chapter ${chapter}` : ""}`
 				const subtitle = `${deltaTimeline.length} total games`
-				const leaderCard = profile.cards[0]
-				const iconUrl = `/images/card/leader/${leaderCard.id}.png?level=${leaderCard.level}&mastery=${leaderCard.mastery}&trained=${leaderCard.trained}&image=${leaderCard.image}`
+				const leaderCard = profile?.cards?.[0] ?? card
+				const iconUrl = leaderCard && `/images/card/leader/${leaderCard.id}.png?level=${leaderCard.level}&mastery=${leaderCard.mastery}&trained=${leaderCard.trained}&image=${leaderCard.image}`
 
-				await copyHeatmap(title, subtitle, profile.name, iconUrl)
+				await copyHeatmap(title, subtitle, name, iconUrl)
 
 				const span = this.querySelector("span")
 				const currentText = span.textContent
@@ -1688,23 +1689,27 @@
 			playerNameLb.textContent = playerName
 			svgElement.appendChild(playerNameLb)
 
-			// svg image href has to be set as base64 data string,
-			// as normal url doesn't work outside of document body for some reason 
-			const playerIconData = await fetch(iconUrl).then(res => res.blob())
-			.then(blob => new Promise((resolve, reject) => {
-				const reader = new FileReader()
-				reader.onloadend = () => resolve(reader.result)
-				reader.onerror = reject
-				reader.readAsDataURL(blob)
-			}))
+			if(iconUrl) {
+				// svg image href has to be set as base64 data string,
+				// as normal url doesn't work outside of document body for some reason 
+				const playerIconData = await fetch(iconUrl).then(res => res.blob())
+				.then(blob => new Promise((resolve, reject) => {
+					const reader = new FileReader()
+					reader.onloadend = () => resolve(reader.result)
+					reader.onerror = reject
+					reader.readAsDataURL(blob)
+				}))
 
-			const playerIcon = document.createElementNS("http://www.w3.org/2000/svg", "image")
-			playerIcon.setAttribute("x", "0")
-			playerIcon.setAttribute("y", "-40")
-			playerIcon.setAttribute("width", "30")
-			playerIcon.setAttribute("height", "30")
-			playerIcon.setAttribute("href", playerIconData)
-			svgElement.appendChild(playerIcon)
+				const playerIcon = document.createElementNS("http://www.w3.org/2000/svg", "image")
+				playerIcon.setAttribute("x", "0")
+				playerIcon.setAttribute("y", "-40")
+				playerIcon.setAttribute("width", "30")
+				playerIcon.setAttribute("height", "30")
+				playerIcon.setAttribute("href", playerIconData)
+				svgElement.appendChild(playerIcon)
+			} else {
+				playerNameLb.setAttribute("x", "5")
+			}
 
 			const bbox = heatmapContainer.getBBox()
 			svgElement.setAttribute("width", bbox.width * scale)
