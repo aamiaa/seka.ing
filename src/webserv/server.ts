@@ -26,6 +26,9 @@ class ExpressServer {
 		this.express.use("/", mainRouter)
 		this.express.use("/api", apiRouter)
 		this.express.use("/images", imageGenRouter)
+		this.express.get("/events/:eventId", (req, res, next) => {
+			return res.sendFile("past_event.html", {root: "data/templates"})
+		})
 
 		this.express.all("*", (req, res) => {
 			return res.status(404).sendFile("404.html", {root: "public"})
