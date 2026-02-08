@@ -153,6 +153,41 @@
 			margin-top: 30px;
 		}
 
+		.filter-buttons {
+			display: flex;
+		}
+
+		@media (max-width: 768px) {
+			.filter-buttons {
+				display: none;
+			}
+		}
+
+		@media (min-width: 768px) {
+			.filter-dropdown {
+				display: none;
+			}
+		}
+
+		.filter-btn {
+			padding: 8px 16px;
+			border: 1px solid #3a3a3a;
+			background-color: #2a2a2a;
+			color: white;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: background-color 0.2s, border-color 0.2s;
+		}
+
+		.filter-btn:hover {
+			background-color: #3a3a3a;
+		}
+
+		.filter-btn.active {
+			background-color: #4a90e2;
+			border-color: #4a90e2;
+		}
+
 		.event-card-id {
 			font-size: 0.75rem;
 			color: #959595;
@@ -170,6 +205,28 @@
 					id="searchInput" 
 					class="form-control search-input" 
 					placeholder="Search events by name...">
+			</div>
+			<div class="filter-buttons gap-1 justify-content-center flex-wrap mt-3">
+				<button class="filter-btn active" data-filter="all">All Events</button>
+				<button class="filter-btn" data-filter="light_sound">Leo/Need</button>
+				<button class="filter-btn" data-filter="idol">More More Jump!</button>
+				<button class="filter-btn" data-filter="street">Vivid Bad Squad</button>
+				<button class="filter-btn" data-filter="theme_park">Wonderlands x Showtime</button>
+				<button class="filter-btn" data-filter="school_refusal">Nightcord at 25:00</button>
+				<button class="filter-btn" data-filter="piapro">Virtual Singer</button>
+				<button class="filter-btn">Mixed</button>
+			</div>
+			<div class="filter-dropdown mt-3">
+				<select id="unitSelect" class="form-select" aria-label="Select unit">
+					<option selected value="all">All Events</option>
+					<option value="light_sound">Leo/Need</option>
+					<option value="idol">More More Jump!</option>
+					<option value="street">Vivid Bad Squad</option>
+					<option value="theme_park">Wonderlands x Showtime</option>
+					<option value="school_refusal">Nightcord at 25:00</option>
+					<option value="piapro">Virtual Singer</option>
+					<option value="mixed">Mixed</option>
+				</select>
 			</div>
 		</header>
 
@@ -229,6 +286,7 @@
 
 	<script type="module">
 		let allEvents = []
+		let currentFilter = "all"
 
 		function formatDate(dateString) {
 			const date = new Date(dateString)
@@ -342,14 +400,17 @@
 			
 			let filtered = allEvents
 
+			// Filter by unit
+			if(currentFilter !== "all") {
+				filtered = filtered.filter(event => event.unit === currentFilter)
+			}
+
 			// Filter by search term
 			if(searchTerm) {
 				filtered = filtered.filter(event => 
 					event.name.toLowerCase().includes(searchTerm)
 				)
 			}
-
-			// TODO: more search filters?
 
 			renderEvents(filtered)
 		}
@@ -374,6 +435,20 @@
 		}
 
 		document.getElementById("searchInput").addEventListener("input", filterEvents)
+
+		document.querySelectorAll(".filter-btn").forEach(x => {
+			x.addEventListener("click", function() {
+				document.querySelectorAll(".filter-btn").forEach(y => y.classList.remove("active"))
+				this.classList.add("active")
+				currentFilter = this.getAttribute("data-filter")
+				filterEvents()
+			})
+		})
+
+		document.getElementById("unitSelect").addEventListener("input", function() {
+			currentFilter = this.value !== "mixed" ? this.value : null
+			filterEvents()
+		})
 
 		document.getElementById("contactBtn").addEventListener("click", async function(event) {
 			const contactBody = document.getElementById("contactModalBody")
