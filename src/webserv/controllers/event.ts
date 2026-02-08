@@ -25,6 +25,10 @@ export default class EventController {
 		const withHonors = req.query.with_honors === "true"
 
 		const events = SekaiMasterDB.getEvents().map(x => getEventDTO(x, {withHonors}))
+		const snapshots = (await RankingSnapshotModel.aggregate([
+			{$group: {_id: "$eventId"}}
+		])).map(x => x._id)
+		events.forEach(event => event.has_snapshot = snapshots.includes(event.id))
 		return res.json(events)
 	}
 

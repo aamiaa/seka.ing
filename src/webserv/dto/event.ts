@@ -13,7 +13,8 @@ export interface EventDTO {
     honors?: {
         rank: number,
         image: string
-    }[]
+    }[],
+	has_snapshot?: boolean
 }
 
 export interface WorldlinkChapterDTO {
