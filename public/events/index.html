@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark" class="h-100">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Browse past Project Sekai event rankings.">
+	<title>Project Sekai Events | Sekaing</title>
+
+	<link rel="icon" type="image/x-icon" href="/favicon.ico">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+	<link rel="stylesheet" href="/assets/style.css">
+	<style>
+		.event-card {
+			background-color: #2a2a2a;
+			border: 1px solid #3a3a3a;
+			border-radius: 10px;
+			overflow: hidden;
+			transition: transform 0.2s, box-shadow 0.2s;
+			cursor: pointer;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.event-card:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+			border-color: #4a4a4a;
+		}
+
+		.event-card.card-disabled {
+			opacity: 0.4;
+			cursor: default;
+			/* cursor: not-allowed; */
+			/* filter: grayscale(100%); */
+		}
+
+		.event-card.card-disabled:hover {
+			transform: none;
+			box-shadow: none;
+			border-color: #3a3a3a;
+		}
+
+		.event-card-img {
+			width: 100%;
+			height: 150px;
+			object-fit: contain;
+			background-color: #1a1a1a;
+			padding: 15px;
+		}
+
+		.event-card-body {
+			padding: 15px;
+			flex-grow: 1;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.event-card-title {
+			font-size: 1.1rem;
+			font-weight: 600;
+			margin-bottom: 10px;
+			color: #ffffff;
+			line-height: 1.3;
+		}
+
+		.event-card-dates {
+			font-size: 0.85rem;
+			color: #aaaaaa;
+			margin-top: auto;
+		}
+
+		.event-card-badge-container {
+			display: flex;
+			gap: 6px;
+		}
+
+		.event-card-badge {
+			display: inline-block;
+			padding: 4px 8px;
+			border-radius: 4px;
+			font-size: 0.75rem;
+			margin-bottom: 8px;
+			font-weight: 500;
+		}
+
+		.type-marathon {
+			background-color: #4a90e2;
+		}
+
+		.type-cheerful_carnival {
+			background-color: #f08a37;
+		}
+
+		.type-world_bloom {
+			background-color: #599c1f;
+		}
+
+		.unit-piapro {
+			background-color: white;
+			color: #3a3a3a;
+		}
+
+		.unit-light_sound {
+			background-color: #4455dd;
+		}
+
+		.unit-idol {
+			/* background-color: #88dd44; */
+			background-color: #67ad2f;
+		}
+
+		.unit-street {
+			background-color: #ee1166;
+		}
+
+		.unit-theme_park {
+			/* background-color: #ff9900; */
+			background-color: #cf7c00;
+		}
+
+		.unit-school_refusal {
+			background-color: #884499;
+		}
+
+		.unit-mixed {
+			background-color: gray;
+		}
+
+		.search-container {
+			max-width: 600px;
+			margin: 0 auto;
+		}
+
+		.search-input {
+			background-color: #2a2a2a;
+			border: 1px solid #3a3a3a;
+			color: white;
+		}
+
+		.search-input:focus {
+			background-color: #2a2a2a;
+			border-color: #4a4a4a;
+			color: white;
+			box-shadow: 0 0 0 0.25rem rgba(74, 74, 74, 0.25);
+		}
+
+		.events-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+			gap: 20px;
+			margin-top: 30px;
+		}
+
+		.filter-buttons {
+			display: flex;
+		}
+
+		@media (max-width: 767px) {
+			.filter-buttons {
+				display: none;
+			}
+		}
+
+		@media (min-width: 768px) {
+			.filter-dropdown {
+				display: none;
+			}
+		}
+
+		.filter-btn {
+			padding: 8px 16px;
+			border: 1px solid #3a3a3a;
+			background-color: #2a2a2a;
+			color: white;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: background-color 0.2s, border-color 0.2s;
+		}
+
+		.filter-btn:hover {
+			background-color: #3a3a3a;
+		}
+
+		.filter-btn.active {
+			background-color: #00ccbb;
+			border-color: #00ccbb;
+			color: #2a2a2a;
+		}
+
+		.event-card-id {
+			font-size: 0.75rem;
+			color: #959595;
+			margin-bottom: 5px;
+		}
+	</style>
+</head>
+<body class="d-flex flex-column" style="min-height: 100vh;">
+	<script src="/assets/updater.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+	<div class="container py-4" style="flex: 1;">
+		<header class="text-center mb-4">
+			<div class="search-container">
+				<input type="text" 
+					id="searchInput" 
+					class="form-control search-input" 
+					placeholder="Search events by name...">
+			</div>
+			<div class="filter-buttons gap-1 justify-content-center flex-wrap mt-3">
+				<button class="filter-btn active" data-filter="all">All Events</button>
+				<button class="filter-btn" data-filter="light_sound">Leo/Need</button>
+				<button class="filter-btn" data-filter="idol">More More Jump!</button>
+				<button class="filter-btn" data-filter="street">Vivid Bad Squad</button>
+				<button class="filter-btn" data-filter="theme_park">Wonderlands x Showtime</button>
+				<button class="filter-btn" data-filter="school_refusal">Nightcord at 25:00</button>
+				<button class="filter-btn" data-filter="piapro">Virtual Singer</button>
+				<button class="filter-btn">Mixed</button>
+			</div>
+			<div class="filter-dropdown mt-3">
+				<select id="unitSelect" class="form-select" aria-label="Select unit">
+					<option selected value="all">All Events</option>
+					<option value="light_sound">Leo/Need</option>
+					<option value="idol">More More Jump!</option>
+					<option value="street">Vivid Bad Squad</option>
+					<option value="theme_park">Wonderlands x Showtime</option>
+					<option value="school_refusal">Nightcord at 25:00</option>
+					<option value="piapro">Virtual Singer</option>
+					<option value="mixed">Mixed</option>
+				</select>
+			</div>
+		</header>
+
+		<div id="eventsContainer" class="events-grid">
+			<div id="cardPlaceholder" class="event-card">
+				<span class="event-card-img placeholder-glow">
+					<span class="placeholder rounded-4 w-100 h-100"></span>
+				</span>
+				<div class="event-card-body">
+					<div class="event-card-id placeholder-glow">
+						<span class="placeholder">Event #123</span>
+					</div>
+					<div class="event-card-badge-container placeholder-glow">
+						<span class="event-card-badge placeholder">Marathon</span>
+					</div>
+					<div class="event-card-title placeholder-glow">
+						<span class="placeholder col-8"></span>
+					</div>
+					<div class="event-card-dates">
+						<div class="placeholder-glow">
+							<i class="bi bi-calendar-event"></i>
+							<span class="placeholder col-7"></span>
+						</div>
+						<div class="placeholder-glow">
+							<i class="bi bi-calendar-check"></i>
+							<span class="placeholder col-6"></span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 id="contactModalLabel" class="modal-title fs-5">Contact</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div id="contactModalBody" class="modal-body">
+					<p class="placeholder-glow" aria-hidden="true">
+						<span class="placeholder col-7"></span>
+						<span class="placeholder col-4"></span>
+						<span class="placeholder col-4"></span>
+						<span class="placeholder col-6"></span>
+						<span class="placeholder col-8"></span>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer class="py-3 text-center">
+		<span>Contact: <a id="contactBtn" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#contactModal">Show</a></span>
+	</footer>
+
+	<script type="module">
+		let allEvents = []
+		let currentFilter = "all"
+
+		function formatDate(dateString) {
+			const date = new Date(dateString)
+			return date.toLocaleDateString(undefined, { 
+				month: "short", 
+				day: "numeric", 
+				year: "numeric",
+				hour: "2-digit",
+				minute: "2-digit"
+			})
+		}
+
+		function getEventTypeName(type) {
+			const typeMap = {
+				"marathon": "Marathon",
+				"cheerful_carnival": "Cheerful Carnival",
+				"world_bloom": "Worldlink"
+			}
+			return typeMap[type] || type
+		}
+
+		function getUnitTypeName(type) {
+			if(type == null) {
+				return "Mixed"
+			}
+
+			const typeMap = {
+				"piapro": "Virtual Singer",
+				"light_sound": "Leo/Need",
+				"street": "Vivid Bad Squad",
+				"idol": "More More Jump!",
+				"theme_park": "Wonderlands x Showtime",
+				"school_refusal": "Nightcord at 25:00"
+			}
+			return typeMap[type] || type
+		}
+
+		function createEventCard(event) {
+			const card = document.createElement("div")
+			card.className = "event-card"
+
+			if(event.has_snapshot === false) {
+				card.classList.add("card-disabled")
+			} else {
+				card.onclick = () => {
+					document.location.href = `/events/${event.id}`
+				}
+			}
+
+			const logoImg = document.createElement("img")
+			logoImg.className = "event-card-img"
+			logoImg.src = `/assets/${event.name_key}.png`
+			logoImg.alt = `${event.name} event logo`
+
+			const cardBody = document.createElement("div")
+			cardBody.className = "event-card-body"
+
+			const eventIdLabel = document.createElement("div")
+			eventIdLabel.className = "event-card-id"
+			eventIdLabel.textContent = `Event #${event.id}`
+
+			const badgesContainer = document.createElement("div")
+			badgesContainer.className = "event-card-badge-container"
+
+			const typeLabel = document.createElement("span")
+			typeLabel.className = `event-card-badge type-${event.type}`
+			typeLabel.textContent = getEventTypeName(event.type)
+			badgesContainer.appendChild(typeLabel)
+
+			const unitLabel = document.createElement("span")
+			unitLabel.className = `event-card-badge unit-${event.unit ?? "mixed"}`
+			unitLabel.textContent = getUnitTypeName(event.unit)
+			badgesContainer.appendChild(unitLabel)
+
+			const title = document.createElement("div")
+			title.className = "event-card-title"
+			title.textContent = event.name
+
+			const datesContainer = document.createElement("div")
+			datesContainer.className = "event-card-dates"
+			
+			const startDate = formatDate(event.starts_at)
+			const endDate = formatDate(event.ends_at)
+			datesContainer.innerHTML = `
+				<div><i class="bi bi-calendar-event"></i> Start: ${startDate}</div>
+				<div><i class="bi bi-calendar-check"></i> End: ${endDate}</div>
+			`
+
+			cardBody.appendChild(eventIdLabel)
+			cardBody.appendChild(badgesContainer)
+			cardBody.appendChild(title)
+			cardBody.appendChild(datesContainer)
+
+			card.appendChild(logoImg)
+			card.appendChild(cardBody)
+
+			return card
+		}
+
+		function renderEvents(events) {
+			const container = document.getElementById("eventsContainer")
+			container.innerHTML = ""
+
+			events.forEach(event => {
+				container.appendChild(createEventCard(event))
+			})
+		}
+
+		function filterEvents() {
+			const searchTerm = document.getElementById("searchInput").value.toLowerCase()
+			
+			let filtered = allEvents
+
+			// Filter by unit
+			if(currentFilter !== "all") {
+				filtered = filtered.filter(event => event.unit === currentFilter)
+			}
+
+			// Filter by search term
+			if(searchTerm) {
+				filtered = filtered.filter(event => 
+					event.name.toLowerCase().includes(searchTerm)
+				)
+			}
+
+			renderEvents(filtered)
+		}
+
+		// Load events
+		const cardPlaceholder = document.getElementById("cardPlaceholder")
+		for(let i=0;i<11;i++) {
+			document.getElementById("eventsContainer").appendChild(cardPlaceholder.cloneNode(true))
+		}
+		try {
+			const res = await fetch("/api/events")
+			if(!res.ok) {
+				throw new Error("Failed to fetch events")
+			}
+			
+			allEvents = await res.json()
+			allEvents.sort((a, b) => b.id - a.id)
+			
+			renderEvents(allEvents)
+		} catch(ex) {
+			console.error(ex)
+		}
+
+		document.getElementById("searchInput").addEventListener("input", filterEvents)
+
+		document.querySelectorAll(".filter-btn").forEach(x => {
+			x.addEventListener("click", function() {
+				document.querySelectorAll(".filter-btn").forEach(y => y.classList.remove("active"))
+				this.classList.add("active")
+				currentFilter = this.getAttribute("data-filter")
+				filterEvents()
+			})
+		})
+
+		document.getElementById("unitSelect").addEventListener("input", function() {
+			currentFilter = this.value !== "mixed" ? this.value : null
+			filterEvents()
+		})
+
+		document.getElementById("contactBtn").addEventListener("click", async function(event) {
+			const contactBody = document.getElementById("contactModalBody")
+
+			try {
+				const res = await fetch("/api/contact")
+				const data = await res.json()
+				if(res.ok) {
+					contactBody.innerHTML = data.contact_info
+				} else if(data.error) {
+					contactBody.innerHTML = `<p>Error: ${data.error}</p>`
+				} else {
+					throw new Error("Failed to fetch")
+				}
+			} catch(ex) {
+				contactBody.innerHTML = "<p>Failed to load. Please refresh and try again.</p>"
+			}
+		})
+	</script>
+</body>
+</html>

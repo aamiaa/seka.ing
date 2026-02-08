@@ -13,11 +13,12 @@ export interface LeaderboardDTO {
 	update_error?: string
 }
 
-interface UserRankingDTO {
+export interface UserRankingDTO {
 	name: string,
 	score: number,
 	rank: number,
-	card: CardDTO,
+	team?: number,
+	card?: CardDTO,
 	hash?: string,
 	delta?: number,
 	rank_delta?: number,

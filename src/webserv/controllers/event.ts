@@ -10,6 +10,7 @@ import { EventProfileDTO } from "../dto/event_profile";
 import { UserCardDefaultImage, UserCardSpecialTrainingStatus } from "sekai-api";
 import { getEventDTO } from "../../transformers/event";
 import { calculateEventBonus } from "../../sekai/helpers/event_bonus";
+import { getLeaderboardDTO } from "../../transformers/leaderboard";
 
 function getEventFromIdStr(eventId: string) {
 	if(eventId === "now") {
@@ -24,6 +25,10 @@ export default class EventController {
 		const withHonors = req.query.with_honors === "true"
 
 		const events = SekaiMasterDB.getEvents().map(x => getEventDTO(x, {withHonors}))
+		const snapshots = (await RankingSnapshotModel.aggregate([
+			{$group: {_id: "$eventId"}}
+		])).map(x => x._id)
+		events.forEach(event => event.has_snapshot = snapshots.includes(event.id))
 		return res.json(events)
 	}
 
@@ -37,6 +42,92 @@ export default class EventController {
 			res.set("Cache-Control", "no-store")
 		}
 		return res.json(data)
+	}
+
+	public static async getEventLeaderboard(req: Request, res: Response, next: NextFunction) {
+		const eventIdStr = req.params.eventId as string
+		const timestampStr = req.query.timestamp as string
+
+		const event = getEventFromIdStr(eventIdStr)
+		if(!event) {
+			return res.status(404).json({error: "Specified event doesn't exist"})
+		}
+
+		// For current event, return the cache unless timestamp is provided
+		const currentEvent = SekaiMasterDB.getCurrentEvent()
+		if(!timestampStr && event.id === currentEvent?.id) {
+			if(req.query.nocache) {
+				res.set("Cache-Control", "no-store")
+			}
+			return res.json(CacheStore.get("leaderboard"))
+		}
+
+		// For a past event without timestamp, return the final snapshot
+		if(!timestampStr) {
+			const snapshot = await RankingSnapshotModel.findOne({eventId: event.id, final: true})
+			const borderSnapshot = await BorderSnapshotModel.findOne({eventId: event.id, final: true})
+			if(!snapshot) {
+				return res.status(404).json({error: "Specified event was not recorded"})
+			}
+
+			const userIds =
+				snapshot.rankings.map(x => x.userId)
+				.concat(
+					borderSnapshot?.borderRankings?.map(x => x.userId)
+				)
+				.concat(
+					snapshot.userWorldBloomChapterRankings.flatMap(x => 
+						x.rankings.map(y => y.userId)
+					)
+				)
+				.concat(
+					borderSnapshot?.userWorldBloomChapterRankingBorders?.flatMap(x => 
+						x.borderRankings.map(y => y.userId)
+					)
+				).filter(x => x != null)
+			const profiles = await EventProfileModel.find({eventId: event.id, userId: {$in: userIds}}).lean()
+
+			return res.json(getLeaderboardDTO({event, profiles, snapshot, borderSnapshot}))
+		}
+
+		// For current and past events with timestamp,
+		// compute the change per hour fields
+		const timestamp = new Date(timestampStr)
+		const snapshot = await RankingSnapshotModel.findOne({eventId: event.id, createdAt: timestamp}).lean()
+		const borderSnapshot = await BorderSnapshotModel.findOne({eventId: event.id, createdAt: {$lte: timestamp}}, undefined, {sort: {createdAt: -1}}).lean()
+		if(!snapshot) {
+			return res.status(404).json({error: "No snapshot found at specified timestamp"})
+		}
+
+		const userIds =
+			snapshot.rankings.map(x => x.userId)
+			.concat(
+				borderSnapshot?.borderRankings?.map(x => x.userId)
+			)
+			.concat(
+				snapshot.userWorldBloomChapterRankings.flatMap(x => 
+					x.rankings.map(y => y.userId)
+				)
+			)
+			.concat(
+				borderSnapshot?.userWorldBloomChapterRankingBorders?.flatMap(x => 
+					x.borderRankings.map(y => y.userId)
+				)
+			).filter(x => x != null)
+		const profiles = await EventProfileModel.find({eventId: event.id, userId: {$in: userIds}}).lean()
+
+		const pastHour = new Date(timestamp.getTime() - 3600 * 1000)
+		const rankingsPastHour = await RankingSnapshotModel.find({eventId: event.id, createdAt: {$gte: pastHour, $lt: timestamp}}).lean()
+		const bordersPastHour = await BorderSnapshotModel.find({eventId: event.id, createdAt: {$gte: pastHour, $lt: timestamp}}).lean()
+
+		return res.json(getLeaderboardDTO({
+			event,
+			profiles,
+			snapshot,
+			borderSnapshot,
+			pastSnapshots: rankingsPastHour,
+			pastBorderSnapshots: bordersPastHour
+		}))
 	}
 
 	public static async getAnnouncements(req: Request, res: Response, next: NextFunction) {
@@ -296,5 +387,18 @@ export default class EventController {
 			const timeline = await model.getCutoffWorldlinkChapterTimeline(event.id, cutoff, eventChapter)
 			return res.json({timeline})
 		}
+	}
+
+	public static async getSnapshotsList(req: Request, res: Response, next: NextFunction) {
+		const eventIdStr = req.params.eventId as string
+		const event = getEventFromIdStr(eventIdStr)
+		if(!event) {
+			return res.status(404).json({error: "Specified event doesn't exist"})
+		}
+
+		const snapshots = await RankingSnapshotModel.find({eventId: event.id}, {_id: 0, timestamp: "$createdAt"}, {sort: {createdAt: 1}})
+		return res.json({
+			timeline: snapshots
+		})
 	}
 }

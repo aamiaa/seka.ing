@@ -310,5 +310,15 @@ export const BorderSnapshotSchema = new mongoose.Schema<IBorderSnapshotModel, IB
 	}
 })
 
+RankingSnapshotSchema.index({eventId: 1})
+RankingSnapshotSchema.index({createdAt: 1})
+RankingSnapshotSchema.index({eventId: 1, createdAt: 1})
+RankingSnapshotSchema.index({eventId: 1, final: 1})
+
+BorderSnapshotSchema.index({eventId: 1})
+BorderSnapshotSchema.index({createdAt: 1})
+BorderSnapshotSchema.index({eventId: 1, createdAt: 1})
+BorderSnapshotSchema.index({eventId: 1, final: 1})
+
 export const RankingSnapshotModel = mongoose.model<IRankingSnapshotModel, IRankingSnapshotModelStatic>("snapshots", RankingSnapshotSchema)
 export const BorderSnapshotModel = mongoose.model<IBorderSnapshotModel, IBorderSnapshotModelStatic>("border_snapshots", BorderSnapshotSchema)

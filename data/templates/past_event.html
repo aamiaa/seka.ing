@@ -47,71 +47,16 @@
 			--bs-nav-link-hover-color: #d1d1d1;
 		}
 
-		.nav-link-hover {
-			transition: all 0.3s ease;
-		}
-
-		.nav-link-hover:hover {
-			background-color: rgba(255, 255, 255, 0.1);
-			/* border-radius: 0.375rem; */
-		}
-
-		.nav-link-active {
-			background-color: #00ccbb;
-			--bs-navbar-active-color: var(--bs-offcanvas-bg);
-		}
-
-		.nav-link-active:hover {
-			background-color: #00ccbb;
-		}
-
-		.announcement-banner {
-			background-color: #ff77ab;
-			height: 32px;
-			opacity: 0.9;
-		}
-
-		.slide-parent {
-			container-type: inline-size; /* https://stackoverflow.com/a/75443310 */
-		}
-
-		.slide-child {
-			animation: scroll-anim 15s linear 1;
-		}
-
-		@keyframes fade-in-anim {
-			0% {
-				opacity: 0;
-			}
-			100% {
-				opacity: 0.9;
-			}
-		}
-
-		@keyframes fade-out-anim {
-			0% {
-				opacity: 0.9;
-			}
-			100% {
-				opacity: 0;
-			}
-		}
-
-		@keyframes scroll-anim {
-			0% {
-				transform: translateX(100cqw);
-			}
-			100% {
-				transform: translateX(-100%);
-			}
-		}
-
 		.past-hour-by-rank-col {
 			white-space: nowrap;
 		}
 
 		.no-select {
 			user-select: none;
+		}
+
+		.time-travel-collapsed {
+			bottom: -61px;
 		}
 	</style>
 </head>
@@ -121,78 +66,7 @@
 	<script src="/assets/flipdown.min.js"></script>
 	<script src="/assets/countdown.min.js"></script>
 	<script src="/assets/updater.js"></script>
-
-	<div class="sticky-top w-100">
-		<div id="announcementBanner" role="marquee" style="display: none; animation: fade-in-anim 0.5s linear 1;" class="announcement-banner slide-parent py-1 overflow-hidden">
-			<div id="announcementMessageContainer" class="slide-child d-inline-block">
-				<span id="announcementMessage" class="text-white text-nowrap">The Osechi group's Team Class Leader has won in the x10 special match!</span>
-			</div>
-		</div>
-		<div id="issuesBanner" role="alert" style="display: none;" class="py-3 bg-danger text-center rounded-bottom">
-			<span id="issuesBannerLabel"></span>
-		</div>
-		<div id="gameMaintenanceBanner" role="alert" style="display: none;" class="py-3 alert alert-warning alert-dismissible show text-center">
-			<span id="gameMaintenanceBannerLabel"></span>
-			<a id="gameMaintenanceBannerNewsLink" style="display: none;" target="_blank"><br>More Info</a>
-			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-		</div>
-	</div>
-
-	<header id="nextLogoContainer" class="my-3 d-flex justify-content-center align-items-center gap-1 d-none">
-		<img id="nextEventLogo" alt="Next event logo" width="300" height="128">
-		<img style="display: none;" id="nextEventChapterCharacter" alt="Worldlink chapter character icon" width="90" height="90">
-	</header>
-
-	<div id="nextEventCountdown" aria-label="Next event countdown" role="timer" class="mb-3 d-none">
-		<div id="nextEventCountdownClock" aria-hidden="true" class="flipdown"></div>
-	</div>
-
-	<hr id="eventSeparator" role="none" class="w-100 d-none">
 	
-	<nav class="navbar position-absolute top-0 start-0 mt-3 pt-0">
-		<div class="container-fluid">
-			<button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-			</button>
-		</div>
-		<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="navbarOffcanvasLgLabel">
-			<div class="offcanvas-header">
-				<div class="d-flex gap-2">
-					<img src="favicon.ico" alt="Logo" width="30" height="30">
-					<h5 class="offcanvas-title" id="offcanvasNavbarLabel">Sekaing</h5>
-				</div>
-				<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-			</div>
-			<div class="offcanvas-body">
-				<ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-					<li class="nav-item">
-						<a class="nav-link nav-link-hover nav-link-active rounded px-2 active d-flex gap-2" aria-current="page" href="/">
-							<i class="bi bi-trophy-fill"></i>
-							<span>Event Tracker</span>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link nav-link-hover rounded px-2 active d-flex gap-2" href="/events">
-							<i class="bi bi-calendar-week-fill"></i>
-							<span>Past Events</span>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link nav-link-hover rounded px-2 active d-flex gap-2" href="/titles">
-							<i class="bi bi-hdd-stack-fill"></i>
-							<span>Titles</span>
-						</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link nav-link-hover rounded px-2 active d-flex gap-2" href="/wl-graph">
-							<i class="bi bi-tree-fill"></i>
-							<span>Worldlink Graph</span>
-						</a>
-					</li>
-				</ul>
-			</div>
-		</div>
-	</nav>
 	<header id="logoContainer" class="my-3 d-flex justify-content-center align-items-center gap-1">
 		<span id="eventLogoPlaceholder" aria-hidden="true" class="placeholder-glow" style="width: 300px; height: 128px;">
 			<span class="placeholder rounded-4 w-100 h-100"></span>
@@ -229,8 +103,6 @@
 	<div style="display: none;" id="eventCountdown" aria-label="Event countdown" role="timer" class="mb-3">
 		<div id="eventCountdownClock" aria-hidden="true" class="flipdown"></div>
 	</div>
-
-	<p id="eventInfoMsg" style="display:none;" class="text-center mb-0"></p>
 
 	<div id="rankingContainer" class="row w-100 justify-content-center">
 		<div class="col-auto">
@@ -693,6 +565,15 @@
 					</div>
 				</div>
 			</div>
+			<div id="timeTravelContainer" class="w-100 sticky-bottom bg-body" style="transition: bottom 0.2s;">
+				<i id="timeTravelCollapse" class="bi bi-chevron-down fs-5" style="position: absolute; top: 0; left: 50%; cursor: pointer;"></i>
+				<div class="px-3 pt-4 pb-2">
+					<input type="range" class="w-100" id="timeTravelRange" value="100" disabled>
+					<div class="d-flex justify-content-center">
+						<input type="datetime-local" id="timeTravelDatePicker" class="form-control form-control-sm" style="width: unset;" disabled>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -715,40 +596,17 @@
 			</div>
 		</div>
 	</div>
-
-	<div class="modal fade" id="mySekaiBugModal" tabindex="-1" aria-labelledby="mySekaiBugModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h1 id="mySekaiBugModalLabel" class="modal-title fs-5">MySEKAI Talent Bug Info</h1>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<p class="placeholder-glow" aria-hidden="true">
-						<p>There is currently a bug with MySEKAI where the decorations bonus is not applied to the painting talent bonus.</p>
-						<p>This bug is only present in the game client (i.e. what runs on your device), but not in the api (i.e. what runs on SEGA's servers). This site uses information from the api, so it can only display the correct talent returned by it.</p>
-						<p>If you upgraded your cards with paintings, the game will always show you an incorrect lower talent until the bug is fixed. You can view the correct talent for yourself by viewing your default profile from an alt.</p>
-						<p>If you're wondering which talent is used when playing solo/coop, it is unfortunately the incorrect lower one, as your score is calculated by your own game.</p>
-					</p>
-				</div>
-			</div>
-		</div>
-	</div>
 	
-	<p id="errorMsg" style="display: none;">Failed to fetch updated leaderboard. Try again later.</p>
+	<p id="errorMsg" style="display: none;">Failed to fetch the snapshot. Try again later.</p>
 
-	<div class="mt-3">
-		<div class="form-check form-switch">
+	<div>
+		<div id="showBordersDiv" class="form-check form-switch">
 			<input class="form-check-input" type="checkbox" role="switch" id="showBordersCb">
 			<label class="form-check-label" for="showBordersCb" id="showBordersCbLabel">Show Highlights</label>
 		</div>
 		<div class="form-check form-switch">
 			<input class="form-check-input" type="checkbox" role="switch" id="compactModeCb">
 			<label class="form-check-label" for="compactModeCb" id="compactModeCbLabel">Compact Mode</label>
-		</div>
-		<div class="form-check form-switch d-none">
-			<input class="form-check-input" type="checkbox" role="switch" id="showCCAnnounceCb" checked>
-			<label class="form-check-label" for="showCCAnnounceCb">Show Cheerful Carnival sliding messages</label>
 		</div>
 	</div>
 
@@ -760,8 +618,8 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body d-flex flex-column gap-3">
-					<div>
-						<h4 id="eventProfileDeckLb">Current Team</h4>
+					<div id="eventProfileDataContainer">
+						<h4 id="eventProfileDeckLb">Last Saved Team</h4>
 						<div id="eventProfileDeck" class="d-flex gap-2 no-select mb-3"></div>
 						<div>
 							<details id="eventProfileTalentDetails">
@@ -770,13 +628,13 @@
 								<p id="eventProfileItemTalentLb" class="mb-0">Decoration Bonus:</p>
 								<p id="eventProfileCRTalentLb" class="mb-0">Character Rank Bonus:</p>
 								<p id="eventProfileTitleTalentLb" class="mb-0">Title Bonus:</p>
-								<p id="eventProfileFurnitureTalentLb" class="mb-0" style="display: none;">Furniture Bonus:</p>
-								<p id="eventProfileGateTalentLb" class="mb-0" style="display: none;">Gate Bonus:</p>
+								<p id="eventProfileGateTalentLb" class="mb-0" style="display: none;">MySekai Gate Bonus:</p>
+								<p id="eventProfileFurnitureTalentLb" class="mb-0" style="display: none;">MySekai Furniture Bonus:</p>
 							</details>
-							<p id="eventProfileTalentBugWarningLb" class="mb-0 text-warning" style="display: none;">Note: The actual effective talent might be lower due to a MySEKAI bug. <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#mySekaiBugModal">Learn more</a></p>
 						</div>
 						<p>Event Bonus: <span id="eventProfileBonusLb" class="fw-bold"></span></p>
 					</div>
+					<div class="alert alert-info text-center" role="alert">All data below reflects the point in time you're currently viewing!</div>
 					<div>
 						<h4>Recent Games</h4>
 						<div style="height: 6rem; width: 100%;">
@@ -828,6 +686,11 @@
 	</footer>
 
 	<script>
+		const eventId = parseInt(document.location.href.match(/\/events\/(\d+)/)?.[1])
+		if(eventId < 120) {
+			document.getElementById("showBordersDiv").classList.add("d-none")
+		}
+
 		let heatmapTimezone = "et"
 		if(document.location.hostname.startsWith("jp.")) {
 			document.title = `プロセカイベントトラッカー　｜　Sekaing`
@@ -898,20 +761,7 @@
 			return name.replace(/[<‹]\/?(?:#|a|align|allcaps|alpha|b|color|cspace|font|font-weight|gradient|i|indent|line-height|line-indent|link|lowercase|margin|mark|mspace|nobr|noparse|page|pos|rotate|s|size|smallcaps|space|sprite|style|sub|sup|u|uppercase|voffset|width).*?[>›]/gi, "")
 		}
 
-		let lastUpdatedAt
-		function toggleIssuesBanner(toggled, msg) {
-			const banner = document.getElementById("issuesBanner")
-			const label = document.getElementById("issuesBannerLabel")
-
-			if(toggled) {
-				label.innerText = msg + `\nLast update: ${lastUpdatedAt?.toLocaleTimeString() ?? "N/A"}`
-				banner.style.display = ""
-			} else {
-				banner.style.display = "none"
-			}
-		}
-
-		function toggleFailureMessage(toggled) {
+		function toggleFailureMessage(toggled, errorText) {
 			const rankingContainer = document.getElementById("rankingContainer")
 			const logoContainer = document.getElementById("logoContainer")
 			const logoPlaceholder = document.getElementById("eventCountdownPlaceholder")
@@ -922,33 +772,13 @@
 				logoContainer.style.setProperty("display", "none", "important")
 				logoPlaceholder.style.setProperty("display", "none", "important")
 				errorMsg.style.display = ""
+
+				if(errorText) {
+					errorMsg.textContent = `Failed to fetch the snapshot: ${errorText}`
+				}
 			} else {
 				rankingContainer.style.display = logoContainer.style.display = ""
 				errorMsg.style.display = "none"
-			}
-		}
-
-		function toggleMaintenanceBanner(toggled, data) {
-			if(toggled) {
-				const startsAt = new Date(data.starts_at)
-				const endsAt = new Date(data.ends_at)
-
-				const startsAtStr = startsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
-				const endsAtStr = endsAt.toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
-
-				const countdownStr = startsAt.getTime() - Date.now() < 60 * 1000 ? "less than a minute" : countdown(null, startsAt, countdown.HOURS | countdown.MINUTES).toString()
-
-				document.getElementById("gameMaintenanceBanner").style.display = ""
-				document.getElementById("gameMaintenanceBannerLabel").innerText = `Project Sekai maintenance is scheduled to take place in ${countdownStr}!\nMaintenance period: ${startsAtStr} - ${endsAtStr} local time`
-
-				if(data.news_id) {
-					document.getElementById("gameMaintenanceBannerNewsLink").style.display = ""
-					document.getElementById("gameMaintenanceBannerNewsLink").href = `https://n-production-web.sekai-en.com/information/index.html?id=${data.news_id}`
-				} else {
-					document.getElementById("gameMaintenanceBannerNewsLink").style.display = "none"
-				}
-			} else {
-				document.getElementById("gameMaintenanceBanner").style.display = "none"
 			}
 		}
 
@@ -962,16 +792,17 @@
 			return json.server_time
 		}
 
-		async function getLeaderboard(noCache) {
+		async function getLeaderboard(timestamp) {
 			try {
-				const res = await fetch("/api/events/now/leaderboard" + (noCache ? "?nocache=true" : ""))
+				const res = await fetch(`/api/events/${eventId}/leaderboard${timestamp ? `?timestamp=${timestamp}` : ""}`)
 				if(!res.ok) {
 					console.error("getLeaderboard() failed (1):", res.status)
 
 					if(res.headers.get("cf-mitigated") === "challenge") {
 						return {errorType: "challenge"}
 					}
-					return {errorType: "backend"}
+					const errorMsg = await res.json().then(x => x.error).catch(x => null)
+					return {errorType: "backend", errorMsg}
 				}
 
 				const json = await res.json()
@@ -980,16 +811,6 @@
 				console.error("getLeaderboard() failed (2):", ex)
 				return {errorType: "network"}
 			}
-		}
-
-		async function getAnnouncements() {
-			const res = await fetch("/api/cc-announcements")
-			if(!res.ok) {
-				throw new Error("getAnnouncements() failed: " + res.status)
-			}
-
-			const json = await res.json()
-			return json
 		}
 
 		async function getUserEventProfile(hash, abortSignal) {
@@ -1013,7 +834,7 @@
 		}
 
 		async function getCutoffStats(cutoff, chapter, abortSignal) {
-			const res = await fetch(`/api/events/now/cutoff-stats/${cutoff}${chapter != null ? `?chapter=${chapter}` : ""}`, {signal: abortSignal})
+			const res = await fetch(`/api/events/${eventId}/cutoff-stats/${cutoff}${chapter != null ? `?chapter=${chapter}` : ""}`, {signal: abortSignal})
 			if(!res.ok) {
 				throw new Error("getCutoffStats() failed: " + res.status)
 			}
@@ -1022,149 +843,145 @@
 			return json
 		}
 
-		async function getGameMaintenance() {
-			const res = await fetch("/api/game/maintenance")
+		async function getSnapshots() {
+			const res = await fetch(`/api/events/${eventId}/snapshots`)
 			if(!res.ok) {
-				throw new Error("getGameMaintenance() failed: " + res.status)
+				throw new Error("getSnapshots() failed: " + res.status)
 			}
 
 			const json = await res.json()
 			return json
 		}
 
-		const announceQueue = []
-		let announceDebounce = false
-		function queueAnnouncement(message) {
-			announceQueue.push(message)
-			announcementLoop()
-		}
-
-		// the only way to restart a css animation is to remove the css, cause reflow, re-add the css
-		// https://stackoverflow.com/a/45036752
-		// love html xoxo
-		function announcementLoop() {
-			if(!announceDebounce && announceQueue.length > 0) {
-				announceDebounce = true
-				document.getElementById("announcementBanner").style.animationName = "fade-in-anim"
-				document.getElementById("announcementBanner").style.display = ""
-				document.getElementById("announcementMessageContainer").classList.add("scrolling-animation-container")
-				document.getElementById("announcementMessage").style.display = ""
-				document.getElementById("announcementMessage").innerText = announceQueue.shift()
-			}
-		}
-		announcementMessageContainer.addEventListener("animationend", event => {
-			announceDebounce = false
-
-			document.getElementById("announcementMessage").style.display = "none"
-			document.getElementById("announcementBanner").style.animationName = "fade-out-anim"
-		})
-		announcementBanner.addEventListener("animationend", event => {
-			if(event.animationName !== "fade-out-anim") {
-				return
-			}
-
-			document.getElementById("announcementBanner").style.display = "none"
-			document.getElementById("announcementMessageContainer").classList.remove("scrolling-animation-container")
-			document.getElementById("announcementMessageContainer").offsetHeight
-
-			announcementLoop()
-		})
-
 		let currentEvent
 		let timerStarted = false
-		let nextTimerStarted = false
-		let lastLbUpdate
-		let lastMaintCheck
-		let lastMaintRes
 		let trackHash = localStorage.getItem("trackHash")
 		let clockOffset = 0
+		let lbCache
+		let snapshotsTimeline
+		let offsetToReduceIntSize
+		let currentTimeTravelTimestamp
 
-		async function doUpdate() {
-			if(lastLbUpdate && document.visibilityState === "hidden") {
+		function updateTimeTravelValues(snapshotDate) {
+			// update clock
+			const diff = new Date(currentEvent.ends_at).getTime() - snapshotDate.getTime()
+			flipdown.epoch = Math.floor((Date.now() + diff)/1000)
+			flipdown._tick()
+
+			// update date picker
+			document.getElementById("timeTravelDatePicker").value = `${snapshotDate.getFullYear()}-${(snapshotDate.getMonth() + 1).toString().padStart(2, "0")}-${snapshotDate.getDate().toString().padStart(2, "0")}T${snapshotDate.getHours().toString().padStart(2, "0")}:${snapshotDate.getMinutes().toString().padStart(2, "0")}`
+
+			// update slider
+			document.getElementById("timeTravelRange").value = snapshotDate.getTime() - offsetToReduceIntSize
+		}
+
+		function toggleTimeTravelInput(enabled) {
+			if(!enabled) {
+				document.getElementById("timeTravelRange").setAttribute("disabled", "true")
+				document.getElementById("timeTravelDatePicker").setAttribute("disabled", "true")
+				document.getElementById("showBordersCb").setAttribute("disabled", "true")
+				document.getElementById("compactModeCb").setAttribute("disabled", "true")
+			} else {
+				document.getElementById("timeTravelRange").removeAttribute("disabled")
+				document.getElementById("timeTravelDatePicker").removeAttribute("disabled")
+				document.getElementById("showBordersCb").removeAttribute("disabled")
+				document.getElementById("compactModeCb").removeAttribute("disabled")
+			}
+		}
+
+		async function timeTravel(snapshotDate) {
+			updateTimeTravelValues(snapshotDate) // this is needed here to constrain the date picker
+			if(snapshotDate.getTime() === currentTimeTravelTimestamp) {
 				return
 			}
+			currentTimeTravelTimestamp = snapshotDate.getTime()
 
-			const {data, errorType} = await getLeaderboard(!timerStarted)
-			if(!data) {
-				if(errorType === "challenge") {
-					return document.location.reload()
+			toggleTimeTravelInput(false)
+			lbCache = null
+			if(snapshotDate.getTime() === snapshotsTimeline.at(-1).getTime()) {
+				await doUpdate()
+				history.replaceState(null, "", document.location.pathname)
+			} else {
+				history.replaceState(null, "", document.location.pathname + "?t=" + snapshotDate.getTime())
+				await doUpdate(snapshotDate)
+			}
+			toggleTimeTravelInput(true)
+		}
+
+		async function doUpdate(snapshotDate) {
+			if(!lbCache) {
+				const res = await getLeaderboard(snapshotDate?.toISOString())
+				if(!res.data) {
+					toggleFailureMessage(true, res.errorMsg)
+					return
+				}
+				lbCache = res.data
+			}
+
+			const data = lbCache
+
+			if(!snapshotsTimeline) {
+				snapshotsTimeline = (await getSnapshots()).timeline.map(x => new Date(x.timestamp))
+				offsetToReduceIntSize = snapshotsTimeline[0].getTime()
+				if(!currentTimeTravelTimestamp) {
+					currentTimeTravelTimestamp = snapshotsTimeline.at(-1).getTime()
 				}
 
-				if(!lastLbUpdate) {
-					toggleFailureMessage(true)
-				} else {
-					let msg = "An unknown error has occurred."
+				const timeTravelRange = document.getElementById("timeTravelRange")
 
-					switch(errorType) {
-						case "backend":
-							msg = "We're experiencing issues. The leaderboard might not be up to date!"
-							break
-						case "network":
-							msg = "Your network is offline. The leaderboard cannot update!"
-							break
+				timeTravelRange.min = snapshotsTimeline[0].getTime() - offsetToReduceIntSize
+				timeTravelRange.max = snapshotsTimeline.at(-1).getTime() - offsetToReduceIntSize
+				timeTravelRange.value = timeTravelRange.max
+				timeTravelRange.removeAttribute("disabled")
+				document.getElementById("timeTravelDatePicker").value = `${snapshotsTimeline.at(-1).getFullYear()}-${(snapshotsTimeline.at(-1).getMonth() + 1).toString().padStart(2, "0")}-${snapshotsTimeline.at(-1).getDate().toString().padStart(2, "0")}T${snapshotsTimeline.at(-1).getHours().toString().padStart(2, "0")}:${snapshotsTimeline.at(-1).getMinutes().toString().padStart(2, "0")}`
+				document.getElementById("timeTravelDatePicker").removeAttribute("disabled")
+
+				const values = snapshotsTimeline.map(x => x.getTime() - offsetToReduceIntSize)
+				timeTravelRange.addEventListener("input", function() {
+					let value = parseInt(this.value)
+
+					// constrain values to the available ones
+					if(!values.includes(value)) {
+						const prevVal = values.findLast(x => x < value)
+						const nextVal = values.find(x => x > value)
+
+						const percent = 1 - (nextVal-value)/(nextVal-prevVal)
+						if(percent >= 0.5) {
+							value = this.value = nextVal
+						} else {
+							value = this.value = prevVal
+						}
 					}
 
-					toggleIssuesBanner(true, msg)
-				}
-				return
-			}
-			lastUpdatedAt = data.updated_at && new Date(data.updated_at)
-
-			// Check for game maintenances
-			if(!lastMaintCheck || (Date.now() - lastMaintCheck.getTime() >= 10 * 60 * 1000)) {
-				lastMaintRes = await getGameMaintenance()
-				lastMaintCheck = new Date()
-			}
-
-			if(document.getElementById("gameMaintenanceBanner") != null) { // If banner wasn't dismissed
-				const next = lastMaintRes.planned_maintenances.find(x => {
-					const startsAt = new Date(x.starts_at).getTime()
-					return startsAt > Date.now() && (startsAt - Date.now() < 4 * 3600 * 1000)
+					const date = new Date(value + offsetToReduceIntSize)
+					updateTimeTravelValues(date)
 				})
-				if(next) {
-					toggleMaintenanceBanner(true, next)
-				} else {
-					toggleMaintenanceBanner(false)
+
+				document.getElementById("timeTravelDatePicker").addEventListener("focusout", async function() {
+					const value = new Date(this.value)
+					const nearest = snapshotsTimeline.findLast(x => Math.abs(x.getTime() - value.getTime()) < 60_000 || (x.getTime() <= value.getTime())) ?? snapshotsTimeline[0]
+
+					await timeTravel(nearest)
+				})
+
+				const handler = async function() {
+					const value = parseInt(this.value)
+					const date = new Date(value + offsetToReduceIntSize)
+
+					await timeTravel(date)
 				}
-			}
-			
-			toggleFailureMessage(false)
-			if(data.aggregate_until) {
-				toggleIssuesBanner(true, `The leaderboard is calculating until ${new Date(data.aggregate_until).toLocaleTimeString()}!`)
-			} else if(data.update_error) {
-				let msg = "An unknown error has occurred."
-
-				switch(data.update_error) {
-					case "maintenance":
-						if(lastMaintRes.active_maintenance) {
-							const startTimeStr = new Date(lastMaintRes.active_maintenance.starts_at).toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
-							const endTimeStr = new Date(lastMaintRes.active_maintenance.ends_at).toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
-							msg = `Project Sekai is under maintenance. The leaderboard cannot update!\nMaintenance period: ${startTimeStr} - ${endTimeStr} local time.`
-						} else {
-							msg = "Project Sekai is under maintenance. The leaderboard cannot update!"
-						}
-						break
-				}
-
-				toggleIssuesBanner(true, msg)
-			} else if(lastUpdatedAt && (Date.now() - lastUpdatedAt.getTime() > 3 * 60 * 1000)) {
-				toggleIssuesBanner(true, "We're experiencing issues. The leaderboard might not be up to date!")
-			} else {
-				toggleIssuesBanner(false)
-			}
-
-			if(!data.event) { // Backend restarting
-				return
+				timeTravelRange.addEventListener("mouseup", handler)
+				timeTravelRange.addEventListener("touchend", handler)
 			}
 			
 			const eventData = currentEvent = data.event
 			document.getElementById("eventLogoPlaceholder").style.display = "none"
-			document.getElementById("eventLogo").src = `assets/${eventData.name_key}.png`
+			document.getElementById("eventLogo").src = `/assets/${eventData.name_key}.png`
 			document.getElementById("eventLogo").alt = `${eventData.name} event logo`
 			document.getElementById("eventLogo").style.display = ""
 			if(eventData.chapter_character) {
 				document.getElementById("eventChapterCharacter").style.display = ""
-				document.getElementById("eventChapterCharacter").src = `assets/character_${eventData.chapter_character}.png`
+				document.getElementById("eventChapterCharacter").src = `/assets/character_${eventData.chapter_character}.png`
 
 				const characterName = eventData.chapters.find(x => x.num === eventData.chapter_num)?.title
 				if(characterName) {
@@ -1190,41 +1007,9 @@
 				document.getElementById("eventCountdown").style.display = ""
 				
 				const eventEndsAt = new Date(eventData.ends_at)
-				const flipdown = new FlipDown(Math.floor((eventEndsAt.getTime() + clockOffset)/1000), "eventCountdownClock", {theme: "light"})
+				flipdown = new FlipDown(Math.floor((eventEndsAt.getTime() + clockOffset)/1000), "eventCountdownClock", {theme: "light"})
 				flipdown.start()
-			}
-			if(eventData.titles_at && !eventData.chapter_num && new Date(eventData.ends_at).getTime() < Date.now() && new Date(eventData.titles_at).getTime() > Date.now()) {
-				document.getElementById("eventInfoMsg").style.display = ""
-				document.getElementById("eventInfoMsg").innerText = `Event titles will be distributed in ${countdown(null, new Date(eventData.titles_at), countdown.HOURS | countdown.MINUTES).toString()}`
-			} else {
-				document.getElementById("eventInfoMsg").style.display = "none"
-			}
-
-			const nextEventData = data.next_event
-			if(nextEventData) {
-				document.getElementById("nextLogoContainer").classList.remove("d-none")
-				document.getElementById("nextEventLogo").src = `assets/${nextEventData.name_key}.png`
-				document.getElementById("nextEventLogo").alt = `${nextEventData.name} event logo`
-
-				if(nextEventData.chapter_character) {
-					document.getElementById("nextEventChapterCharacter").style.display = ""
-					document.getElementById("nextEventChapterCharacter").src = `assets/character_${nextEventData.chapter_character}.png`
-				}
-
-				if(nextEventData.starts_at && !nextTimerStarted) {
-					nextTimerStarted = true
-					document.getElementById("nextEventCountdown").classList.remove("d-none")
-					
-					const eventStartsAt = new Date(nextEventData.starts_at)
-					const flipdown = new FlipDown(Math.floor((eventStartsAt.getTime() + clockOffset)/1000), "nextEventCountdownClock", {theme: "light"})
-					flipdown.start()
-				}
-
-				document.getElementById("eventSeparator").classList.remove("d-none")
-			} else {
-				document.getElementById("nextLogoContainer").classList.add("d-none")
-				document.getElementById("nextEventCountdown").classList.add("d-none")
-				document.getElementById("eventSeparator").classList.add("d-none")
+				clearInterval(flipdown.countdown)
 			}
 
 			const showHighlights = document.getElementById("showBordersCb").checked
@@ -1256,7 +1041,7 @@
 					tbl.style.setProperty("--bs-table-hover-bg", hoverColor)
 
 					const chapterStart = new Date(chapter.starts_at)
-					if(chapterStart.getTime() > Date.now()) {
+					if(chapterStart.getTime() > currentTimeTravelTimestamp) {
 						tbl.style.display = "none"
 						document.getElementById(`eventTableChapter${chapter.num}Countdown`).style.display = ""
 						document.getElementById(`eventTableChapter${chapter.num}CountdownLabel`).innerText = chapterStart.toLocaleString()
@@ -1270,52 +1055,7 @@
 					const chapterNum = idx + 1
 					updateLeaderboard(document.getElementById("eventTableChapter" + chapterNum), rankings, chapterNum)
 				}
-
-				if(!lastLbUpdate) {
-					const idx = localStorage.getItem("tabIdx") ?? data.event.chapters.find(x => x.current)?.num
-					if(idx) {
-						switchTab(+idx)
-					}
-				}
 			}
-
-			if(eventData.type === "cheerful_carnival") {
-				try {
-					const res = await getAnnouncements()
-
-					if(res.team_stats.length > 0 && !document.getElementById("compactModeCb").checked) {
-						document.getElementById("ccTeamsContainer").classList.remove("d-none")
-						for(const [idx, teamStats] of res.team_stats.entries()) {
-							document.getElementById(`ccTeam${idx + 1}Img`).src = `/assets/team_${teamStats.team_id}.png`
-							document.getElementById(`ccTeam${idx + 1}Bonus`).textContent = formatNumber(teamStats.total_bonus) + " Bonus"
-
-							if(teamStats.midterm) {
-								document.getElementById(`ccTeam${idx + 1}MidtermContainer`).style.display = ""
-								document.getElementById(`ccTeam${idx + 1}MidtermLabel`).textContent = `Term ${teamStats.midterm.seq}:`
-								document.getElementById(`ccTeam${idx + 1}MidtermPoints`).textContent = formatNumber(teamStats.midterm.points)
-							}
-						}
-					} else {
-						document.getElementById("ccTeamsContainer").classList.add("d-none")
-					}
-
-					const isEnabled = document.getElementById("showCCAnnounceCb").checked
-					const isFresh = Date.now() - new Date(res.updated_at).getTime() <= 2 * 60 * 1000 && res.updated_at !== localStorage.getItem("lastCCAnnounce")
-					if(isEnabled && isFresh && res.announcements.length > 0) {
-						localStorage.setItem("lastCCAnnounce", res.updated_at)
-						
-						for(const message of res.announcements) {
-							queueAnnouncement(message)
-						}
-					}
-				} catch(ex) {
-					console.error(ex)
-				}
-			} else {
-				document.getElementById("ccTeamsContainer").classList.add("d-none")
-			}
-
-			lastLbUpdate = new Date()
 		}
 
 		function updateLeaderboard(table, rankings, chapter) {
@@ -1352,7 +1092,7 @@
 
 				nameCellDiv.setAttribute("class", "d-flex align-items-center gap-2 username-cell")
 
-				if(!document.getElementById("compactModeCb").checked) {
+				if(!document.getElementById("compactModeCb").checked && slot.card) {
 					nameCell.style.paddingTop = "5px"
 					nameCell.style.paddingBottom = "5px"
 
@@ -1368,7 +1108,7 @@
 							event.preventDefault()
 							event.stopPropagation()
 							new bootstrap.Modal("#eventProfileModal").show()
-							loadEventProfileModal(slot.hash, slot.rank, chapter)
+							loadEventProfileModal(slot, chapter)
 						})
 					}
 
@@ -1394,7 +1134,7 @@
 						event.preventDefault()
 						event.stopPropagation()
 						new bootstrap.Modal("#eventProfileModal").show()
-						loadEventProfileModal(slot.hash, slot.rank, chapter)
+						loadEventProfileModal(slot, chapter)
 					})
 				}
 				nameCellDiv.appendChild(nameLabel)
@@ -1468,7 +1208,8 @@
 
 		let lastCharts = []
 		let profileModalAbort
-		async function loadEventProfileModal(hash, cutoff, chapter) {
+		async function loadEventProfileModal(slot, chapter) {
+			const {name, hash, card, rank: cutoff} = slot
 			// Clear old values
 			eventProfileDeck.innerHTML = ""
 			document.getElementById("eventProfileTalentDetails").open = false
@@ -1478,9 +1219,8 @@
 			document.getElementById("eventProfileItemTalentLb").textContent = "Decoration Bonus:"
 			document.getElementById("eventProfileCRTalentLb").textContent = "Character Rank Bonus:"
 			document.getElementById("eventProfileTitleTalentLb").textContent = "Title Bonus:"
-			document.getElementById("eventProfileFurnitureTalentLb").textContent = "Furniture Bonus:"
-			document.getElementById("eventProfileGateTalentLb").textContent = "Gate Bonus:"
-			document.getElementById("eventProfileTalentBugWarningLb").style.display = "none"
+			document.getElementById("eventProfileGateTalentLb").textContent = "MySekai Gate Bonus:"
+			document.getElementById("eventProfileFurnitureTalentLb").textContent = "MySekai Furniture Bonus:"
 			document.getElementById("eventProfileBonusLb").textContent = ""
 			lastCharts.forEach(x => {
 				x.clear()
@@ -1499,64 +1239,67 @@
 				document.getElementById("heatmapTimezoneCb").checked = true
 			}
 
-			if(Date.now() > new Date(currentEvent.ends_at).getTime()) {
-				document.getElementById("eventProfileDeckLb").textContent = "Event Team"
-			} else {
-				document.getElementById("eventProfileDeckLb").textContent = "Current Team"
+			let profile
+			try {
+				profile = await getUserEventProfile(hash, profileModalAbort.signal)
+			} catch(ex) {
+				console.error("Profile fetch failed:", ex)
 			}
 
-			const profile = await getUserEventProfile(hash, profileModalAbort.signal)
 			const statsPromise = getUserEventStats(hash, chapter, profileModalAbort.signal)
 			const cutoffPromise = getCutoffStats(cutoff, chapter, profileModalAbort.signal)
 
 			// Render name
-			document.getElementById("eventProfileModalLabel").textContent = removeTMPTags(profile.name)
+			document.getElementById("eventProfileModalLabel").textContent = removeTMPTags(name)
 
-			// Render cards
-			for(const [idx, card] of profile.cards.entries()) {
-				const img = document.createElement("img")
-				img.style.minWidth = "80px"
-				img.style.width = "100%"
-				img.style.maxWidth = "128px"
-				img.src = `/images/card/deck/${card.id}.png?level=${card.level}&mastery=${card.mastery}&trained=${card.trained}&image=${card.image}&slot=${idx}`
-				img.alt = img.title = card.description
+			if(profile) {
+				document.getElementById("eventProfileDataContainer").style.display = ""
 
-				const a = document.createElement("a")
-				a.href = `https://sekai.best/card/${card.id}`
-				a.target = "_blank"
-				a.appendChild(img)
+				// Render cards
+				for(const [idx, card] of profile.cards.entries()) {
+					const img = document.createElement("img")
+					img.style.minWidth = "80px"
+					img.style.width = "100%"
+					img.style.maxWidth = "128px"
+					img.src = `/images/card/deck/${card.id}.png?level=${card.level}&mastery=${card.mastery}&trained=${card.trained}&image=${card.image}&slot=${idx}`
+					img.alt = img.title = card.description
 
-				const div = document.createElement("div")
-				div.style.aspectRatio = "312/510"
-				div.style.maxWidth = "20%"
-				div.appendChild(a)
+					const a = document.createElement("a")
+					a.href = `https://sekai.best/card/${card.id}`
+					a.target = "_blank"
+					a.appendChild(img)
 
-				document.getElementById("eventProfileDeck").appendChild(div)
-			}
+					const div = document.createElement("div")
+					div.style.aspectRatio = "312/510"
+					div.style.maxWidth = "20%"
+					div.appendChild(a)
 
-			// Render talent
-			document.getElementById("eventProfileTalentLb").textContent = formatNumber(profile.talent.total_talent)
-			document.getElementById("eventProfileBaseTalentLb").textContent = `Base Talent: ${formatNumber(profile.talent.basic_talent)}`
-			document.getElementById("eventProfileItemTalentLb").textContent = `Decoration Bonus: ${formatNumber(profile.talent.area_item_bonus)}`
-			document.getElementById("eventProfileCRTalentLb").textContent = `Character Rank Bonus: ${formatNumber(profile.talent.character_rank_bonus)}`
-			document.getElementById("eventProfileTitleTalentLb").textContent = `Title Bonus: ${formatNumber(profile.talent.honor_bonus)}`
-			if(profile.talent.mysekai_gate_bonus != null && profile.talent.mysekai_furniture_bonus != null) {
-				document.getElementById("eventProfileFurnitureTalentLb").style.display = ""
-				document.getElementById("eventProfileGateTalentLb").style.display = ""
-
-				document.getElementById("eventProfileFurnitureTalentLb").textContent = `Furniture Bonus: ${formatNumber(profile.talent.mysekai_furniture_bonus)}`
-				document.getElementById("eventProfileGateTalentLb").textContent = `Gate Bonus: ${formatNumber(profile.talent.mysekai_gate_bonus)}`
-
-				if(profile.talent.mysekai_gate_bonus > 0) {
-					document.getElementById("eventProfileTalentBugWarningLb").style.display = ""
+					document.getElementById("eventProfileDeck").appendChild(div)
 				}
-			}
 
-			// Render event bonus
-			document.getElementById("eventProfileBonusLb").textContent = profile.event_bonus != null ? `${profile.event_bonus}%` : "¯\\_(ツ)_/¯"
+				// Render talent
+				document.getElementById("eventProfileTalentLb").textContent = formatNumber(profile.talent.total_talent)
+				document.getElementById("eventProfileBaseTalentLb").textContent = `Base Talent: ${formatNumber(profile.talent.basic_talent)}`
+				document.getElementById("eventProfileItemTalentLb").textContent = `Decoration Bonus: ${formatNumber(profile.talent.area_item_bonus)}`
+				document.getElementById("eventProfileCRTalentLb").textContent = `Character Rank Bonus: ${formatNumber(profile.talent.character_rank_bonus)}`
+				document.getElementById("eventProfileTitleTalentLb").textContent = `Title Bonus: ${formatNumber(profile.talent.honor_bonus)}`
+				if(profile.talent.mysekai_gate_bonus != null && profile.talent.mysekai_furniture_bonus != null) {
+					document.getElementById("eventProfileGateTalentLb").style.display = ""
+					document.getElementById("eventProfileFurnitureTalentLb").style.display = ""
+
+					document.getElementById("eventProfileGateTalentLb").textContent = `MySekai Gate Bonus: ${formatNumber(profile.talent.mysekai_gate_bonus)}`
+					document.getElementById("eventProfileFurnitureTalentLb").textContent = `MySekai Furniture Bonus: ${formatNumber(profile.talent.mysekai_furniture_bonus)}`
+				}
+
+				// Render event bonus
+				document.getElementById("eventProfileBonusLb").textContent = profile.event_bonus != null ? `${profile.event_bonus}%` : "¯\\_(ツ)_/¯"
+			} else {
+				document.getElementById("eventProfileDataContainer").style.display = "none"
+			}
 
 			const stats = await statsPromise
 			stats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
+			stats.timeline = stats.timeline.filter(x => x.timestamp.getTime() <= currentTimeTravelTimestamp)
 			const deltaTimeline = []
 			for(const [idx, val] of stats.timeline.entries()) {
 				if(idx === 0 || stats.timeline[idx-1].score !== val.score) {
@@ -1565,7 +1308,7 @@
 			}
 
 			// Render recent games
-			const hourAgo = new Date(Date.now() - 3600 * 1000)
+			const hourAgo = new Date(currentTimeTravelTimestamp - 3600 * 1000)
 			const recentGames = []
 			for(const [idx, dataPoint] of deltaTimeline.entries()) {
 				if(dataPoint.timestamp >= hourAgo && (recentGames.length === 0 || (deltaTimeline[idx-1]?.score || 0) < dataPoint.score)) {
@@ -1604,9 +1347,6 @@
 							},
 							ticks: {
 								callback: function(value, index, values) {
-									if(value === 60) {
-										return "Now"
-									}
 									return new Date(hourAgo.getTime() + value * 60 * 1000).toLocaleTimeString(undefined, {hour: "numeric", minute: "numeric"})
 								}
 							}
@@ -1658,14 +1398,15 @@
 
 			const cutoffStats = await cutoffPromise
 			cutoffStats.timeline.forEach(x => x.timestamp = new Date(x.timestamp))
+			cutoffStats.timeline = cutoffStats.timeline.filter(x => x.timestamp.getTime() <= currentTimeTravelTimestamp)
 
 			document.getElementById("copyHeatmapBtn").onclick = async function() {
 				const title = `T${cutoff} ${currentEvent.name}${chapter != null ? `, Chapter ${chapter}` : ""}`
 				const subtitle = `${deltaTimeline.length} total games`
-				const leaderCard = profile.cards[0]
-				const iconUrl = `/images/card/leader/${leaderCard.id}.png?level=${leaderCard.level}&mastery=${leaderCard.mastery}&trained=${leaderCard.trained}&image=${leaderCard.image}`
+				const leaderCard = profile?.cards?.[0] ?? card
+				const iconUrl = leaderCard && `/images/card/leader/${leaderCard.id}.png?level=${leaderCard.level}&mastery=${leaderCard.mastery}&trained=${leaderCard.trained}&image=${leaderCard.image}`
 
-				await copyHeatmap(title, subtitle, profile.name, iconUrl)
+				await copyHeatmap(title, subtitle, name, iconUrl)
 
 				const span = this.querySelector("span")
 				const currentText = span.textContent
@@ -1715,7 +1456,7 @@
 					labels: labels,
 					datasets: [
 						{
-							label: removeTMPTags(profile.name),
+							label: removeTMPTags(name),
 							data: recentGamesByDelta.map(x => x.y),
 							spanGaps: true,
 							pointRadius: 0,
@@ -1855,7 +1596,7 @@
 				document.getElementById("heatmapContainer").appendChild(text)
 			}
 
-			const effectiveDays = days.filter(x => x.getTime() <= shiftTimestampByTimezone(Date.now(), tzOffset))
+			const effectiveDays = days.filter(x => x.getTime() <= shiftTimestampByTimezone(currentTimeTravelTimestamp, tzOffset))
 			document.getElementById("heatmapContainer").setAttribute("viewBox", `${XOffsetStart} 0 ${BoxWidthHeight * 24 + XOffsetEnd} ${BoxWidthHeight * effectiveDays.length + BoxStrokeSize + HourLabelHeight + HourLabelPadding}`)
 
 			for(const [dayIdx, day] of days.entries()) {
@@ -1863,7 +1604,7 @@
 					const dateAt = new Date(day.getTime() + i * 3600 * 1000)
 					const dateIn1h = new Date(day.getTime() + (i + 1) * 3600 * 1000)
 
-					if(dateAt.getTime() > shiftTimestampByTimezone(Date.now(), tzOffset)) {
+					if(dateAt.getTime() > shiftTimestampByTimezone(currentTimeTravelTimestamp, tzOffset)) {
 						continue
 					}
 
@@ -1880,7 +1621,7 @@
 					text.setAttribute("y", (dayIdx * BoxWidthHeight + HourLabelHeight + HourLabelPadding + BoxWidthHeight/2).toString())
 					text.setAttribute("text-anchor", "middle")
 					text.setAttribute("dominant-baseline", "central")
-					if(dateAt.getTime() >= shiftTimestampByTimezone(startDate.getTime(), tzOffset) && dateAt.getTime() < shiftTimestampByTimezone(endDate.getTime(), tzOffset) && dateAt.getTime() <= shiftTimestampByTimezone(Date.now(), tzOffset)) {
+					if(dateAt.getTime() >= shiftTimestampByTimezone(startDate.getTime(), tzOffset) && dateAt.getTime() < shiftTimestampByTimezone(endDate.getTime(), tzOffset) && dateAt.getTime() <= shiftTimestampByTimezone(currentTimeTravelTimestamp, tzOffset)) {
 						const amountOfGames = timeline.filter(x => shiftTimestampByTimezone(x.timestamp.getTime(), tzOffset) >= dateAt.getTime() && shiftTimestampByTimezone(x.timestamp.getTime(), tzOffset) < dateIn1h.getTime()).length
 						text.textContent = amountOfGames
 						rect.setAttribute("fill", colors[Math.min(amountOfGames, colors.length-1)])
@@ -1897,13 +1638,6 @@
 			// document.getElementById("heatmapPlaceholder").style.display = "none"
 		}
 
-		if(localStorage.getItem("showCCAnnounce") === "false") {
-			document.getElementById("showCCAnnounceCb").checked = false
-		}
-		document.getElementById("showCCAnnounceCb").addEventListener("change", function(event) {
-			localStorage.setItem("showCCAnnounce", this.checked.toString())
-		})
-
 		if(localStorage.getItem("compactMode") === "true") {
 			document.getElementById("compactModeCb").checked = true
 		}
@@ -1913,7 +1647,6 @@
 			this.scrollIntoView({behavior: "instant", block: "center"})
 		})
 
-
 		if(localStorage.getItem("showBorders") === "true") {
 			document.getElementById("showBordersCb").checked = true
 		}
@@ -1921,6 +1654,12 @@
 			localStorage.setItem("showBorders", this.checked.toString())
 			await doUpdate()
 			this.scrollIntoView({behavior: "instant", block: "center"})
+		})
+
+		document.getElementById("timeTravelCollapse").addEventListener("click", function(event) {
+			document.getElementById("timeTravelContainer").classList.toggle("time-travel-collapsed")
+			this.classList.toggle("bi-chevron-down")
+			this.classList.toggle("bi-chevron-up")
 		})
 
 		async function copyHeatmap(title, subtitle, playerName, iconUrl) {
@@ -1960,23 +1699,27 @@
 			playerNameLb.textContent = playerName
 			svgElement.appendChild(playerNameLb)
 
-			// svg image href has to be set as base64 data string,
-			// as normal url doesn't work outside of document body for some reason 
-			const playerIconData = await fetch(iconUrl).then(res => res.blob())
-			.then(blob => new Promise((resolve, reject) => {
-				const reader = new FileReader()
-				reader.onloadend = () => resolve(reader.result)
-				reader.onerror = reject
-				reader.readAsDataURL(blob)
-			}))
+			if(iconUrl) {
+				// svg image href has to be set as base64 data string,
+				// as normal url doesn't work outside of document body for some reason 
+				const playerIconData = await fetch(iconUrl).then(res => res.blob())
+				.then(blob => new Promise((resolve, reject) => {
+					const reader = new FileReader()
+					reader.onloadend = () => resolve(reader.result)
+					reader.onerror = reject
+					reader.readAsDataURL(blob)
+				}))
 
-			const playerIcon = document.createElementNS("http://www.w3.org/2000/svg", "image")
-			playerIcon.setAttribute("x", "0")
-			playerIcon.setAttribute("y", "-40")
-			playerIcon.setAttribute("width", "30")
-			playerIcon.setAttribute("height", "30")
-			playerIcon.setAttribute("href", playerIconData)
-			svgElement.appendChild(playerIcon)
+				const playerIcon = document.createElementNS("http://www.w3.org/2000/svg", "image")
+				playerIcon.setAttribute("x", "0")
+				playerIcon.setAttribute("y", "-40")
+				playerIcon.setAttribute("width", "30")
+				playerIcon.setAttribute("height", "30")
+				playerIcon.setAttribute("href", playerIconData)
+				svgElement.appendChild(playerIcon)
+			} else {
+				playerNameLb.setAttribute("x", "5")
+			}
 
 			const bbox = heatmapContainer.getBBox()
 			svgElement.setAttribute("width", bbox.width * scale)
@@ -2005,17 +1748,14 @@
 			navigator.clipboard.write([item])
 		}
 
-		doUpdate()
-		setInterval(doUpdate, 20 * 1000)
-
-		document.addEventListener("visibilitychange", async function() {
-			if(!lastLbUpdate) return
-
-			const secondsDiff = (Date.now() - lastLbUpdate.getTime())/1000
-			if(document.visibilityState === "visible" && secondsDiff >= 20) {
-				await doUpdate()
-			}
-		})
+		const urlTimestamp = new URL(document.location.href).searchParams.get("t")
+		const urlDate = new Date(parseInt(urlTimestamp))
+		if(!isNaN(urlDate.getTime())) {
+			currentTimeTravelTimestamp = urlDate.getTime()
+			doUpdate(urlDate).then(() => updateTimeTravelValues(urlDate))
+		} else {
+			doUpdate()
+		}
 
 		document.getElementById("contactBtn").addEventListener("click", async function(event) {
 			const contactBody = document.getElementById("contactModalBody")

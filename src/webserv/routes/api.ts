@@ -19,6 +19,13 @@ apiRouter.get("/leaderboard",
 	ValidationMiddleware.sendErrors,
 	EventController.getLeaderboard
 )
+apiRouter.get("/events/:eventId/leaderboard",
+	param("eventId").custom(x => x === "now" || /^\d+$/.test(x)),
+	query("timestamp").optional().isISO8601(),
+	query("nocache").optional().isBoolean(),
+	ValidationMiddleware.sendErrors,
+	EventController.getEventLeaderboard
+)
 apiRouter.get("/cc-announcements", EventController.getAnnouncements)
 apiRouter.get("/wl-graph",
 	query("all").optional().isBoolean(),
@@ -45,6 +52,11 @@ apiRouter.get("/events/:eventId/cutoff-stats/:cutoff",
 	query("chapter").optional().isInt({min: 1, max: 6}),
 	ValidationMiddleware.sendErrors,
 	EventController.getCutoffStats
+)
+apiRouter.get("/events/:eventId/snapshots",
+	param("eventId").custom(x => x === "now" || /^\d+$/.test(x)),
+	ValidationMiddleware.sendErrors,
+	EventController.getSnapshotsList
 )
 // To be removed after users' cache expires
 apiRouter.get("/event-cutoff-stats/:cutoff",
