@@ -47,6 +47,24 @@
 			--bs-nav-link-hover-color: #d1d1d1;
 		}
 
+		.nav-link-hover {
+			transition: all 0.3s ease;
+		}
+
+		.nav-link-hover:hover {
+			background-color: rgba(255, 255, 255, 0.1);
+			/* border-radius: 0.375rem; */
+		}
+
+		.nav-link-active {
+			background-color: #00ccbb;
+			--bs-navbar-active-color: var(--bs-offcanvas-bg);
+		}
+
+		.nav-link-active:hover {
+			background-color: #00ccbb;
+		}
+
 		.announcement-banner {
 			background-color: #ff77ab;
 			height: 32px;
@@ -131,6 +149,50 @@
 
 	<hr id="eventSeparator" role="none" class="w-100 d-none">
 	
+	<nav class="navbar position-absolute top-0 start-0 mt-3 pt-0">
+		<div class="container-fluid">
+			<button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+		</div>
+		<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="navbarOffcanvasLgLabel">
+			<div class="offcanvas-header">
+				<div class="d-flex gap-2">
+					<img src="favicon.ico" alt="Logo" width="30" height="30">
+					<h5 class="offcanvas-title" id="offcanvasNavbarLabel">Sekaing</h5>
+				</div>
+				<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+			</div>
+			<div class="offcanvas-body">
+				<ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+					<li class="nav-item">
+						<a class="nav-link nav-link-hover nav-link-active rounded px-2 active d-flex gap-2" aria-current="page" href="/">
+							<i class="bi bi-trophy-fill"></i>
+							<span>Event Tracker</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link nav-link-hover rounded px-2 active d-flex gap-2" href="/events">
+							<i class="bi bi-calendar-week-fill"></i>
+							<span>Past Events</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link nav-link-hover rounded px-2 active d-flex gap-2" href="/titles">
+							<i class="bi bi-hdd-stack-fill"></i>
+							<span>Titles</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link nav-link-hover rounded px-2 active d-flex gap-2" href="/wl-graph">
+							<i class="bi bi-tree-fill"></i>
+							<span>Worldlink Graph</span>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
 	<header id="logoContainer" class="my-3 d-flex justify-content-center align-items-center gap-1">
 		<span id="eventLogoPlaceholder" aria-hidden="true" class="placeholder-glow" style="width: 300px; height: 128px;">
 			<span class="placeholder rounded-4 w-100 h-100"></span>
