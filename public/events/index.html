@@ -71,7 +71,12 @@
 			margin-top: auto;
 		}
 
-		.event-card-type {
+		.event-card-badge-container {
+			display: flex;
+			gap: 6px;
+		}
+
+		.event-card-badge {
 			display: inline-block;
 			padding: 4px 8px;
 			border-radius: 4px;
@@ -90,6 +95,37 @@
 
 		.type-world_bloom {
 			background-color: #599c1f;
+		}
+
+		.unit-piapro {
+			background-color: white;
+			color: #3a3a3a;
+		}
+
+		.unit-light_sound {
+			background-color: #4455dd;
+		}
+
+		.unit-idol {
+			/* background-color: #88dd44; */
+			background-color: #67ad2f;
+		}
+
+		.unit-street {
+			background-color: #ee1166;
+		}
+
+		.unit-theme_park {
+			/* background-color: #ff9900; */
+			background-color: #cf7c00;
+		}
+
+		.unit-school_refusal {
+			background-color: #884499;
+		}
+
+		.unit-mixed {
+			background-color: gray;
 		}
 
 		.search-container {
@@ -146,8 +182,8 @@
 					<div class="event-card-id placeholder-glow">
 						<span class="placeholder">Event #123</span>
 					</div>
-					<div class="placeholder-glow">
-						<span class="event-card-type placeholder">Marathon</span>
+					<div class="event-card-badge-container placeholder-glow">
+						<span class="event-card-badge placeholder">Marathon</span>
 					</div>
 					<div class="event-card-title placeholder-glow">
 						<span class="placeholder col-8"></span>
@@ -214,6 +250,22 @@
 			return typeMap[type] || type
 		}
 
+		function getUnitTypeName(type) {
+			if(type == null) {
+				return "Mixed"
+			}
+
+			const typeMap = {
+				"piapro": "Virtual Singer",
+				"light_sound": "Leo/Need",
+				"street": "Vivid Bad Squad",
+				"idol": "More More Jump!",
+				"theme_park": "Wonderlands x Showtime",
+				"school_refusal": "Nightcord at 25:00"
+			}
+			return typeMap[type] || type
+		}
+
 		function createEventCard(event) {
 			const card = document.createElement("div")
 			card.className = "event-card"
@@ -238,11 +290,18 @@
 			eventIdLabel.className = "event-card-id"
 			eventIdLabel.textContent = `Event #${event.id}`
 
-			const typeContainer = document.createElement("div")
+			const badgesContainer = document.createElement("div")
+			badgesContainer.className = "event-card-badge-container"
+
 			const typeLabel = document.createElement("span")
-			typeLabel.className = `event-card-type type-${event.type}`
+			typeLabel.className = `event-card-badge type-${event.type}`
 			typeLabel.textContent = getEventTypeName(event.type)
-			typeContainer.appendChild(typeLabel)
+			badgesContainer.appendChild(typeLabel)
+
+			const unitLabel = document.createElement("span")
+			unitLabel.className = `event-card-badge unit-${event.unit ?? "mixed"}`
+			unitLabel.textContent = getUnitTypeName(event.unit)
+			badgesContainer.appendChild(unitLabel)
 
 			const title = document.createElement("div")
 			title.className = "event-card-title"
@@ -259,7 +318,7 @@
 			`
 
 			cardBody.appendChild(eventIdLabel)
-			cardBody.appendChild(typeContainer)
+			cardBody.appendChild(badgesContainer)
 			cardBody.appendChild(title)
 			cardBody.appendChild(datesContainer)
 
