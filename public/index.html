@@ -1358,7 +1358,7 @@
 					nameCell.style.paddingBottom = "5px"
 
 					const leaderImg = document.createElement("img")
-					leaderImg.src = `/images/card/leader/${slot.card.id}.png?level=${slot.card.level}&mastery=${slot.card.mastery}&trained=${slot.card.trained}&image=${slot.card.image}`
+					leaderImg.src = `/images/card/leader/${slot.card.id}.webp?size=72&level=${slot.card.level}&mastery=${slot.card.mastery}&trained=${slot.card.trained}&image=${slot.card.image}`
 					leaderImg.width = 38
 					leaderImg.height = 38
 					leaderImg.alt = "Leader Card"
@@ -1519,7 +1519,7 @@
 				img.style.minWidth = "80px"
 				img.style.width = "100%"
 				img.style.maxWidth = "128px"
-				img.src = `/images/card/deck/${card.id}.png?level=${card.level}&mastery=${card.mastery}&trained=${card.trained}&image=${card.image}&slot=${idx}`
+				img.src = `/images/card/deck/${card.id}.webp?size=128&level=${card.level}&mastery=${card.mastery}&trained=${card.trained}&image=${card.image}&slot=${idx}`
 				img.alt = img.title = card.description
 
 				const a = document.createElement("a")

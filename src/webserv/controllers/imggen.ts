@@ -4,7 +4,6 @@ import fs from "fs";
 import path from "path";
 import { SekaiEventType } from "../../interface/event";
 import { DeckCardImage, EventHonorImage, EventHonorSubImage, LeaderCardImage } from "sekai-images"
-import { writePNGSignature } from "../../util/img_signature";
 import parseurl from "parseurl"
 import { UserCardSpecialTrainingStatus } from "sekai-api";
 
@@ -19,6 +18,7 @@ export default class ImageGenController {
 	public static async generateHonorFromEventId(req: Request, res: Response, next: NextFunction) {
 		const eventId = parseInt(req.params.eventId as string)
 		const rank = parseInt(req.params.rank as string)
+		const format = req.params.format as "png" | "webp"
 		const sub = req.query.sub === "true"
 		const chapter = req.query.chapter ? parseInt(req.query.chapter as string) : null
 
@@ -69,14 +69,14 @@ export default class ImageGenController {
 			frameImage,
 			honorRarity: honor.honorRarity,
 			isWorldlinkChapter: chapter && event.eventType === SekaiEventType.WORLD_BLOOM
-		}).create()
-		const withSig = writePNGSignature(image, "sekaing")
-		return res.set("Content-Type", "image/png").send(withSig)
+		}).create({format})
+		return res.set("Content-Type", `image/${format}`).send(image)
 	}
 
 	public static async generateHonorFromEventKey(req: Request, res: Response, next: NextFunction) {
 		const eventKey = req.params.eventKey as string
 		const rank = parseInt(req.params.rank as string)
+		const format = req.params.format as "png" | "webp"
 		const sub = req.query.sub === "true"
 		const chapter = req.query.chapter ? parseInt(req.query.chapter as string) : null
 
@@ -126,13 +126,14 @@ export default class ImageGenController {
 			frameImage,
 			honorRarity: rarity,
 			isWorldlinkChapter: chapter != null
-		}).create()
-		const withSig = writePNGSignature(image, "sekaing")
-		return res.set("Content-Type", "image/png").send(withSig)
+		}).create({format})
+		return res.set("Content-Type", `image/${format}`).send(image)
 	}
 
 	public static async generateLeaderCard(req: Request, res: Response, next: NextFunction) {
 		const cardId = parseInt(req.params.cardId as string)
+		const format = req.params.format as "png" | "webp"
+		const size = parseInt(req.query.size as string)
 		const level = parseInt(req.query.level as string)
 		const masteryRank = parseInt(req.query.mastery as string)
 		const trained = req.query.trained === "true"
@@ -181,13 +182,14 @@ export default class ImageGenController {
 			attr: card.attr,
 			memberImage: backgroundImage
 			
-		}).create()
-		const withSig = writePNGSignature(image, "sekaing")
-		return res.set("Content-Type", "image/png").send(withSig)
+		}).create({format, size})
+		return res.set("Content-Type", `image/${format}`).send(image)
 	}
 
 	public static async generateDeckCard(req: Request, res: Response, next: NextFunction) {
 		const cardId = parseInt(req.params.cardId as string)
+		const format = req.params.format as "png" | "webp"
+		const size = parseInt(req.query.size as string)
 		const level = parseInt(req.query.level as string)
 		const masteryRank = parseInt(req.query.mastery as string)
 		const trained = req.query.trained === "true"
@@ -236,8 +238,7 @@ export default class ImageGenController {
 			attr: card.attr,
 			memberImage: backgroundImage,
 			slot
-		}).create()
-		const withSig = writePNGSignature(image, "sekaing")
-		return res.set("Content-Type", "image/png").send(withSig)
+		}).create({format, size})
+		return res.set("Content-Type", `image/${format}`).send(image)
 	}
 }
