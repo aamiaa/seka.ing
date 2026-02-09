@@ -61,11 +61,8 @@
 	</style>
 </head>
 <body class="d-flex flex-column justify-content-center align-items-center" style="min-height: 100%;">
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-	<script src="/assets/flipdown.min.js"></script>
-	<script src="/assets/countdown.min.js"></script>
-	<script src="/assets/updater.js"></script>
+	<script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script defer src="/assets/updater.js"></script>
 	
 	<header id="logoContainer" class="my-3 d-flex justify-content-center align-items-center gap-1">
 		<span id="eventLogoPlaceholder" aria-hidden="true" class="placeholder-glow" style="width: 300px; height: 128px;">
@@ -684,6 +681,10 @@
 	<footer class="py-3">
 		<span id="contactLb">Contact: <a id="contactBtn" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#contactModal">Show</a></span>
 	</footer>
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+	<script src="/assets/flipdown.min.js"></script>
+	<script src="/assets/countdown.min.js"></script>
 
 	<script>
 		const eventId = parseInt(document.location.href.match(/\/events\/(\d+)/)?.[1])
