@@ -1098,7 +1098,7 @@
 					nameCell.style.paddingBottom = "5px"
 
 					const leaderImg = document.createElement("img")
-					leaderImg.src = `/images/card/leader/${slot.card.id}.png?level=${slot.card.level}&mastery=${slot.card.mastery}&trained=${slot.card.trained}&image=${slot.card.image}`
+					leaderImg.src = `/images/card/leader/${slot.card.id}.webp?size=72&level=${slot.card.level}&mastery=${slot.card.mastery}&trained=${slot.card.trained}&image=${slot.card.image}`
 					leaderImg.width = 38
 					leaderImg.height = 38
 					leaderImg.alt = "Leader Card"
@@ -1405,7 +1405,7 @@
 				const title = `T${cutoff} ${currentEvent.name}${chapter != null ? `, Chapter ${chapter}` : ""}`
 				const subtitle = `${deltaTimeline.length} total games`
 				const leaderCard = profile?.cards?.[0] ?? card
-				const iconUrl = leaderCard && `/images/card/leader/${leaderCard.id}.webp?size=72&level=${leaderCard.level}&mastery=${leaderCard.mastery}&trained=${leaderCard.trained}&image=${leaderCard.image}`
+				const iconUrl = leaderCard && `/images/card/leader/${leaderCard.id}.png?level=${leaderCard.level}&mastery=${leaderCard.mastery}&trained=${leaderCard.trained}&image=${leaderCard.image}`
 
 				await copyHeatmap(title, subtitle, name, iconUrl)
 
