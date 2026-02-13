@@ -149,7 +149,7 @@ export default class ImageGenController {
 				case "rarity_1":
 				case "rarity_2":
 				case "rarity_birthday":
-					return res.status(400).json({error: "Impossible combination: birthday cards cannot be trained"})
+					return res.status(400).json({error: "Impossible combination: cards of this rarity cannot be trained"})
 				case "rarity_3":
 					if(level < 40) {
 						return res.status(400).json({error: "Impossible combination: card level too low to be trained"})
@@ -206,7 +206,7 @@ export default class ImageGenController {
 				case "rarity_1":
 				case "rarity_2":
 				case "rarity_birthday":
-					return res.status(400).json({error: "Impossible combination: birthday cards cannot be trained"})
+					return res.status(400).json({error: "Impossible combination: cards of this rarity cannot be trained"})
 				case "rarity_3":
 					if(level < 40) {
 						return res.status(400).json({error: "Impossible combination: card level too low to be trained"})
