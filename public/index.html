@@ -712,25 +712,6 @@
 			</div>
 		</div>
 	</div>
-
-	<div class="modal fade" id="mySekaiBugModal" tabindex="-1" aria-labelledby="mySekaiBugModalLabel" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h1 id="mySekaiBugModalLabel" class="modal-title fs-5">MySEKAI Talent Bug Info</h1>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<p class="placeholder-glow" aria-hidden="true">
-						<p>There is currently a bug with MySEKAI where the decorations bonus is not applied to the painting talent bonus.</p>
-						<p>This bug is only present in the game client (i.e. what runs on your device), but not in the api (i.e. what runs on SEGA's servers). This site uses information from the api, so it can only display the correct talent returned by it.</p>
-						<p>If you upgraded your cards with paintings, the game will always show you an incorrect lower talent until the bug is fixed. You can view the correct talent for yourself by viewing your default profile from an alt.</p>
-						<p>If you're wondering which talent is used when playing solo/coop, it is unfortunately the incorrect lower one, as your score is calculated by your own game.</p>
-					</p>
-				</div>
-			</div>
-		</div>
-	</div>
 	
 	<p id="errorMsg" style="display: none;">Failed to fetch updated leaderboard. Try again later.</p>
 
@@ -770,7 +751,6 @@
 								<p id="eventProfileFurnitureTalentLb" class="mb-0" style="display: none;">Furniture Bonus:</p>
 								<p id="eventProfileGateTalentLb" class="mb-0" style="display: none;">Gate Bonus:</p>
 							</details>
-							<p id="eventProfileTalentBugWarningLb" class="mb-0 text-warning" style="display: none;">Note: The actual effective talent might be lower due to a MySEKAI bug. <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#mySekaiBugModal">Learn more</a></p>
 						</div>
 						<p>Event Bonus: <span id="eventProfileBonusLb" class="fw-bold"></span></p>
 					</div>
@@ -1481,7 +1461,6 @@
 			document.getElementById("eventProfileTitleTalentLb").textContent = "Title Bonus:"
 			document.getElementById("eventProfileFurnitureTalentLb").textContent = "Furniture Bonus:"
 			document.getElementById("eventProfileGateTalentLb").textContent = "Gate Bonus:"
-			document.getElementById("eventProfileTalentBugWarningLb").style.display = "none"
 			document.getElementById("eventProfileBonusLb").textContent = ""
 			lastCharts.forEach(x => {
 				x.clear()
@@ -1547,10 +1526,6 @@
 
 				document.getElementById("eventProfileFurnitureTalentLb").textContent = `Furniture Bonus: ${formatNumber(profile.talent.mysekai_furniture_bonus)}`
 				document.getElementById("eventProfileGateTalentLb").textContent = `Gate Bonus: ${formatNumber(profile.talent.mysekai_gate_bonus)}`
-
-				if(profile.talent.mysekai_gate_bonus > 0) {
-					document.getElementById("eventProfileTalentBugWarningLb").style.display = ""
-				}
 			}
 
 			// Render event bonus
