@@ -688,7 +688,8 @@
 
 	<script>
 		const eventId = parseInt(document.location.href.match(/\/events\/(\d+)/)?.[1])
-		if(eventId < 120) {
+		const hasHighlights = eventId >= 120
+		if(!hasHighlights) {
 			document.getElementById("showBordersDiv").classList.add("d-none")
 		}
 
@@ -1013,7 +1014,7 @@
 				clearInterval(flipdown.countdown)
 			}
 
-			const showHighlights = document.getElementById("showBordersCb").checked
+			const showHighlights = hasHighlights && document.getElementById("showBordersCb").checked
 			if(showHighlights) {
 				document.querySelectorAll(".past-hour-col").forEach(x => x.style.display = "none")
 				document.querySelectorAll(".per-game-col").forEach(x => x.style.display = "none")
@@ -1060,7 +1061,7 @@
 		}
 
 		function updateLeaderboard(table, rankings, chapter) {
-			const isBordersView = document.getElementById("showBordersCb").checked
+			const isBordersView = hasHighlights && document.getElementById("showBordersCb").checked
 			const tableBody = table.querySelector("tbody")
 			while(tableBody.firstChild) {
 				tableBody.removeChild(tableBody.lastChild)
