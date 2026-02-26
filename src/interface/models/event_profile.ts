@@ -14,4 +14,5 @@ export default interface PlayerEventProfile extends UserRanking {
 	wasTop100: boolean,
 	fullProfileFetched: boolean,
 	fullProfileFetchedAt: Date,
+	source?: string
 }

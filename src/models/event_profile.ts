@@ -47,15 +47,15 @@ export const EventProfileSchema = new mongoose.Schema<IEventProfileModel, IEvent
 	}],
 	userDeck: {
 		type: {
-		deckId: {type: Number, required: true},
-		name: {type: String, required: true},
-		leader: {type: Number, required: true},
-		subLeader: {type: Number, required: true},
-		member1: {type: Number, required: true},
-		member2: {type: Number, required: true},
-		member3: {type: Number, required: true},
-		member4: {type: Number, required: true},
-		member5: {type: Number, required: true}
+			deckId: {type: Number, required: true},
+			name: {type: String, required: true},
+			leader: {type: Number, required: true},
+			subLeader: {type: Number, required: true},
+			member1: {type: Number, required: true},
+			member2: {type: Number, required: true},
+			member3: {type: Number, required: true},
+			member4: {type: Number, required: true},
+			member5: {type: Number, required: true}
 		},
 		default: undefined
 	},
@@ -90,27 +90,28 @@ export const EventProfileSchema = new mongoose.Schema<IEventProfileModel, IEvent
 	},
 	userMultiLiveTopScoreCount: {
 		type: {
-		mvp: {type: Number, required: true},
-		superStar: {type: Number, required: true}
+			mvp: {type: Number, required: true},
+			superStar: {type: Number, required: true}
 		},
 		default: undefined
 	},
 	playerRank: {type: Number},
 	totalPower: {
 		type: {
-		totalPower: {type: Number, required: true},
-		basicCardTotalPower: {type: Number, required: true},
-		areaItemBonus: {type: Number, required: true},
-		characterRankBonus: {type: Number, required: true},
-		mysekaiGateLevelBonus: {type: Number},
-		honorBonus: {type: Number, required: true},
-		mysekaiFixtureGameCharacterPerformanceBonus: {type: Number}
+			totalPower: {type: Number, required: true},
+			basicCardTotalPower: {type: Number, required: true},
+			areaItemBonus: {type: Number, required: true},
+			characterRankBonus: {type: Number, required: true},
+			mysekaiGateLevelBonus: {type: Number},
+			honorBonus: {type: Number, required: true},
+			mysekaiFixtureGameCharacterPerformanceBonus: {type: Number}
 		},
 		default: undefined
 	},
 	wasTop100: {type: Boolean, required: true, default: false},
 	fullProfileFetched: {type: Boolean, required: true, default: false},
-	fullProfileFetchedAt: {type: Date}
+	fullProfileFetchedAt: {type: Date},
+	source: {type: String}
 })
 EventProfileSchema.index({userId: -1, eventId: -1}, {unique: true})
 
