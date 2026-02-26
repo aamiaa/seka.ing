@@ -1128,7 +1128,12 @@
 				}
 				const nameLabel = document.createElement("span")
 				nameLabel.setAttribute("class", "username-label")
-				nameLabel.textContent = nameLabel.title = removeTMPTags(slot.name)
+				if(slot.name != null) {
+					nameLabel.textContent = nameLabel.title = removeTMPTags(slot.name)
+				} else {
+					nameLabel.classList.add("opacity-50")
+					nameLabel.textContent = "Unknown name"
+				}
 
 				if(slot.hash) {
 					nameLabel.classList.add("username-clickable")
