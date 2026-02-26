@@ -46,6 +46,7 @@ export const EventProfileSchema = new mongoose.Schema<IEventProfileModel, IEvent
 		progress: {type: Number, required: true}
 	}],
 	userDeck: {
+		type: {
 		deckId: {type: Number, required: true},
 		name: {type: String, required: true},
 		leader: {type: Number, required: true},
@@ -55,6 +56,8 @@ export const EventProfileSchema = new mongoose.Schema<IEventProfileModel, IEvent
 		member3: {type: Number, required: true},
 		member4: {type: Number, required: true},
 		member5: {type: Number, required: true}
+		},
+		default: undefined
 	},
 	userCards: {
 		type: [{
@@ -86,11 +89,15 @@ export const EventProfileSchema = new mongoose.Schema<IEventProfileModel, IEvent
 		default: undefined
 	},
 	userMultiLiveTopScoreCount: {
+		type: {
 		mvp: {type: Number, required: true},
 		superStar: {type: Number, required: true}
+		},
+		default: undefined
 	},
 	playerRank: {type: Number},
 	totalPower: {
+		type: {
 		totalPower: {type: Number, required: true},
 		basicCardTotalPower: {type: Number, required: true},
 		areaItemBonus: {type: Number, required: true},
@@ -98,6 +105,8 @@ export const EventProfileSchema = new mongoose.Schema<IEventProfileModel, IEvent
 		mysekaiGateLevelBonus: {type: Number},
 		honorBonus: {type: Number, required: true},
 		mysekaiFixtureGameCharacterPerformanceBonus: {type: Number}
+		},
+		default: undefined
 	},
 	wasTop100: {type: Boolean, required: true, default: false},
 	fullProfileFetched: {type: Boolean, required: true, default: false},
