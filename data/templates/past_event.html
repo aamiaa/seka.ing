@@ -628,8 +628,10 @@
 				<i id="timeTravelCollapse" class="bi bi-chevron-down fs-5" style="position: absolute; top: 0; left: 50%; cursor: pointer;"></i>
 				<div class="px-3 pt-4 pb-2">
 					<input type="range" class="w-100" id="timeTravelRange" value="100" disabled>
-					<div class="d-flex justify-content-center">
+					<div class="d-flex justify-content-center align-items-center gap-2">
+						<i id="timeTravelPrev" class="bi bi-arrow-left fs-5 opacity-50" disabled></i>
 						<input type="datetime-local" id="timeTravelDatePicker" class="form-control form-control-sm" style="width: unset;" disabled>
+						<i id="timeTravelNext" class="bi bi-arrow-right fs-5 opacity-50" disabled></i>
 					</div>
 				</div>
 			</div>
@@ -945,11 +947,23 @@
 				document.getElementById("timeTravelDatePicker").setAttribute("disabled", "true")
 				document.getElementById("showBordersCb").setAttribute("disabled", "true")
 				document.getElementById("compactModeCb").setAttribute("disabled", "true")
+				document.getElementById("timeTravelPrev").setAttribute("disabled", "true")
+				document.getElementById("timeTravelPrev").classList.add("opacity-50")
+				document.getElementById("timeTravelPrev").style.cursor = ""
+				document.getElementById("timeTravelNext").setAttribute("disabled", "true")
+				document.getElementById("timeTravelNext").classList.add("opacity-50")
+				document.getElementById("timeTravelNext").style.cursor = ""
 			} else {
 				document.getElementById("timeTravelRange").removeAttribute("disabled")
 				document.getElementById("timeTravelDatePicker").removeAttribute("disabled")
 				document.getElementById("showBordersCb").removeAttribute("disabled")
 				document.getElementById("compactModeCb").removeAttribute("disabled")
+				document.getElementById("timeTravelPrev").removeAttribute("disabled")
+				document.getElementById("timeTravelPrev").classList.remove("opacity-50")
+				document.getElementById("timeTravelPrev").style.cursor = "pointer"
+				document.getElementById("timeTravelNext").removeAttribute("disabled")
+				document.getElementById("timeTravelNext").classList.remove("opacity-50")
+				document.getElementById("timeTravelPrev").style.cursor = "pointer"
 			}
 		}
 
@@ -996,9 +1010,8 @@
 				timeTravelRange.min = snapshotsTimeline[0].getTime() - offsetToReduceIntSize
 				timeTravelRange.max = snapshotsTimeline.at(-1).getTime() - offsetToReduceIntSize
 				timeTravelRange.value = timeTravelRange.max
-				timeTravelRange.removeAttribute("disabled")
 				document.getElementById("timeTravelDatePicker").value = `${snapshotsTimeline.at(-1).getFullYear()}-${(snapshotsTimeline.at(-1).getMonth() + 1).toString().padStart(2, "0")}-${snapshotsTimeline.at(-1).getDate().toString().padStart(2, "0")}T${snapshotsTimeline.at(-1).getHours().toString().padStart(2, "0")}:${snapshotsTimeline.at(-1).getMinutes().toString().padStart(2, "0")}`
-				document.getElementById("timeTravelDatePicker").removeAttribute("disabled")
+				toggleTimeTravelInput(true)
 
 				const values = snapshotsTimeline.map(x => x.getTime() - offsetToReduceIntSize)
 				timeTravelRange.addEventListener("input", function() {
@@ -1026,6 +1039,27 @@
 					const nearest = snapshotsTimeline.findLast(x => Math.abs(x.getTime() - value.getTime()) < 60_000 || (x.getTime() <= value.getTime())) ?? snapshotsTimeline[0]
 
 					await timeTravel(nearest)
+				})
+
+				document.getElementById("timeTravelPrev").addEventListener("click", async function() {
+					if(this.getAttribute("disabled")) {
+						return
+					}
+
+					const prev = snapshotsTimeline.findLast(x => x.getTime() < currentTimeTravelTimestamp)
+					if(prev) {
+						await timeTravel(prev)
+					}
+				})
+				document.getElementById("timeTravelNext").addEventListener("click", async function() {
+					if(this.getAttribute("disabled")) {
+						return
+					}
+
+					const next = snapshotsTimeline.find(x => x.getTime() > currentTimeTravelTimestamp)
+					if(next) {
+						await timeTravel(next)
+					}
 				})
 
 				const handler = async function() {
