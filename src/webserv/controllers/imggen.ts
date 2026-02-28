@@ -3,9 +3,10 @@ import SekaiMasterDB from "../../providers/sekai-master-db";
 import fs from "fs";
 import path from "path";
 import { SekaiEventType } from "../../interface/event";
-import { DeckCardImage, EventHonorImage, EventHonorSubImage, LeaderCardImage } from "sekai-images"
 import parseurl from "parseurl"
 import { UserCardSpecialTrainingStatus } from "sekai-api";
+import { StaticPool } from "node-worker-threads-pool";
+import { ImageGenThreadPoolFn } from "../../workers/types";
 
 const RarityMap = {
 	"highest": 4,
@@ -15,6 +16,12 @@ const RarityMap = {
 }
 
 export default class ImageGenController {
+	private static readonly ThreadPool = new StaticPool<ImageGenThreadPoolFn, any>({
+		size: 4,
+		task: path.join(__dirname, "..", "..", "workers", "imggen-worker")
+	})
+	private static readonly ThreadTimeout = 10 * 1000
+
 	public static async generateHonorFromEventId(req: Request, res: Response, next: NextFunction) {
 		const eventId = parseInt(req.params.eventId as string)
 		const rank = parseInt(req.params.rank as string)
@@ -53,24 +60,26 @@ export default class ImageGenController {
 		const honor = SekaiMasterDB.getHonor(resourceId)
 		const honorGroup = SekaiMasterDB.getHonorGroup(honor.groupId)
 
-		const backgroundImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honorGroup.backgroundAssetbundleName, sub ? "degree_sub/degree_sub.png" : "degree_main/degree_main.png"))
-		const rankImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honor.assetbundleName, sub ? "rank_sub/rank_sub.png" : "rank_main/rank_main.png"))
-		let frameImage: Buffer
+		const backgroundImage = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honorGroup.backgroundAssetbundleName, sub ? "degree_sub/degree_sub.png" : "degree_main/degree_main.png")
+		const rankImage = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", honor.assetbundleName, sub ? "rank_sub/rank_sub.png" : "rank_main/rank_main.png")
+		let frameImage: string
 		if(honorGroup.frameName) {
 			const assetName = `frame_degree_${sub ? "s" : "m"}_${RarityMap[honor.honorRarity]}`
-			try {
-				frameImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor_frame", honorGroup.frameName, `${assetName}/${assetName}.png`))
-			} catch(ex) {}
+			frameImage = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor_frame", honorGroup.frameName, `${assetName}/${assetName}.png`)
 		}
 
-		const image = await new (sub ? EventHonorSubImage : EventHonorImage)({
-			backgroundImage,
-			rankImage,
-			frameImage,
-			honorRarity: honor.honorRarity,
-			isWorldlinkChapter: chapter && event.eventType === SekaiEventType.WORLD_BLOOM
-		}).create({format})
-		return res.set("Content-Type", `image/${format}`).send(image)
+		const image = await this.ThreadPool.createExecutor().setTimeout(this.ThreadTimeout).exec({
+			action: sub ? "event-honor-sub" : "event-honor",
+			params: {
+				backgroundImage,
+				rankImage,
+				frameImage,
+				honorRarity: honor.honorRarity,
+				isWorldlinkChapter: chapter && event.eventType === SekaiEventType.WORLD_BLOOM
+			},
+			format
+		})
+		return res.set("Content-Type", `image/${format}`).send(Buffer.from(image))
 	}
 
 	public static async generateHonorFromEventKey(req: Request, res: Response, next: NextFunction) {
@@ -90,44 +99,44 @@ export default class ImageGenController {
 			return res.redirect(`/images/honor/event/${event.id}/${rank}.png${parseurl(req).search ?? ""}`)
 		}
 
-		const backgroundImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", `honor_bg_${eventKeyPart}${chapter ? `_cp${chapter}` : ""}`, sub ? "degree_sub/degree_sub.png" : "degree_main/degree_main.png")
+		const backgroundImage = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", `honor_bg_${eventKeyPart}${chapter ? `_cp${chapter}` : ""}`, sub ? "degree_sub/degree_sub.png" : "degree_main/degree_main.png")
 		try {
-			await fs.promises.stat(backgroundImagePath)
+			await fs.promises.stat(backgroundImage)
 		} catch(ex) {
 			return res.status(400).json({error: "Background asset doesn't exist"})
 		}
 
 		const assetbundleName = "honor_top_" + "0".repeat(6 - rank.toString().length) + rank + (rank === 10 ? "_v2" : "") + (chapter ? `_${eventKeyPart}_cp${chapter}` : "")
-		const rankImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", assetbundleName, sub ? "rank_sub/rank_sub.png" : "rank_main/rank_main.png")
+		const rankImage = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor", assetbundleName, sub ? "rank_sub/rank_sub.png" : "rank_main/rank_main.png")
 		try {
-			await fs.promises.stat(rankImagePath)
+			await fs.promises.stat(rankImage)
 		} catch(ex) {
 			return res.status(400).json({error: "Rank asset doesn't exist"})
 		}
 
-		const backgroundImage = await fs.promises.readFile(backgroundImagePath)
-		const rankImage = await fs.promises.readFile(rankImagePath)
 		const rarity =
 			(rank >= 1 && rank <= 10) ? "highest" :
 			(rank > 10 && rank <= 1000) ? "high" :
 			(rank > 1000 && rank <= 10000) ? "middle" : "low"
 
-		let frameImage: Buffer
+		let frameImage: string
 		if(chapter != null) {
 			const assetName = `frame_degree_${sub ? "s" : "m"}_${RarityMap[rarity]}`
-			try {
-				frameImage = await fs.promises.readFile(path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor_frame", `${eventKeyPart}_cp${chapter}`, `${assetName}/${assetName}.png`))
-			} catch(ex) {}	
+			frameImage = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/honor_frame", `${eventKeyPart}_cp${chapter}`, `${assetName}/${assetName}.png`)
 		}
 
-		const image = await new (sub ? EventHonorSubImage : EventHonorImage)({
-			backgroundImage,
-			rankImage,
-			frameImage,
-			honorRarity: rarity,
-			isWorldlinkChapter: chapter != null
-		}).create({format})
-		return res.set("Content-Type", `image/${format}`).send(image)
+		const image = await this.ThreadPool.createExecutor().setTimeout(this.ThreadTimeout).exec({
+			action: sub ? "event-honor-sub" : "event-honor",
+			params: {
+				backgroundImage,
+				rankImage,
+				frameImage,
+				honorRarity: rarity,
+				isWorldlinkChapter: chapter != null
+			},
+			format
+		})
+		return res.set("Content-Type", `image/${format}`).send(Buffer.from(image))
 	}
 
 	public static async generateLeaderCard(req: Request, res: Response, next: NextFunction) {
@@ -166,24 +175,22 @@ export default class ImageGenController {
 		}
 
 		const assetbundleName = card.assetbundleName + (imageType === 0 ? "_normal" : "_after_training")
-		const backgroundImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/thumbnail/chara", assetbundleName, assetbundleName + ".png")
-		try {
-			await fs.promises.stat(backgroundImagePath)
-		} catch(ex) {
-			return res.status(400).json({error: "Background asset doesn't exist"})
-		}
+		const backgroundImage = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/thumbnail/chara", assetbundleName, assetbundleName + ".png")
 
-		const backgroundImage = await fs.promises.readFile(backgroundImagePath)
-		const image = await new LeaderCardImage({
-			level,
-			masteryRank,
-			specialTrainingStatus: trained ? UserCardSpecialTrainingStatus.DONE : UserCardSpecialTrainingStatus.DO_NOTHING,
-			cardRarityType: card.cardRarityType,
-			attr: card.attr,
-			memberImage: backgroundImage
-			
-		}).create({format, size})
-		return res.set("Content-Type", `image/${format}`).send(image)
+		const image = await this.ThreadPool.createExecutor().setTimeout(this.ThreadTimeout).exec({
+			action: "leader-card",
+			params: {
+				level,
+				masteryRank,
+				specialTrainingStatus: trained ? UserCardSpecialTrainingStatus.DONE : UserCardSpecialTrainingStatus.DO_NOTHING,
+				cardRarityType: card.cardRarityType,
+				attr: card.attr,
+				memberImage: backgroundImage
+			},
+			format,
+			size
+		})
+		return res.set("Content-Type", `image/${format}`).send(Buffer.from(image))
 	}
 
 	public static async generateDeckCard(req: Request, res: Response, next: NextFunction) {
@@ -222,23 +229,22 @@ export default class ImageGenController {
 			return res.status(400).json({error: "Impossible combination: untrained card cannot use trained image"})
 		}
 
-		const backgroundImagePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/character/member_cutout", card.assetbundleName, (imageType === 0 ? "normal" : "after_training"), "deck.png")
-		try {
-			await fs.promises.stat(backgroundImagePath)
-		} catch(ex) {
-			return res.status(400).json({error: "Background asset doesn't exist"})
-		}
+		const backgroundImage = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/character/member_cutout", card.assetbundleName, (imageType === 0 ? "normal" : "after_training"), "deck.png")
 
-		const backgroundImage = await fs.promises.readFile(backgroundImagePath)
-		const image = await new DeckCardImage({
-			level,
-			masteryRank,
-			specialTrainingStatus: trained ? UserCardSpecialTrainingStatus.DONE : UserCardSpecialTrainingStatus.DO_NOTHING,
-			cardRarityType: card.cardRarityType,
-			attr: card.attr,
-			memberImage: backgroundImage,
-			slot
-		}).create({format, size})
-		return res.set("Content-Type", `image/${format}`).send(image)
+		const image = await this.ThreadPool.createExecutor().setTimeout(this.ThreadTimeout).exec({
+			action: "deck-card",
+			params: {
+				level,
+				masteryRank,
+				specialTrainingStatus: trained ? UserCardSpecialTrainingStatus.DONE : UserCardSpecialTrainingStatus.DO_NOTHING,
+				cardRarityType: card.cardRarityType,
+				attr: card.attr,
+				memberImage: backgroundImage,
+				slot
+			},
+			format,
+			size
+		})
+		return res.set("Content-Type", `image/${format}`).send(Buffer.from(image))
 	}
 }

@@ -12,7 +12,7 @@ imageGenRouter.get("/honor/event/:eventId/:rank.:format",
 	query("sub").optional().isBoolean(),
 	query("chapter").optional().isInt({min: 1, max: 6}),
 	ValidationMiddleware.sendErrors,
-	ImageGenController.generateHonorFromEventId
+	ImageGenController.generateHonorFromEventId.bind(ImageGenController)
 )
 
 imageGenRouter.get("/honor/event_key/:eventKey/:rank.:format",
@@ -22,7 +22,7 @@ imageGenRouter.get("/honor/event_key/:eventKey/:rank.:format",
 	query("sub").optional().isBoolean(),
 	query("chapter").optional().isInt({min: 1, max: 6}),
 	ValidationMiddleware.sendErrors,
-	ImageGenController.generateHonorFromEventKey
+	ImageGenController.generateHonorFromEventKey.bind(ImageGenController)
 )
 
 imageGenRouter.get("/card/leader/:cardId.:format",
@@ -34,7 +34,7 @@ imageGenRouter.get("/card/leader/:cardId.:format",
 	query("trained").isBoolean(),
 	query("image").isInt({min: 0, max: 1}),
 	ValidationMiddleware.sendErrors,
-	ImageGenController.generateLeaderCard
+	ImageGenController.generateLeaderCard.bind(ImageGenController)
 )
 
 imageGenRouter.get("/card/deck/:cardId.:format",
@@ -47,7 +47,7 @@ imageGenRouter.get("/card/deck/:cardId.:format",
 	query("image").isInt({min: 0, max: 1}),
 	query("slot").isInt({min: 0, max: 4}),
 	ValidationMiddleware.sendErrors,
-	ImageGenController.generateDeckCard
+	ImageGenController.generateDeckCard.bind(ImageGenController)
 )
 
 export default imageGenRouter
