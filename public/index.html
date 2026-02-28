@@ -741,7 +741,7 @@
 				<div class="modal-body d-flex flex-column gap-3">
 					<div>
 						<h4 id="eventProfileDeckLb">Current Team</h4>
-						<div id="eventProfileDeck" class="d-flex gap-2 no-select mb-3"></div>
+						<div id="eventProfileDeck" class="d-flex gap-2 no-select mb-3 placeholder-glow"></div>
 						<div>
 							<details id="eventProfileTalentDetails">
 								<summary>Talent: <span id="eventProfileTalentLb" class="fw-bold"></span></summary>
@@ -1476,6 +1476,20 @@
 			document.getElementById("heatmapContainer").innerHTML = ""
 			// document.getElementById("heatmapPlaceholder").style.display = ""
 
+			// Setup event team placeholder
+			for(let i=0;i<5;i++) {
+				const span = document.createElement("span")
+				span.classList.add("placeholder", "w-100", "h-100")
+
+				const div = document.createElement("div")
+				div.style.aspectRatio = "312/510"
+				div.style.maxWidth = "128px"
+				div.style.width = "100%"
+
+				div.appendChild(span)
+				document.getElementById("eventProfileDeck").appendChild(div)
+			}
+
 			if(localStorage.getItem("heatmapTimezone") === "true") {
 				document.getElementById("heatmapTimezoneCb").checked = true
 			}
@@ -1495,10 +1509,13 @@
 
 			// Render cards
 			for(const [idx, card] of profile.cards.entries()) {
+				const div = document.getElementById("eventProfileDeck").childNodes[idx]
+
 				const img = document.createElement("img")
 				img.style.minWidth = "80px"
 				img.style.width = "100%"
 				img.style.maxWidth = "128px"
+				img.style.display = "none"
 				img.src = `/images/card/deck/${card.id}.webp?size=128&level=${card.level}&mastery=${card.mastery}&trained=${card.trained}&image=${card.image}&slot=${idx}`
 				img.alt = img.title = card.description
 
@@ -1507,12 +1524,13 @@
 				a.target = "_blank"
 				a.appendChild(img)
 
-				const div = document.createElement("div")
-				div.style.aspectRatio = "312/510"
-				div.style.maxWidth = "20%"
-				div.appendChild(a)
+				const span = div.childNodes[0]
+				img.addEventListener("load", function() {
+					span.remove()
+					this.style.display = ""
+				})
 
-				document.getElementById("eventProfileDeck").appendChild(div)
+				div.appendChild(a)
 			}
 
 			// Render talent
