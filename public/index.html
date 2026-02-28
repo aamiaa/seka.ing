@@ -757,8 +757,11 @@
 					</div>
 					<div>
 						<h4>Recent Games</h4>
-						<div style="height: 6rem; width: 100%;">
+						<div id="recentGamesContainer" style="height: 6rem; width: 100%; display: none;">
 							<canvas id="recentGamesChart"></canvas>
+						</div>
+						<div id="recentGamesPlaceholder" class="placeholder-glow" style="height: 6rem; width: 100%;">
+							<span class="placeholder w-100 h-100"></span>
 						</div>
 					</div>
 					<div>
@@ -769,9 +772,9 @@
 							<span id="eventProfileTotalGamesLb" style="font-size: 0.9rem;" class="text-white-50"></span>
 						</div>
 						<svg id="heatmapContainer" viewBox="-3 0 780 128" xmlns="http://www.w3.org/2000/svg"></svg>
-						<!-- <div id="heatmapPlaceholder" class="placeholder-glow" style="height: min(300px, 30vw);">
+						<div id="heatmapPlaceholder" class="placeholder-glow" style="height: min(300px, 30vw);">
 							<span class="placeholder w-100 h-100"></span>
-						</div> -->
+						</div>
 						<div class="d-flex mt-2">
 							<div style="flex: 1;">
 								<button id="copyHeatmapBtn" class="btn btn-secondary btn-sm">
@@ -1474,7 +1477,6 @@
 			profileModalAbort = new AbortController()
 			document.getElementById("eventProfileTotalGamesLb").textContent = ""
 			document.getElementById("heatmapContainer").innerHTML = ""
-			// document.getElementById("heatmapPlaceholder").style.display = ""
 
 			// Setup event team placeholder
 			for(let i=0;i<5;i++) {
@@ -1489,6 +1491,14 @@
 				div.appendChild(span)
 				document.getElementById("eventProfileDeck").appendChild(div)
 			}
+
+			// Setup recent games placeholder
+			document.getElementById("recentGamesPlaceholder").style.display = ""
+			document.getElementById("recentGamesContainer").style.display = "none"
+
+			// Setup heatmap placeholder
+			document.getElementById("heatmapPlaceholder").style.display = ""
+			document.getElementById("heatmapContainer").style.display = "none"
 
 			if(localStorage.getItem("heatmapTimezone") === "true") {
 				document.getElementById("heatmapTimezoneCb").checked = true
@@ -1631,6 +1641,9 @@
 					}
 				}
 			}))
+
+			document.getElementById("recentGamesPlaceholder").style.display = "none"
+			document.getElementById("recentGamesContainer").style.display = ""
 
 			// Render heatmap
 			const startDate = chapter != null ? currentEvent.chapters.find(x => x.num === chapter).starts_at : currentEvent.starts_at
@@ -1889,7 +1902,8 @@
 				}
 			}
 
-			// document.getElementById("heatmapPlaceholder").style.display = "none"
+			document.getElementById("heatmapPlaceholder").style.display = "none"
+			document.getElementById("heatmapContainer").style.display = ""
 		}
 
 		if(localStorage.getItem("showCCAnnounce") === "false") {
