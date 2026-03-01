@@ -51,7 +51,7 @@ apiRouter.get("/event-profiles/:hash",
 	param("hash").isString().isLength({min: 32, max: 32}).isHexadecimal(),
 	ValidationMiddleware.sendErrors,
 	rl({limit: 60, per: 3 * 60}),
-	rl({limit: 5, per: 10}),
+	rl({limit: 10, per: 10}),
 	EventController.getPlayerEventProfile
 )
 apiRouter.get("/event-stats/:hash",
@@ -59,7 +59,7 @@ apiRouter.get("/event-stats/:hash",
 	query("chapter").optional().isInt({min: 1, max: 6}),
 	ValidationMiddleware.sendErrors,
 	rl({limit: 60, per: 3 * 60}),
-	rl({limit: 5, per: 10}),
+	rl({limit: 10, per: 10}),
 	EventController.getPlayerEventStats
 )
 apiRouter.get("/events/:eventId/cutoff-stats/:cutoff",
@@ -71,7 +71,7 @@ apiRouter.get("/events/:eventId/cutoff-stats/:cutoff",
 	query("chapter").optional().isInt({min: 1, max: 6}),
 	ValidationMiddleware.sendErrors,
 	rl({limit: 60, per: 3 * 60}),
-	rl({limit: 5, per: 10}),
+	rl({limit: 10, per: 10}),
 	EventController.getCutoffStats
 )
 apiRouter.get("/events/:eventId/snapshots",
