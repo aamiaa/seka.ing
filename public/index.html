@@ -1144,12 +1144,12 @@
 			
 			const eventData = currentEvent = data.event
 			document.getElementById("eventLogoPlaceholder").style.display = "none"
-			document.getElementById("eventLogo").src = `assets/${eventData.name_key}.png`
+			document.getElementById("eventLogo").src = `/images/asset/${eventData.name_key}.webp?size=300`
 			document.getElementById("eventLogo").alt = `${eventData.name} event logo`
 			document.getElementById("eventLogo").style.display = ""
 			if(eventData.chapter_character) {
 				document.getElementById("eventChapterCharacter").style.display = ""
-				document.getElementById("eventChapterCharacter").src = `assets/character_${eventData.chapter_character}.png`
+				document.getElementById("eventChapterCharacter").src = `/images/asset/character_${eventData.chapter_character}.webp?size=90`
 
 				const characterName = eventData.chapters.find(x => x.num === eventData.chapter_num)?.title
 				if(characterName) {
@@ -1188,12 +1188,12 @@
 			const nextEventData = data.next_event
 			if(nextEventData) {
 				document.getElementById("nextLogoContainer").classList.remove("d-none")
-				document.getElementById("nextEventLogo").src = `assets/${nextEventData.name_key}.png`
+				document.getElementById("nextEventLogo").src = `/images/asset/${nextEventData.name_key}.webp?size=300`
 				document.getElementById("nextEventLogo").alt = `${nextEventData.name} event logo`
 
 				if(nextEventData.chapter_character) {
 					document.getElementById("nextEventChapterCharacter").style.display = ""
-					document.getElementById("nextEventChapterCharacter").src = `assets/character_${nextEventData.chapter_character}.png`
+					document.getElementById("nextEventChapterCharacter").src = `/images/asset/character_${nextEventData.chapter_character}.webp?size=90`
 				}
 
 				if(nextEventData.starts_at && !nextTimerStarted) {
@@ -1271,7 +1271,7 @@
 					if(res.team_stats.length > 0 && !document.getElementById("compactModeCb").checked) {
 						document.getElementById("ccTeamsContainer").classList.remove("d-none")
 						for(const [idx, teamStats] of res.team_stats.entries()) {
-							document.getElementById(`ccTeam${idx + 1}Img`).src = `/assets/team_${teamStats.team_id}.png`
+							document.getElementById(`ccTeam${idx + 1}Img`).src = `/images/asset/team_${teamStats.team_id}.webp?size=60`
 							document.getElementById(`ccTeam${idx + 1}Bonus`).textContent = formatNumber(teamStats.total_bonus) + " Bonus"
 
 							if(teamStats.midterm) {
@@ -1362,7 +1362,7 @@
 
 				if(slot.team != null) {
 					const teamImg = document.createElement("img")
-					teamImg.src = `/assets/team_${slot.team}.png`
+					teamImg.src = `/images/asset/team_${slot.team}.webp?size=32`
 					teamImg.width = 20
 					teamImg.height = 20
 					teamImg.alt = "Team logo"

@@ -18,6 +18,7 @@
     "node-worker-threads-pool": "^1.5.1",
     "pythonia": "^1.2.2",
     "sekai-api": "github:aamiaa/sekai-api",
-    "sekai-images": "github:aamiaa/sekai-images"
+    "sekai-images": "github:aamiaa/sekai-images",
+    "sharp": "^0.34.3"
   }
 }

@@ -2,6 +2,7 @@ import { parentPort } from "worker_threads";
 import { ImageGenTask } from "./types";
 import { DeckCardImage, EventHonorImage, EventHonorSubImage, LeaderCardImage } from "sekai-images";
 import fs from "fs";
+import sharp from "sharp";
 
 parentPort.on("message", async (data: ImageGenTask) => {
 	switch(data.action) {
@@ -67,6 +68,19 @@ parentPort.on("message", async (data: ImageGenTask) => {
 			})
 
 			parentPort.postMessage(img)
+			break
+		}
+		case "resize-asset": {
+			let image = sharp(data.params.image)
+			if(data.size) {
+				image = image.resize(data.size)
+			}
+			if(data.format === "webp") {
+				image = image.webp({nearLossless: true})
+			}
+
+			const result = await image.toBuffer()
+			parentPort.postMessage(result)
 			break
 		}
 		default:

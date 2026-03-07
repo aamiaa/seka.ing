@@ -4,7 +4,7 @@ import { SekaiHonor } from "../interface/honor"
 
 export type ImageGenThreadPoolFn = (param: ImageGenTask) => Promise<Uint8Array>
 
-export type ImageGenTask = ImageGenEventHonorTask | ImageGenLeaderCardTask | ImageGenDeckCardTask
+export type ImageGenTask = ImageGenEventHonorTask | ImageGenLeaderCardTask | ImageGenDeckCardTask | ImageGenResizeAssetTask
 
 export interface ImageGenBaseTask {
 	action: string,
@@ -46,5 +46,12 @@ export interface ImageGenDeckCardTask extends ImageGenBaseTask {
 		attr: SekaiCardAttribute,
 		memberImage: string,
 		slot: number
+	}
+}
+
+export interface ImageGenResizeAssetTask extends ImageGenBaseTask {
+	action: "resize-asset",
+	params: {
+		image: string
 	}
 }

@@ -1098,12 +1098,12 @@
 			
 			const eventData = currentEvent = data.event
 			document.getElementById("eventLogoPlaceholder").style.display = "none"
-			document.getElementById("eventLogo").src = `/assets/${eventData.name_key}.png`
+			document.getElementById("eventLogo").src = `/images/asset/${eventData.name_key}.webp?size=300`
 			document.getElementById("eventLogo").alt = `${eventData.name} event logo`
 			document.getElementById("eventLogo").style.display = ""
 			if(eventData.chapter_character) {
 				document.getElementById("eventChapterCharacter").style.display = ""
-				document.getElementById("eventChapterCharacter").src = `/assets/character_${eventData.chapter_character}.png`
+				document.getElementById("eventChapterCharacter").src = `/images/asset/character_${eventData.chapter_character}.webp?size=90`
 
 				const characterName = eventData.chapters.find(x => x.num === eventData.chapter_num)?.title
 				if(characterName) {
@@ -1239,7 +1239,7 @@
 
 				if(slot.team != null) {
 					const teamImg = document.createElement("img")
-					teamImg.src = `/assets/team_${slot.team}.png`
+					teamImg.src = `/images/asset/team_${slot.team}.webp?size=32`
 					teamImg.width = 20
 					teamImg.height = 20
 					teamImg.alt = "Team logo"

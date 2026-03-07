@@ -247,4 +247,27 @@ export default class ImageGenController {
 		})
 		return res.set("Content-Type", `image/${format}`).send(Buffer.from(image))
 	}
+
+	public static async resizeAsset(req: Request, res: Response, next: NextFunction) {
+		const assetName = req.params.assetName as string
+		const format = req.params.format as "png" | "webp"
+		const size = parseInt(req.query.size as string)
+
+		// Prevent path traversal
+		const assetsDir = path.resolve(__dirname, "..", "..", "..", "public", "assets")
+		const filePath = path.resolve(assetsDir, assetName + ".png")
+		if(path.parse(filePath).dir !== assetsDir) {
+			return res.status(400).json({error: "Invalid asset name"})
+		}
+
+		const image = await this.ThreadPool.createExecutor().setTimeout(this.ThreadTimeout).exec({
+			action: "resize-asset",
+			params: {
+				image: filePath
+			},
+			format,
+			size
+		})
+		return res.set("Content-Type", `image/${format}`).send(Buffer.from(image))
+	}
 }

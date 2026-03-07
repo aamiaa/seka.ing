@@ -50,4 +50,11 @@ imageGenRouter.get("/card/deck/:cardId.:format",
 	ImageGenController.generateDeckCard.bind(ImageGenController)
 )
 
+imageGenRouter.get("/asset/:assetName.:format",
+	param("assetName").isString().matches(/^[\w_]+$/),
+	param("format").isIn(["png", "webp"]),
+	ValidationMiddleware.sendErrors,
+	ImageGenController.resizeAsset.bind(ImageGenController)
+)
+
 export default imageGenRouter
