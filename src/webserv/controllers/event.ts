@@ -11,14 +11,7 @@ import { UserCardDefaultImage, UserCardSpecialTrainingStatus } from "sekai-api";
 import { getEventDTO } from "../../transformers/event";
 import { calculateEventBonus } from "../../sekai/helpers/event_bonus";
 import { getLeaderboardDTO } from "../../transformers/leaderboard";
-
-function getEventFromIdStr(eventId: string) {
-	if(eventId === "now") {
-		return SekaiMasterDB.getCurrentEvent()
-	}
-
-	return SekaiMasterDB.getEvent(parseInt(eventId))
-}
+import { getEventFromIdStr } from "../../util/format";
 
 export default class EventController {
 	public static async getEvents(req: Request, res: Response, next: NextFunction) {

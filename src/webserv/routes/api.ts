@@ -7,6 +7,7 @@ import ContactController from "../controllers/contact";
 import ApiRestriction from "../middleware/antibot/api_restriction";
 import GameController from "../controllers/game";
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
+import EmbedController from "../controllers/embed";
 
 function rl({limit, per}: {limit: number, per: number}) {
 	return rateLimit({
@@ -80,6 +81,12 @@ apiRouter.get("/events/:eventId/snapshots",
 	rl({limit: 60, per: 3 * 60}),
 	rl({limit: 5, per: 10}),
 	EventController.getSnapshotsList
+)
+
+apiRouter.get("/embeds/event",
+	query("path").isString().matches(/^\//),
+	ValidationMiddleware.sendErrors,
+	EmbedController.getEventEmbed
 )
 
 apiRouter.get("/time", ServerController.getServerTime)
