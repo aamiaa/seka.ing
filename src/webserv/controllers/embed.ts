@@ -60,7 +60,7 @@ export default class EmbedController {
 		`T10: ${snapshot.rankings[9].score.toLocaleString()}\n` +
 		`T50: ${snapshot.rankings[49].score.toLocaleString()}\n` +
 		`T100: ${snapshot.rankings[99].score.toLocaleString()}`
-		: null
+		: ""
 
 		// Get the event logo's dominant color
 		const logoPath = path.join(__dirname, "../../../public/assets", event.assetbundleName + ".png")
