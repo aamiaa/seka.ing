@@ -296,7 +296,7 @@
 		function selectEvent(event) {
 			selectedEvent = event
 			document.getElementById("selectedImage").style.display = ""
-			document.getElementById("selectedImage").src = `/assets/${event.name_key}.png`
+			document.getElementById("selectedImage").src = `/images/asset/${event.name_key}.webp?size=61`
 			document.getElementById("selectedText").textContent = event.name
 			document.getElementById("selectOptions").classList.remove("show")
 			document.location.hash = "#" + event.id
