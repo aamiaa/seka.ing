@@ -124,6 +124,11 @@
 			background: #5a5a5a;
 		}
 
+		.title-container {
+			width: 300px;
+			height: 63px;
+		}
+
 		@media (min-width: 768px) {
 			.position-md-absolute {
 				position: absolute;
@@ -218,7 +223,7 @@
 			</div>
 		</div>
 
-		<div id="rankImages">
+		<div id="rankImages" class="placeholder-glow">
 
 		</div>
 	</div>
@@ -324,6 +329,9 @@
 			}
 
 			honors.forEach(honor => {
+				const div = document.createElement("div")
+				div.classList.add("title-container", "placeholder", "rounded-pill")
+
 				const img = document.createElement("img")
 				const url = new URL(document.location.origin + honor.image)
 				if(document.getElementById("useSubslotCb").checked) {
@@ -331,7 +339,12 @@
 				}
 				img.src = url.toString()
 				img.alt = `Rank ${honor.rank} title`
-				rankImages.appendChild(img)
+				img.addEventListener("load", function() {
+					div.classList.remove("placeholder", "rounded-pill")
+				})
+
+				div.appendChild(img)
+				rankImages.appendChild(div)
 			})
 		}
 
