@@ -1,6 +1,6 @@
 import { parentPort } from "worker_threads";
 import { ImageGenTask } from "./types";
-import { DeckCardImage, EventHonorImage, EventHonorSubImage, LeaderCardImage } from "sekai-images";
+import { DeckCardImage, EventHonorImage, EventHonorSubImage, LeaderCardImage, OldLeaderCardImage } from "sekai-images";
 import fs from "fs";
 import sharp from "sharp";
 
@@ -33,10 +33,12 @@ parentPort.on("message", async (data: ImageGenTask) => {
 			parentPort.postMessage(img)
 			break
 		}
-		case "leader-card": {
+		case "leader-card":
+		case "old-leader-card": {
 			const memberImage = await fs.promises.readFile(data.params.memberImage)
+			const old = data.action === "old-leader-card"
 
-			const img = await new LeaderCardImage({
+			const img = await new (old ? OldLeaderCardImage : LeaderCardImage)({
 				level: data.params.level,
 				masteryRank: data.params.masteryRank,
 				specialTrainingStatus: data.params.specialTrainingStatus,

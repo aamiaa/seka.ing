@@ -147,6 +147,7 @@ export default class ImageGenController {
 		const masteryRank = parseInt(req.query.mastery as string)
 		const trained = req.query.trained === "true"
 		const imageType = parseInt(req.query.image as string)
+		const old = req.query.old === "true"
 
 		const card = SekaiMasterDB.getCard(cardId)
 		if(!card) {
@@ -178,7 +179,7 @@ export default class ImageGenController {
 		const backgroundImage = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/thumbnail/chara", assetbundleName, assetbundleName + ".png")
 
 		const image = await this.ThreadPool.createExecutor().setTimeout(this.ThreadTimeout).exec({
-			action: "leader-card",
+			action: old ? "old-leader-card" : "leader-card",
 			params: {
 				level,
 				masteryRank,

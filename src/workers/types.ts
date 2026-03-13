@@ -25,7 +25,7 @@ export interface ImageGenEventHonorTask extends ImageGenBaseTask {
 }
 
 export interface ImageGenLeaderCardTask extends ImageGenBaseTask {
-	action: "leader-card",
+	action: "leader-card" | "old-leader-card",
 	params: {
 		level: number,
 		masteryRank: number,

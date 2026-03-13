@@ -776,6 +776,7 @@
 	<script>
 		const eventId = parseInt(document.location.href.match(/\/events\/(\d+)/)?.[1])
 		const hasHighlights = eventId >= 120
+		const isPre3rdAnni = eventId <= 107
 		const showMySekaiTalentBugWarning = eventId >= 154 && eventId <= 157
 		if(!hasHighlights) {
 			document.getElementById("showBordersDiv").classList.add("d-none")
@@ -1219,7 +1220,7 @@
 					nameCell.style.paddingBottom = "5px"
 
 					const leaderImg = document.createElement("img")
-					leaderImg.src = `/images/card/leader/${slot.card.id}.webp?size=72&level=${slot.card.level}&mastery=${slot.card.mastery}&trained=${slot.card.trained}&image=${slot.card.image}`
+					leaderImg.src = `/images/card/leader/${slot.card.id}.webp?size=72&level=${slot.card.level}&mastery=${slot.card.mastery}&trained=${slot.card.trained}&image=${slot.card.image}&old=${isPre3rdAnni}`
 					leaderImg.width = 38
 					leaderImg.height = 38
 					leaderImg.alt = "Leader Card"
@@ -1564,7 +1565,7 @@
 				const title = `T${cutoff} ${currentEvent.name}${chapter != null ? `, Chapter ${chapter}` : ""}`
 				const subtitle = `${deltaTimeline.length} total games`
 				const leaderCard = profile?.cards?.[0] ?? card
-				const iconUrl = leaderCard && `/images/card/leader/${leaderCard.id}.png?level=${leaderCard.level}&mastery=${leaderCard.mastery}&trained=${leaderCard.trained}&image=${leaderCard.image}`
+				const iconUrl = leaderCard && `/images/card/leader/${leaderCard.id}.png?level=${leaderCard.level}&mastery=${leaderCard.mastery}&trained=${leaderCard.trained}&image=${leaderCard.image}&old=${isPre3rdAnni}`
 
 				await copyHeatmap(title, subtitle, name, iconUrl)
 

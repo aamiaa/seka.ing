@@ -33,6 +33,7 @@ imageGenRouter.get("/card/leader/:cardId.:format",
 	query("mastery").isInt({min: 0, max: 5}),
 	query("trained").isBoolean(),
 	query("image").isInt({min: 0, max: 1}),
+	query("old").optional().isBoolean(),
 	ValidationMiddleware.sendErrors,
 	ImageGenController.generateLeaderCard.bind(ImageGenController)
 )
