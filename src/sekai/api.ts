@@ -1,5 +1,5 @@
 import HttpsProxyAgent from "https-proxy-agent"
-import SekaiApiClient from "sekai-api"
+import SekaiApiClient, { ApiServer } from "sekai-api"
 
 const httpsAgent = HttpsProxyAgent({
 	host: process.env.ProxyHost,
@@ -8,7 +8,7 @@ const httpsAgent = HttpsProxyAgent({
 })
 
 const client = new SekaiApiClient({
-	server: process.env.SEKAI_SERVER as "en" | "jp",
+	server: process.env.SEKAI_SERVER as ApiServer,
 	httpsAgent,
 	deviceModel: process.env.SEKAI_DEVICE_MODEL,
 	deviceOS: process.env.SEKAI_DEVICE_OS
