@@ -15,7 +15,7 @@ export default class EventController {
 	public static async getEvents(req: Request, res: Response, next: NextFunction) {
 		const withHonors = req.query.with_honors === "true"
 
-		const events = SekaiMasterDB.getEvents().map(x => getEventDTO(x, {withHonors}))
+		const events = SekaiMasterDB.getEvents().filter(x => x.startAt.getTime() <= Date.now()).map(x => getEventDTO(x, {withHonors}))
 		const snapshots = (await RankingSnapshotModel.aggregate([
 			{$group: {_id: "$eventId"}}
 		])).map(x => x._id)
@@ -175,8 +175,8 @@ export default class EventController {
 			return res.status(400).send({error: "Invalid event"})
 		}
 
-			const timeline = await RankingSnapshotModel.getPlayerEventTimeline(eventId, userId)
-			return res.json({timeline})
+		const timeline = await RankingSnapshotModel.getPlayerEventTimeline(eventId, userId)
+		return res.json({timeline})
 	}
 
 	public static async getCutoffStats(req: Request, res: Response, next: NextFunction) {
@@ -189,7 +189,7 @@ export default class EventController {
 		}
 
 		const timeline = await RankingSnapshotModel.getCutoffEventTimeline(event.id, cutoff)
-			return res.json({timeline})
+		return res.json({timeline})
 	}
 
 	public static async getSnapshotsList(req: Request, res: Response, next: NextFunction) {
