@@ -25,7 +25,8 @@ async function main() {
 	await ApiClient.authenticate({
 		credential: process.env.SEKAI_AUTH,
 		deviceId: process.env.SEKAI_DEVICE_ID,
-		installId: process.env.SEKAI_INSTALL_ID
+		installId: process.env.SEKAI_INSTALL_ID,
+		userId: process.env.SEKAI_USER_ID
 	})
 
 	await SekaiMasterDB.init()
