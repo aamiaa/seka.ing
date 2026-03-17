@@ -1,10 +1,7 @@
-import axios from "axios";
-import { SekaiCheerfulCarnivalSummary, SekaiCheerfulCarnivalTeam, SekaiEvent, SekaiEventCard, SekaiEventDeckBonus, SekaiEventRarityBonusRate, SekaiEventType, SekaiWorldBloom, SekaiWorldBloomChapterRankingRewardRange } from "../interface/event";
+import { SekaiCheerfulCarnivalSummary, SekaiCheerfulCarnivalTeam, SekaiEvent, SekaiEventCard, SekaiEventDeckBonus, SekaiEventRarityBonusRate } from "../interface/event";
 import SekaiGameCharacter, { SekaiPenlightColor } from "../interface/character";
 import { SekaiResourceBox } from "../interface/resource";
-import { SekaiHonor, SekaiHonorGroup } from "../interface/honor";
 import SekaiCard from "../interface/card";
-import { SystemAppVersion } from "sekai-api";
 import ApiClient from "../sekai/api"
 import path from "path"
 import fs from "fs"
@@ -20,17 +17,13 @@ async function ensureFolderExists(path: string) {
 }
 
 export default class SekaiMasterDB {
-	private static readonly requiredModules = ["events", "worldBlooms", "gameCharacters", "penlightColors",
-		"resourceBoxes", "honors", "honorGroups", "worldBloomChapterRankingRewardRanges", "cards", "cheerfulCarnivalTeams",
+	private static readonly requiredModules = ["events", "gameCharacters", "penlightColors",
+		"resourceBoxes", "cards", "cheerfulCarnivalTeams",
 		"cheerfulCarnivalSummaries", "eventCards", "eventDeckBonuses", "eventRarityBonusRates", "gameCharacterUnits"]
 	private static events: SekaiEvent[] = []
-	private static worldBlooms: SekaiWorldBloom[] = []
 	private static gameCharacters: SekaiGameCharacter[] = []
 	private static penlightColors: SekaiPenlightColor[] = []
 	private static resourceBoxes: SekaiResourceBox[] = []
-	private static honors: SekaiHonor[] = []
-	private static honorGroups: SekaiHonorGroup[] = []
-	private static worldBloomChapterRankingRewardRanges: SekaiWorldBloomChapterRankingRewardRange[] = []
 	private static cards: SekaiCard[] = []
 	private static cheerfulCarnivalTeams: SekaiCheerfulCarnivalTeam[] = []
 	private static cheerfulCarnivalSummaries: SekaiCheerfulCarnivalSummary[] = []
@@ -44,34 +37,9 @@ export default class SekaiMasterDB {
 		setInterval(this.refreshData.bind(this), 4 * 3600 * 1000)
 	}
 
-	private static async getDataVersion(server: string) {
-		switch(server) {
-			case "en": {
-				const versionRes = await axios.get<SystemAppVersion>("https://raw.githubusercontent.com/aamiaa/sekai-en-diff/refs/heads/main/api/currentVersion.json")
-				return versionRes.data.dataVersion
-			}
-			case "jp": {
-				const versionRes = await axios.get<SystemAppVersion>("https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/refs/heads/main/versions.json")
-				return versionRes.data.dataVersion
-			}
-		}
-	}
-
-	private static async getModuleFromGitHub(server: string, module: string) {
-		switch(server) {
-			case "en": {
-				return (await axios.get(`https://raw.githubusercontent.com/aamiaa/sekai-en-diff/refs/heads/main/modules/${module}.json`)).data
-			}
-			case "jp": {
-				return (await axios.get(`https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/refs/heads/main/${module}.json`)).data
-			}
-		}
-	}
-
 	private static async refreshData() {
 		console.log("[SekaiMasterDB] Performing data refresh...")
 
-		const repoDataVersion = await this.getDataVersion(process.env.SEKAI_SERVER)
 		const liveDataVersion = ApiClient.clientInfo.dataVersion
 		if(!liveDataVersion) {
 			throw new Error("[SekaiMasterDB] Data version is null!")
@@ -84,13 +52,7 @@ export default class SekaiMasterDB {
 
 			console.log("[SekaiMasterDB] Data is up to date!")
 		} catch(ex) {
-			if(repoDataVersion !== liveDataVersion) {
-				console.log("[SekaiMasterDB] GitHub repo is outdated, falling back to game api")
-				await this.updateFromGameApi(versionFolderPath)
-			} else {
-				await this.updateFromGitHub(versionFolderPath)
-			}
-
+			await this.updateFromGameApi(versionFolderPath)
 			await this.loadFromFiles(versionFolderPath)
 		}
 		ensureEventAssetsExist()
@@ -107,15 +69,6 @@ export default class SekaiMasterDB {
 		}
 	}
 
-	private static async updateFromGitHub(folderPath: string) {
-		await ensureFolderExists(folderPath)
-		for(const module of this.requiredModules) {
-			const res = await this.getModuleFromGitHub(process.env.SEKAI_SERVER, module)
-			const fileName = path.join(folderPath, `${module}.json`)
-			await fs.promises.writeFile(fileName, JSON.stringify(res))
-		}
-	}
-
 	private static async loadFromFiles(folderPath: string) {
 		for(const module of this.requiredModules) {
 			const fileName = path.join(folderPath, `${module}.json`)
@@ -127,12 +80,6 @@ export default class SekaiMasterDB {
 						["startAt", "aggregateAt", "rankingAnnounceAt", "distributionStartAt", "closedAt", "distributionEndAt"].forEach(field => event[field] = new Date(event[field]))
 					)
 					this.events = data
-					break
-				case "worldBlooms":
-					data.forEach(event => 
-						["chapterStartAt", "aggregateAt", "chapterEndAt"].forEach(field => event[field] = new Date(event[field]))
-					)
-					this.worldBlooms = data
 					break
 				case "cheerfulCarnivalSummaries":
 					data.forEach(x => {
@@ -170,32 +117,6 @@ export default class SekaiMasterDB {
 		return this.events.find(x => x.startAt > now)
 	}
 
-	public static getAllWorldBloomChapters() {
-		return this.worldBlooms
-	}
-
-	public static getWorldBloomChapters(id: number) {
-		return this.worldBlooms.filter(x => x.eventId === id).sort((a,b) => a.chapterNo - b.chapterNo)
-	}
-
-	public static getWorldBloomChapter(id: number, chapter: number) {
-		return this.worldBlooms.find(x => x.eventId === id && x.chapterNo === chapter)
-	}
-
-	public static getCurrentWorldBloomChapter() {
-		const currentEvent = this.getCurrentEvent()
-		if(!currentEvent || currentEvent.eventType !== SekaiEventType.WORLD_BLOOM) {
-			return null
-		}
-		
-		const now = new Date()
-		return this.worldBlooms.find(x => now <= x.aggregateAt && now >= x.chapterStartAt)
-	}
-
-	public static getWorldBloomChapterRankingRewardRanges(id: number, gameCharacterId: number) {
-		return this.worldBloomChapterRankingRewardRanges.filter(x => x.eventId === id && x.gameCharacterId === gameCharacterId)
-	}
-
 	public static getGameCharacter(id: number) {
 		return this.gameCharacters.find(x => x.id === id)
 	}
@@ -206,22 +127,6 @@ export default class SekaiMasterDB {
 
 	public static getResourceBox(id: number, purpose: string) {
 		return this.resourceBoxes.find(x => x.id === id && x.resourceBoxPurpose === purpose)
-	}
-
-	public static getHonor(id: number) {
-		return this.honors.find(x => x.id === id)
-	}
-
-	public static getHonorGroup(id: number) {
-		return this.honorGroups.find(x => x.id === id)
-	}
-
-	public static getHonorGroups() {
-		return this.honorGroups
-	}
-
-	public static getHonorsForGroup(id: number) {
-		return this.honors.filter(x => x.groupId === id)
 	}
 
 	public static getCard(id: number) {

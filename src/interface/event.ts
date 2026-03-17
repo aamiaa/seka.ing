@@ -18,8 +18,7 @@ export interface SekaiEvent {
 
 export enum SekaiEventType {
 	MARATHON = "marathon",
-	CHEERFUL_CARNIVAL = "cheerful_carnival",
-	WORLD_BLOOM = "world_bloom"
+	CHEERFUL_CARNIVAL = "cheerful_carnival"
 }
 
 export interface SekaiEventRankingRewardsRange {
@@ -33,26 +32,6 @@ export interface SekaiEventRankingRewardsRange {
 export interface SekaiEventRankingReward {
 	id: number,
 	eventRankingRewardRangeId: number,
-	resourceBoxId: number
-}
-
-export interface SekaiWorldBloom {
-	id: number,
-	eventId: number,
-	gameCharacterId: number,
-	chapterNo: number,
-	chapterStartAt: Date,
-	aggregateAt: Date,
-	chapterEndAt: Date,
-	isSupplemental: boolean
-}
-
-export interface SekaiWorldBloomChapterRankingRewardRange {
-	id: number,
-	eventId: number,
-	gameCharacterId: number,
-	fromRank: number,
-	toRank: number,
 	resourceBoxId: number
 }
 

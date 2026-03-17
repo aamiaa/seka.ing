@@ -1,16 +1,15 @@
-import { BorderSnapshotModel, RankingSnapshotModel } from "../../models/snapshot/model"
+import { RankingSnapshotModel } from "../../models/snapshot/model"
 import SekaiMasterDB from "../../providers/sekai-master-db"
 import { EventProfileModel } from "../../models/event_profile"
-import { BorderSnapshot, RankingEntry, RankingSnapshot } from "../../interface/models/snapshot"
-import { SekaiEvent, SekaiEventType } from "../../interface/event"
+import { RankingEntry, RankingSnapshot } from "../../interface/models/snapshot"
+import { SekaiEvent } from "../../interface/event"
 import CacheStore from "../../webserv/cache"
-import { EventRankingBorderPage, EventRankingPage, SekaiError, UserCardDefaultImage, UserCardSpecialTrainingStatus, UserRanking } from "sekai-api"
+import { EventRankingPage, UserCardDefaultImage, UserCardSpecialTrainingStatus, UserRanking } from "sekai-api"
 import ApiClient from "../api"
 import { encryptEventSnowflake } from "../../util/cipher"
 import { sleep } from "../../util/sleep"
 import { LeaderboardDTO } from "../../webserv/dto/leaderboard"
 import { getEventDTO } from "../../transformers/event"
-import { EventDTO } from "../../webserv/dto/event"
 
 function populateUsersMap(map: Record<string, RankingEntry>, users: RankingEntry[]) {
 	for(const user of users) {
@@ -41,16 +40,6 @@ export default class LeaderboardTracker {
 		const rankingPastHour = await RankingSnapshotModel.find({eventId: currentEvent.id, createdAt: {$gte: pastHour}}).lean()
 
 		return rankingPastHour
-	}
-
-	public static async getPastHourBorders() {
-		const now = new Date()
-		const currentEvent = SekaiMasterDB.getCurrentEvent()
-
-		const pastHour = new Date(now.getTime() - 3600 * 1000)
-		const bordersPastHour = await BorderSnapshotModel.find({eventId: currentEvent.id, createdAt: {$gte: pastHour}}).lean()
-
-		return bordersPastHour
 	}
 
 	private static processRankingDifference(event: SekaiEvent, currentRanking: UserRanking[], pastRankings: RankingEntry[][]): LeaderboardDTO["rankings"] {
@@ -95,53 +84,11 @@ export default class LeaderboardTracker {
 		})
 	}
 
-	private static processBordersDifference(event: SekaiEvent, currentRanking: UserRanking[], pastRankings: RankingEntry[][]) {
-		return currentRanking.map(user => {
-			// Doing it this way instead of pastRankings[0] since not all ranks will be immediately there (ex. t300k might take a while to appear)
-			let earliest = user.score
-			for(const entry of pastRankings) {
-				const currentRankSlot = entry.find(x => x.rank === user.rank)
-				if(currentRankSlot) {
-					earliest = currentRankSlot.score
-					break
-				}
-			}
-
-			return {
-				name: user.name,
-				team: user.userCheerfulCarnival?.cheerfulCarnivalTeamId,
-				score: user.score,
-				rank: user.rank,
-				card: {
-					id: user.userCard.cardId,
-					level: user.userCard.level,
-					mastery: user.userCard.masterRank,
-					trained: user.userCard.specialTrainingStatus === UserCardSpecialTrainingStatus.DONE,
-					image: user.userCard.defaultImage === UserCardDefaultImage.SPECIAL_TRAINING ? 1 : 0
-				},
-				rank_delta: user.score - earliest
-			}
-		})
-	}
-
-	private static async updateUserProfiles(rankingSnapshot: RankingSnapshot, borderSnapshot: BorderSnapshot, onlyNew?: boolean) {
+	private static async updateUserProfiles(rankingSnapshot: RankingSnapshot, onlyNew?: boolean) {
 		const usersTop100: Record<string, UserRanking> = {}
 		const usersBorders: Record<string, UserRanking> = {}
 
 		populateUsersMap(usersTop100, rankingSnapshot.rankings)
-		populateUsersMap(usersBorders, borderSnapshot.borderRankings)
-		if(rankingSnapshot.userWorldBloomChapterRankings?.length > 0) {
-			rankingSnapshot.userWorldBloomChapterRankings.forEach(x => {
-				if(!x.isWorldBloomChapterAggregate) {
-					populateUsersMap(usersTop100, x.rankings)
-				}
-			})
-			borderSnapshot.userWorldBloomChapterRankingBorders.forEach(x => {
-				if(!x.isWorldBloomChapterAggregate) {
-					populateUsersMap(usersBorders, x.borderRankings)
-				}
-			})
-		}
 
 		await EventProfileModel.bulkWrite(Object.values(usersTop100).map(user => {
 			const entry = {
@@ -190,17 +137,13 @@ export default class LeaderboardTracker {
 			console.log("[LeaderboardTracker] No current event")
 			return
 		}
-		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
 
 		// Save current leaderboard snapshot
 		let ranking: EventRankingPage
-		let border: EventRankingBorderPage
 		for(let i=0;i<3;i++) {
 			try {
 				if(!ranking)
 					ranking = await ApiClient.getRankingTop100(currentEvent.id)
-				if(!border)
-					border = await ApiClient.getRankingBorder(currentEvent.id)
 				break
 			} catch(ex) {
 				console.error("[LeaderboardTracker] Update failed:", ex)
@@ -213,13 +156,13 @@ export default class LeaderboardTracker {
 				}
 			}
 		}
-		if(!ranking || !border || (Date.now() - now.getTime()) >= 45 * 1000) {
+		if(!ranking || (Date.now() - now.getTime()) >= 45 * 1000) {
 			return
 		}
 
 		// Edge case: ranking might be aggregate: false, while border might be aggregate: true in one go
 		// This is why we check both
-		if(ranking.isEventAggregate || border.isEventAggregate) {
+		if(ranking.isEventAggregate) {
 			console.warn("[LeaderboardTracker] Event is aggregating")
 
 			CacheStore.get<LeaderboardDTO>("leaderboard").aggregate_until = currentEvent.rankingAnnounceAt
@@ -231,33 +174,13 @@ export default class LeaderboardTracker {
 			eventId: currentEvent.id,
 			createdAt: ranking.responseTime
 		}
-		const borderSnapshot = {
-			...border,
-			eventId: currentEvent.id,
-			createdAt: ranking.responseTime
-		}
-
-		// Fix for worldlink chapters of borders api being unsorted
-		if(currentEvent.eventType === SekaiEventType.WORLD_BLOOM) {
-			const chapters = SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
-			const characters = chapters.map(x => x.gameCharacterId)
-
-			border.userWorldBloomChapterRankingBorders.sort((a,b) => characters.indexOf(a.gameCharacterId) - characters.indexOf(b.gameCharacterId)) 
-		}
 
 		const eventInProgress = now < new Date(currentEvent.rankingAnnounceAt.getTime())
 		const eventRanksDistributed = now >= new Date(currentEvent.distributionStartAt.getTime())
 		if(eventInProgress) {
 			// Save ranking snapshot
 			await RankingSnapshotModel.create(rankingSnapshot)
-			await this.updateUserProfiles(rankingSnapshot, borderSnapshot)
-
-			// Check if borders have changed
-			const borderEntry = new BorderSnapshotModel(borderSnapshot)
-			const lastBorderEntry = await BorderSnapshotModel.findOne({eventId: currentEvent.id}, null, {sort: {createdAt: -1}})
-			if(!lastBorderEntry || lastBorderEntry.getHash() !== borderEntry.getHash()) {
-				await borderEntry.save()
-			}
+			await this.updateUserProfiles(rankingSnapshot)
 		} else if(!eventRanksDistributed) {
 			// Save only a single "final" snapshot past event end, and repeat
 			// whenever the leaderboard changes (ex. due to account deletions)
@@ -269,73 +192,21 @@ export default class LeaderboardTracker {
 				await rankingEntry.save()
 			}
 
-			const borderEntry = new BorderSnapshotModel(borderSnapshot)
-			borderEntry.final = true
-			const finalBorderEntry = await BorderSnapshotModel.findOne({eventId: currentEvent.id, final: true})
-			if(!finalBorderEntry || finalBorderEntry.getHash() !== borderEntry.getHash()) {
-				await BorderSnapshotModel.updateMany({eventId: currentEvent.id, final: true}, {$unset: {final: ""}})
-				await borderEntry.save()
-			}
-
 			// Only add unseen-before user profiles. Handles the edge case
 			// where someone deletes their account after event end
-			await this.updateUserProfiles(rankingSnapshot, borderSnapshot, true)
+			await this.updateUserProfiles(rankingSnapshot, true)
 		}
 
 		// Update data sent to frontend
 		const rankingPastHour = await this.getPastHourRanking()
-		const bordersPastHour = await this.getPastHourBorders()
 		const currentRanking = ranking.rankings
-		const currentBorders = border.borderRankings
 
 		const lbCache: LeaderboardDTO = {
 			event: getEventDTO(currentEvent),
 			rankings: this.processRankingDifference(currentEvent, currentRanking, rankingPastHour.map(x => x.rankings)),
-			borders: this.processBordersDifference(currentEvent, currentBorders, bordersPastHour.map(x => x.borderRankings)),
 			updated_at: ranking.responseTime
 		}
 		CacheStore.set("leaderboard", lbCache)
-
-		if(currentEvent.eventType === SekaiEventType.WORLD_BLOOM) {
-			const chapters: EventDTO["chapters"] = SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
-				.map(x => ({
-					title: SekaiMasterDB.getGameCharacter(x.gameCharacterId).givenName,
-					num: x.chapterNo,
-					character_id: x.gameCharacterId,
-					color: SekaiMasterDB.getCharacterColor(x.gameCharacterId),
-					starts_at: new Date(x.chapterStartAt),
-					ends_at: new Date(x.aggregateAt)
-				}))
-
-			lbCache.event.chapters = chapters
-			
-			if(currentChapter != null) {
-				lbCache.event.chapter_num = currentChapter.chapterNo
-				lbCache.event.chapter_character = currentChapter.gameCharacterId
-				lbCache.event.ends_at = currentChapter.aggregateAt
-			}
-
-			lbCache.chapter_rankings = chapters.map(chapter => {
-				if(!ranking.userWorldBloomChapterRankings[chapter.num - 1].isWorldBloomChapterAggregate) {
-					return this.processRankingDifference(
-						currentEvent,
-						ranking.userWorldBloomChapterRankings[chapter.num - 1].rankings,
-						rankingPastHour.map(x => x.userWorldBloomChapterRankings[chapter.num - 1].rankings)
-					)
-				}
-				return []
-			})
-			lbCache.chapter_borders = chapters.map(chapter => {
-				if(!ranking.userWorldBloomChapterRankings[chapter.num - 1].isWorldBloomChapterAggregate) {
-					return this.processBordersDifference(
-						currentEvent,
-						border.userWorldBloomChapterRankingBorders.find(y => y.gameCharacterId === chapter.character_id).borderRankings,
-						bordersPastHour.map(x => x.userWorldBloomChapterRankingBorders.find(y => y.gameCharacterId === chapter.character_id).borderRankings)
-					)
-				}
-				return []
-			})
-		}
 
 		if(nextEvent && (nextEvent.startAt.getTime() - Date.now()) <= 86400 * 1000) {
 			lbCache.next_event = getEventDTO(nextEvent)
@@ -370,7 +241,6 @@ export default class LeaderboardTracker {
 
 			const top100UserIds = new Set<string>()
 			lastTop100.rankings.forEach(x => top100UserIds.add(x.userId))
-			lastTop100.userWorldBloomChapterRankings?.forEach(x => x.rankings.forEach(y => top100UserIds.add(y.userId)))
 
 			// TODO: try/catch this to prevent the loop from aborting
 			const nextProfiles = await EventProfileModel.find({

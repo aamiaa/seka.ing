@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import SekaiMasterDB from "../../providers/sekai-master-db";
-import { PipelineStage } from "mongoose";
-import { SekaiEventType } from "../../interface/event";
-import { BorderSnapshotModel, RankingSnapshotModel } from "../../models/snapshot/model";
+import { RankingSnapshotModel } from "../../models/snapshot/model";
 import { EventProfileModel } from "../../models/event_profile";
 import CacheStore from "../cache";
 import { decryptEventSnowflake } from "../../util/cipher";
@@ -58,68 +56,35 @@ export default class EventController {
 		// For a past event without timestamp, return the final snapshot
 		if(!timestampStr) {
 			const snapshot = await RankingSnapshotModel.findOne({eventId: event.id, final: true})
-			const borderSnapshot = await BorderSnapshotModel.findOne({eventId: event.id, final: true})
 			if(!snapshot) {
 				return res.status(404).json({error: "Specified event was not recorded"})
 			}
 
-			const userIds =
-				snapshot.rankings.map(x => x.userId)
-				.concat(
-					borderSnapshot?.borderRankings?.map(x => x.userId)
-				)
-				.concat(
-					snapshot.userWorldBloomChapterRankings.flatMap(x => 
-						x.rankings.map(y => y.userId)
-					)
-				)
-				.concat(
-					borderSnapshot?.userWorldBloomChapterRankingBorders?.flatMap(x => 
-						x.borderRankings.map(y => y.userId)
-					)
-				).filter(x => x != null)
+			const userIds = snapshot.rankings.map(x => x.userId)
 			const profiles = await EventProfileModel.find({eventId: event.id, userId: {$in: userIds}}).lean()
 
-			return res.json(getLeaderboardDTO({event, profiles, snapshot, borderSnapshot}))
+			return res.json(getLeaderboardDTO({event, profiles, snapshot}))
 		}
 
 		// For current and past events with timestamp,
 		// compute the change per hour fields
 		const timestamp = new Date(timestampStr)
 		const snapshot = await RankingSnapshotModel.findOne({eventId: event.id, createdAt: timestamp}).lean()
-		const borderSnapshot = await BorderSnapshotModel.findOne({eventId: event.id, createdAt: {$lte: timestamp}}, undefined, {sort: {createdAt: -1}}).lean()
 		if(!snapshot) {
 			return res.status(404).json({error: "No snapshot found at specified timestamp"})
 		}
 
-		const userIds =
-			snapshot.rankings.map(x => x.userId)
-			.concat(
-				borderSnapshot?.borderRankings?.map(x => x.userId)
-			)
-			.concat(
-				snapshot.userWorldBloomChapterRankings.flatMap(x => 
-					x.rankings.map(y => y.userId)
-				)
-			)
-			.concat(
-				borderSnapshot?.userWorldBloomChapterRankingBorders?.flatMap(x => 
-					x.borderRankings.map(y => y.userId)
-				)
-			).filter(x => x != null)
+		const userIds = snapshot.rankings.map(x => x.userId)
 		const profiles = await EventProfileModel.find({eventId: event.id, userId: {$in: userIds}}).lean()
 
 		const pastHour = new Date(timestamp.getTime() - 3600 * 1000)
 		const rankingsPastHour = await RankingSnapshotModel.find({eventId: event.id, createdAt: {$gte: pastHour, $lt: timestamp}}).lean()
-		const bordersPastHour = await BorderSnapshotModel.find({eventId: event.id, createdAt: {$gte: pastHour, $lt: timestamp}}).lean()
 
 		return res.json(getLeaderboardDTO({
 			event,
 			profiles,
 			snapshot,
-			borderSnapshot,
-			pastSnapshots: rankingsPastHour,
-			pastBorderSnapshots: bordersPastHour
+			pastSnapshots: rankingsPastHour
 		}))
 	}
 
@@ -131,131 +96,6 @@ export default class EventController {
 
 		res.set("Cache-Control", "no-store")
 		return res.json(data)
-	}
-
-	public static async getWorldlinkGraph(req: Request, res: Response, next: NextFunction) {
-		let includeAll = req.query.all === "true"
-
-		const currentEvent = SekaiMasterDB.getCurrentEvent()
-		if(!includeAll && currentEvent?.eventType !== SekaiEventType.WORLD_BLOOM) {
-			includeAll = true
-		}
-
-		const chapters = includeAll ? SekaiMasterDB.getAllWorldBloomChapters() : SekaiMasterDB.getWorldBloomChapters(currentEvent.id)
-		const currentChapter = SekaiMasterDB.getCurrentWorldBloomChapter()
-
-		const points: Record<string, any[]> = {}
-		const colors: Record<string, string> = {}
-		const query: PipelineStage.Facet["$facet"] = {}
-		chapters.forEach(chapter => {
-			const name = SekaiMasterDB.getGameCharacter(chapter.gameCharacterId).givenName
-			colors[name] = SekaiMasterDB.getCharacterColor(chapter.gameCharacterId)
-
-			const isPastChapter = currentChapter == null || chapter.eventId !== currentEvent.id || chapter.chapterNo < currentChapter.chapterNo
-			const isFutureChapter = currentChapter != null && !isPastChapter && chapter.chapterNo > currentChapter.chapterNo
-			const graphCache = CacheStore.get<any>(`wl_graph_${name}`)
-			if(isPastChapter && graphCache) {
-				points[name] = graphCache
-			} else if(!isFutureChapter) {
-				query[name] = [
-					{
-						$match: {
-							createdAt: {
-								$gte: chapter.chapterStartAt,
-								$lte: chapter.aggregateAt
-							}
-						}
-					},
-					{
-						$project: {
-							_id: 0,
-							points: {
-								$getField: {
-									field: "score",
-									input: {
-										$arrayElemAt: [
-											{
-												$arrayElemAt: [
-													"$userWorldBloomChapterRankings.rankings",
-													chapter.chapterNo - 1
-												]
-											},
-											99
-										]
-									}
-								}
-							},
-							createdAt: 1
-						}
-					},
-					{
-						$group: {
-							_id: {
-								$dateTrunc: {
-									date: "$createdAt",
-									unit: "minute",
-									binSize: isPastChapter ? 5 : 1
-								}
-							},
-							points: {
-								$first: "$points"
-							}
-						}
-					},
-					{
-						$sort: {_id: 1}
-					},
-					{
-						$project: {
-							_id: 0,
-							y: "$points",
-							x: {
-								$dateDiff: {
-									startDate: chapter.chapterStartAt,
-									endDate: "$_id",
-									unit: "minute"
-								}
-							}
-						}
-					}
-				]
-			}
-		})
-
-		// Length will be 0 if all chapters are cached (i.e. no ongoing chapter)
-		// in which case don't query the db
-		if(Object.keys(query).length > 0) {
-			const results = await RankingSnapshotModel.aggregate([
-				{
-					$match: {
-						eventId: includeAll ? {
-							$in: SekaiMasterDB.getEvents().filter(x => x.eventType === SekaiEventType.WORLD_BLOOM).map(x => x.id)
-						} : currentEvent.id
-					}
-				},
-				{
-					$facet: query
-				}
-			])
-
-			for(const [name, vals] of Object.entries(results[0])) {
-				points[name] = (vals as any)
-				CacheStore.set(`wl_graph_${name}`, vals)
-			}
-		}
-
-		let now: number
-		if(currentChapter) {
-		    now = Math.floor((Date.now() - currentChapter.chapterStartAt.getTime())/60000)
-		    now = Math.round(now/100)*100
-		} else {
-		    now = 4100
-		}
-		return res.json({
-			points,
-			colors,
-			now
-		})
 	}
 
 	public static async getPlayerEventProfile(req: Request, res: Response, next: NextFunction) {
@@ -313,14 +153,13 @@ export default class EventController {
 				mysekai_furniture_bonus: profile.totalPower.mysekaiFixtureGameCharacterPerformanceBonus,
 				total_talent: profile.totalPower.totalPower
 			},
-			event_bonus: event.eventType !== SekaiEventType.WORLD_BLOOM ? calculateEventBonus(eventId, cards) : undefined
+			event_bonus: calculateEventBonus(eventId, cards)
 		}
 		return res.json(response)
 	}
 
 	public static async getPlayerEventStats(req: Request, res: Response, next: NextFunction) {
 		const hash = req.params.hash as string
-		const chapter = parseInt(req.query.chapter as string)
 
 		let eventId: number, userId: string
 		try {
@@ -335,51 +174,22 @@ export default class EventController {
 		if(!event) {
 			return res.status(400).send({error: "Invalid event"})
 		}
-		if(req.query.chapter && event.eventType !== SekaiEventType.WORLD_BLOOM) {
-			return res.status(400).send({error: "Cannot specify chapter for non-worldlink events"})
-		}
 
-		if(!req.query.chapter) {
 			const timeline = await RankingSnapshotModel.getPlayerEventTimeline(eventId, userId)
 			return res.json({timeline})
-		} else {
-			const eventChapter = SekaiMasterDB.getWorldBloomChapter(eventId, chapter)
-			if(!eventChapter) {
-				return res.status(400).json({error: "Specified chapter doesn't exist"})
-			}
-
-			const timeline = await RankingSnapshotModel.getPlayerWorldlinkChapterTimeline(eventId, userId, eventChapter)
-			return res.json({timeline})
-		}
 	}
 
 	public static async getCutoffStats(req: Request, res: Response, next: NextFunction) {
 		const eventIdStr = req.params.eventId as string || "now" // To be removed after users' cache expires
 		const cutoff = parseInt(req.params.cutoff as string)
-		const chapter = parseInt(req.query.chapter as string)
 
 		const event = getEventFromIdStr(eventIdStr)
 		if(!event) {
 			return res.status(404).json({error: "Specified event doesn't exist"})
 		}
-		if(req.query.chapter && event.eventType !== SekaiEventType.WORLD_BLOOM) {
-			return res.status(400).send({error: "Cannot specify chapter for non-worldlink events"})
-		}
 
-		const model = cutoff <= 100 ? RankingSnapshotModel : BorderSnapshotModel
-
-		if(!req.query.chapter) {
-			const timeline = await model.getCutoffEventTimeline(event.id, cutoff)
+		const timeline = await RankingSnapshotModel.getCutoffEventTimeline(event.id, cutoff)
 			return res.json({timeline})
-		} else {
-			const eventChapter = SekaiMasterDB.getWorldBloomChapter(event.id, chapter)
-			if(!eventChapter) {
-				return res.status(400).json({error: "Specified chapter doesn't exist"})
-			}
-
-			const timeline = await model.getCutoffWorldlinkChapterTimeline(event.id, cutoff, eventChapter)
-			return res.json({timeline})
-		}
 	}
 
 	public static async getSnapshotsList(req: Request, res: Response, next: NextFunction) {

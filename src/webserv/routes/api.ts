@@ -41,13 +41,6 @@ apiRouter.get("/events/:eventId/leaderboard",
 	EventController.getEventLeaderboard
 )
 apiRouter.get("/cc-announcements", EventController.getAnnouncements)
-apiRouter.get("/wl-graph",
-	query("all").optional().isBoolean(),
-	ValidationMiddleware.sendErrors,
-	rl({limit: 60, per: 3 * 60}),
-	rl({limit: 5, per: 10}),
-	EventController.getWorldlinkGraph
-)
 apiRouter.get("/event-profiles/:hash",
 	param("hash").isString().isLength({min: 32, max: 32}).isHexadecimal(),
 	ValidationMiddleware.sendErrors,
@@ -57,7 +50,6 @@ apiRouter.get("/event-profiles/:hash",
 )
 apiRouter.get("/event-stats/:hash",
 	param("hash").isString().isLength({min: 32, max: 32}).isHexadecimal(),
-	query("chapter").optional().isInt({min: 1, max: 6}),
 	ValidationMiddleware.sendErrors,
 	rl({limit: 60, per: 3 * 60}),
 	rl({limit: 10, per: 10}),
@@ -69,7 +61,6 @@ apiRouter.get("/events/:eventId/cutoff-stats/:cutoff",
 		(x >= 1 && x <= 100) ||
 		[200, 300, 400, 500, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 10000, 20000, 30000, 40000, 50000, 100000, 200000, 300000].includes(parseInt(x))
 	),
-	query("chapter").optional().isInt({min: 1, max: 6}),
 	ValidationMiddleware.sendErrors,
 	rl({limit: 60, per: 3 * 60}),
 	rl({limit: 10, per: 10}),

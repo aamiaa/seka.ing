@@ -6,33 +6,6 @@ import sharp from "sharp";
 
 parentPort.on("message", async (data: ImageGenTask) => {
 	switch(data.action) {
-		case "event-honor":
-		case "event-honor-sub": {
-			const sub = data.action === "event-honor-sub"
-
-			const backgroundImage = await fs.promises.readFile(data.params.backgroundImage)
-			const rankImage = await fs.promises.readFile(data.params.rankImage)
-			let frameImage: Buffer
-			if(data.params.frameImage) {
-				try {
-					frameImage = await fs.promises.readFile(data.params.frameImage)
-				} catch(ex) {}
-			}
-
-			const img = await new (sub ? EventHonorSubImage : EventHonorImage)({
-				backgroundImage,
-				rankImage,
-				frameImage,
-				honorRarity: data.params.honorRarity,
-				isWorldlinkChapter: data.params.isWorldlinkChapter
-			}).create({
-				format: data.format,
-				size: data.size
-			})
-
-			parentPort.postMessage(img)
-			break
-		}
 		case "leader-card":
 		case "old-leader-card": {
 			const memberImage = await fs.promises.readFile(data.params.memberImage)

@@ -5,26 +5,6 @@ import ValidationMiddleware from "../middleware/validation";
 
 const imageGenRouter = Router()
 
-imageGenRouter.get("/honor/event/:eventId/:rank.:format",
-	param("eventId").isInt({min: 1}),
-	param("rank").isInt(),
-	param("format").isIn(["png", "webp"]),
-	query("sub").optional().isBoolean(),
-	query("chapter").optional().isInt({min: 1, max: 6}),
-	ValidationMiddleware.sendErrors,
-	ImageGenController.generateHonorFromEventId.bind(ImageGenController)
-)
-
-imageGenRouter.get("/honor/event_key/:eventKey/:rank.:format",
-	param("eventKey").isString().matches(/^event_\w+_20\d{2}$/),
-	param("rank").isInt(),
-	param("format").isIn(["png", "webp"]),
-	query("sub").optional().isBoolean(),
-	query("chapter").optional().isInt({min: 1, max: 6}),
-	ValidationMiddleware.sendErrors,
-	ImageGenController.generateHonorFromEventKey.bind(ImageGenController)
-)
-
 imageGenRouter.get("/card/leader/:cardId.:format",
 	param("cardId").isInt({min: 1}),
 	param("format").isIn(["png", "webp"]),
