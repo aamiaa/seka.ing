@@ -35,7 +35,6 @@ class ExpressServer {
 		})
 		this.express.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 			console.error("[Express Error]", req.path, err)
-			
 			return res.status(500).send("Internal Server Error")
 		})
 	}

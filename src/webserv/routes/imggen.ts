@@ -1,4 +1,4 @@
-import { Router } from "express"
+import { Router, Request, Response, NextFunction } from "express"
 import { query, param } from "express-validator";
 import ImageGenController from "../controllers/imggen";
 import ValidationMiddleware from "../middleware/validation";
@@ -57,5 +57,14 @@ imageGenRouter.get("/asset/:assetName.:format",
 	ValidationMiddleware.sendErrors,
 	ImageGenController.resizeAsset.bind(ImageGenController)
 )
+
+imageGenRouter.all("*", (req, res) => {
+	return res.status(404).send("")
+})
+
+imageGenRouter.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+	console.error("[Express Error]", req.path, err)
+	return res.status(500).json({error: "Internal Server Error"})
+})
 
 export default imageGenRouter

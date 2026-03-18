@@ -1,4 +1,4 @@
-import { Router } from "express"
+import { Router, Request, Response, NextFunction } from "express"
 import { param, query } from "express-validator";
 import EventController from "../controllers/event"
 import ValidationMiddleware from "../middleware/validation";
@@ -111,5 +111,14 @@ apiRouter.get("/contact",
 	}),
 	ContactController.getContactInfo.bind(ContactController)
 )
+
+apiRouter.all("*", (req, res) => {
+	return res.status(404).json({error: "Route not found"})
+})
+
+apiRouter.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+	console.error("[Express Error]", req.path, err)
+	return res.status(500).json({error: "Internal Server Error"})
+})
 
 export default apiRouter
