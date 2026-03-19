@@ -39,7 +39,8 @@ export interface SekaiEventRankingReward {
 export interface SekaiWorldBloom {
 	id: number,
 	eventId: number,
-	gameCharacterId: number,
+	gameCharacterId?: number,
+	worldBloomChapterType: SekaiWorldBloomChapterType,
 	chapterNo: number,
 	chapterStartAt: Date,
 	aggregateAt: Date,
@@ -93,4 +94,9 @@ export interface SekaiEventRarityBonusRate {
 	cardRarityType: SekaiCardRarityType,
 	masterRank: number,
 	bonusRate: number
+}
+
+export enum SekaiWorldBloomChapterType {
+	GAME_CHARACTER = "game_character",
+	FINALE = "finale"
 }

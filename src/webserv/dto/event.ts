@@ -1,3 +1,4 @@
+import { SekaiWorldBloomChapterType } from "../../interface/event"
 import { SekaiUnit } from "../../interface/unit"
 
 export interface EventDTO {
@@ -23,7 +24,8 @@ export interface EventDTO {
 export interface WorldlinkChapterDTO {
 	title: string,
 	num: number,
-	character_id: number,
+	type?: SekaiWorldBloomChapterType, // TODO: make non-nullable once the update comes to en
+	character_id?: number,
 	color: string,
 	starts_at: Date,
 	ends_at: Date

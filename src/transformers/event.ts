@@ -1,4 +1,4 @@
-import { SekaiEvent, SekaiEventType, SekaiWorldBloom } from "../interface/event";
+import { SekaiEvent, SekaiEventType, SekaiWorldBloom, SekaiWorldBloomChapterType } from "../interface/event";
 import SekaiMasterDB from "../providers/sekai-master-db";
 import { EventDTO, WorldlinkChapterDTO } from "../webserv/dto/event";
 import { getTimezoneOffsetAtDate } from "../util/time";
@@ -74,8 +74,9 @@ export function getEventDTO(event: SekaiEvent, options?: {withHonors?: boolean})
 
 export function getWorldlinkChapterDTO(chapter: SekaiWorldBloom): WorldlinkChapterDTO {
 	const dto: WorldlinkChapterDTO = {
-		title: SekaiMasterDB.getGameCharacter(chapter.gameCharacterId).givenName,
+		title: getWorldlinkChapterTitle(chapter),
 		num: chapter.chapterNo,
+		type: chapter.worldBloomChapterType,
 		character_id: chapter.gameCharacterId,
 		color: SekaiMasterDB.getCharacterColor(chapter.gameCharacterId),
 		starts_at: new Date(chapter.chapterStartAt),
@@ -83,4 +84,14 @@ export function getWorldlinkChapterDTO(chapter: SekaiWorldBloom): WorldlinkChapt
 	}
 
 	return dto
+}
+
+function getWorldlinkChapterTitle(chapter: SekaiWorldBloom) {
+	switch(chapter.worldBloomChapterType) {
+		case undefined: // TODO: remove once finale comes to en
+		case SekaiWorldBloomChapterType.GAME_CHARACTER:
+			return SekaiMasterDB.getGameCharacter(chapter.gameCharacterId).givenName
+		case SekaiWorldBloomChapterType.FINALE:
+			return "Finale"
+	}
 }
