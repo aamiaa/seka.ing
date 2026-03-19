@@ -354,7 +354,7 @@ export default class EventController {
 	}
 
 	public static async getCutoffStats(req: Request, res: Response, next: NextFunction) {
-		const eventIdStr = req.params.eventId as string || "now" // To be removed after users' cache expires
+		const eventIdStr = req.params.eventId as string
 		const cutoff = parseInt(req.params.cutoff as string)
 		const chapter = parseInt(req.query.chapter as string)
 
