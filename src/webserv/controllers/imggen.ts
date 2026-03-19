@@ -86,6 +86,7 @@ export default class ImageGenController {
 		const trained = req.query.trained === "true"
 		const imageType = parseInt(req.query.image as string)
 		const slot = parseInt(req.query.slot as string)
+		const old = req.query.old === "true"
 
 		const card = SekaiMasterDB.getCard(cardId)
 		if(!card) {
@@ -116,7 +117,7 @@ export default class ImageGenController {
 		const backgroundImage = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/character/member_cutout", card.assetbundleName, (imageType === 0 ? "normal" : "after_training"), "deck.png")
 
 		const image = await this.ThreadPool.createExecutor().setTimeout(this.ThreadTimeout).exec({
-			action: "deck-card",
+			action: old ? "old-deck-card" : "deck-card",
 			params: {
 				level,
 				masteryRank,
