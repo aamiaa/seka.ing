@@ -3,7 +3,6 @@ import { param, query } from "express-validator";
 import EventController from "../controllers/event"
 import ValidationMiddleware from "../middleware/validation";
 import ServerController from "../controllers/server";
-import ContactController from "../controllers/contact";
 import ApiRestriction from "../middleware/antibot/api_restriction";
 import GameController from "../controllers/game";
 import rateLimit, { ipKeyGenerator } from "express-rate-limit";
@@ -90,17 +89,6 @@ apiRouter.get("/version",
 apiRouter.get("/game/maintenance",
 	rl({limit: 10, per: 10}),
 	GameController.getMaintenance
-)
-
-apiRouter.get("/contact",
-	ApiRestriction.protectApi({
-		require_browser_ua: true,
-		require_browser_headers: true,
-		require_referer: true,
-		require_sec_fetch: true,
-		require_accept: true
-	}),
-	ContactController.getContactInfo.bind(ContactController)
 )
 
 export default apiRouter
