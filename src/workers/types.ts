@@ -37,7 +37,7 @@ export interface ImageGenLeaderCardTask extends ImageGenBaseTask {
 }
 
 export interface ImageGenDeckCardTask extends ImageGenBaseTask {
-	action: "deck-card",
+	action: "deck-card" | "old-deck-card",
 	params: {
 		level: number,
 		masteryRank: number,

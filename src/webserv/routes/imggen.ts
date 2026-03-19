@@ -47,6 +47,7 @@ imageGenRouter.get("/card/deck/:cardId.:format",
 	query("trained").isBoolean(),
 	query("image").isInt({min: 0, max: 1}),
 	query("slot").isInt({min: 0, max: 4}),
+	query("old").optional().isBoolean(),
 	ValidationMiddleware.sendErrors,
 	ImageGenController.generateDeckCard.bind(ImageGenController)
 )
