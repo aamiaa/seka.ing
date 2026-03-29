@@ -17,7 +17,7 @@ export default class EventController {
 	public static async getEvents(req: Request, res: Response, next: NextFunction) {
 		const withHonors = req.query.with_honors === "true"
 
-		const events = SekaiMasterDB.getEvents().map(x => getEventDTO(x, {withHonors}))
+		const events = SekaiMasterDB.getEvents().filter(x => x.id >= 108 && x.startAt.getTime() <= Date.now()).map(x => getEventDTO(x, {withHonors}))
 		const snapshots = (await RankingSnapshotModel.aggregate([
 			{$group: {_id: "$eventId"}}
 		])).map(x => x._id)
