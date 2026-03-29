@@ -58,6 +58,7 @@ export default class MaintenanceTracker {
 			method: "get"
 		}, 2)
 
+		// FIXME: the 2nd part does not always have the day and month
 		const match = page.match(/■実施期間■<br>\n^\s*(\d+月\d+日\d+時\d+分) ～ (\d+月\d+日\d+時\d+分)<br>/m)
 		const startDateStr = match?.[1]
 		const endDateStr = match?.[2]

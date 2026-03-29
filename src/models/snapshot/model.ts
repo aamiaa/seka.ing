@@ -123,6 +123,9 @@ export const RankingSnapshotSchema = new mongoose.Schema({
 		},
 
 		async getCutoffEventTimeline(eventId: number, cutoff: number) {
+			// Note: the same optimization hack cannot be applied here
+			// as it gets slower the more "gaps" there are,
+			// effectively nullifying any speed gains for lower cutoffs.
 			return await this.aggregate([
 				{
 					$match: {
