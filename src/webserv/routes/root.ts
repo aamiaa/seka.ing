@@ -14,7 +14,6 @@ mainRouter.use("/", express.static(
 // Support old urls with trailing slash
 const legacyPaths = new Map([
 	["/events/", "events.html"],
-	["/titles/", "titles.html"],
 	["/wl-graph/", "wl-graph.html"]
 ])
 mainRouter.use("/", (req, res, next) => {

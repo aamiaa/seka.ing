@@ -44,34 +44,9 @@ export default class SekaiMasterDB {
 		setInterval(this.refreshData.bind(this), 4 * 3600 * 1000)
 	}
 
-	private static async getDataVersion(server: string) {
-		switch(server) {
-			case "en": {
-				const versionRes = await axios.get<SystemAppVersion>("https://raw.githubusercontent.com/aamiaa/sekai-en-diff/refs/heads/main/api/currentVersion.json")
-				return versionRes.data.dataVersion
-			}
-			case "jp": {
-				const versionRes = await axios.get<SystemAppVersion>("https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/refs/heads/main/versions.json")
-				return versionRes.data.dataVersion
-			}
-		}
-	}
-
-	private static async getModuleFromGitHub(server: string, module: string) {
-		switch(server) {
-			case "en": {
-				return (await axios.get(`https://raw.githubusercontent.com/aamiaa/sekai-en-diff/refs/heads/main/modules/${module}.json`)).data
-			}
-			case "jp": {
-				return (await axios.get(`https://raw.githubusercontent.com/Sekai-World/sekai-master-db-diff/refs/heads/main/${module}.json`)).data
-			}
-		}
-	}
-
 	private static async refreshData() {
 		console.log("[SekaiMasterDB] Performing data refresh...")
 
-		const repoDataVersion = await this.getDataVersion(process.env.SEKAI_SERVER)
 		const liveDataVersion = ApiClient.clientInfo.dataVersion
 		if(!liveDataVersion) {
 			throw new Error("[SekaiMasterDB] Data version is null!")
@@ -84,13 +59,7 @@ export default class SekaiMasterDB {
 
 			console.log("[SekaiMasterDB] Data is up to date!")
 		} catch(ex) {
-			if(repoDataVersion !== liveDataVersion) {
-				console.log("[SekaiMasterDB] GitHub repo is outdated, falling back to game api")
-				await this.updateFromGameApi(versionFolderPath)
-			} else {
-				await this.updateFromGitHub(versionFolderPath)
-			}
-
+			await this.updateFromGameApi(versionFolderPath)
 			await this.loadFromFiles(versionFolderPath)
 		}
 		ensureEventAssetsExist()
@@ -104,15 +73,6 @@ export default class SekaiMasterDB {
 		for(const module of this.requiredModules) {
 			const fileName = path.join(folderPath, `${module}.json`)
 			await fs.promises.writeFile(fileName, JSON.stringify(masterData[module]))
-		}
-	}
-
-	private static async updateFromGitHub(folderPath: string) {
-		await ensureFolderExists(folderPath)
-		for(const module of this.requiredModules) {
-			const res = await this.getModuleFromGitHub(process.env.SEKAI_SERVER, module)
-			const fileName = path.join(folderPath, `${module}.json`)
-			await fs.promises.writeFile(fileName, JSON.stringify(res))
 		}
 	}
 
