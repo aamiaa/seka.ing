@@ -58,35 +58,22 @@ export const RankingSnapshotSchema = new mongoose.Schema({
 	methods: RankingSnapshotMethods,
 	statics: {
 		async getPlayerEventTimeline(eventId: number, userId: string) {
-			return await this.aggregate([
-				{
-					$match: {
-						eventId
-					}
-				},
-				{
-					$unwind: {
-						path: "$rankings"
-					}
-				},
-				{
-					$match: {
-						"rankings.userId": userId
-					}
-				},
-				{
-					$project: {
-						timestamp: "$createdAt",
-						_id: 0,
-						score: "$rankings.score",
-					}
-				},
-				{
-					$sort: {
-						timestamp: 1
-					}
-				}
-			])
+			// Optimization hack.
+			// Using an array find with the positional $ operator is
+			// apparently faster than $unwind by up to 1s.
+			const timeline = await this.find({
+				eventId,
+				"rankings.userId": userId
+			}, {
+				_id: 0,
+				createdAt: 1,
+				"rankings.$": 1,
+			}).lean()
+
+			return timeline.map(x => ({
+				timestamp: x.createdAt,
+				score: x.rankings[0].score
+			}))
 		},
 
 		async getPlayerWorldlinkChapterTimeline(eventId: number, userId: string, chapter: SekaiWorldBloom) {
