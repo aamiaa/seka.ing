@@ -78,7 +78,7 @@ export default class EmbedController {
 			site_name: host,
 			url: `https://${host}${initialPath}`,
 			image: `https://${host}/assets/${event.assetbundleName}.png`,
-			description: `Event leaderboard tracker for Project Sekai.\n\n${extraText}`,
+			description: `Event leaderboard tracker for OurStage.\n\n${extraText}`,
 			theme_color: dominantHex
 		})
 
