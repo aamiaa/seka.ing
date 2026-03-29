@@ -86,7 +86,7 @@ export function getWorldlinkChapterDTO(chapter: SekaiWorldBloom): WorldlinkChapt
 	return dto
 }
 
-function getWorldlinkChapterTitle(chapter: SekaiWorldBloom) {
+export function getWorldlinkChapterTitle(chapter: SekaiWorldBloom) {
 	switch(chapter.worldBloomChapterType) {
 		case undefined: // TODO: remove once finale comes to en
 		case SekaiWorldBloomChapterType.GAME_CHARACTER:

@@ -8,7 +8,7 @@ import CacheStore from "../cache";
 import { decryptEventSnowflake } from "../../util/cipher";
 import { EventProfileDTO } from "../dto/event_profile";
 import { UserCardDefaultImage, UserCardSpecialTrainingStatus } from "sekai-api";
-import { getEventDTO } from "../../transformers/event";
+import { getEventDTO, getWorldlinkChapterTitle } from "../../transformers/event";
 import { calculateEventBonus } from "../../sekai/helpers/event_bonus";
 import { getLeaderboardDTO } from "../../transformers/leaderboard";
 import { getEventFromIdStr } from "../../util/format";
@@ -148,7 +148,7 @@ export default class EventController {
 		const colors: Record<string, string> = {}
 		const query: PipelineStage.Facet["$facet"] = {}
 		chapters.forEach(chapter => {
-			const name = SekaiMasterDB.getGameCharacter(chapter.gameCharacterId).givenName
+			const name = getWorldlinkChapterTitle(chapter)
 			colors[name] = SekaiMasterDB.getCharacterColor(chapter.gameCharacterId)
 
 			const isPastChapter = currentChapter == null || chapter.eventId !== currentEvent.id || chapter.chapterNo < currentChapter.chapterNo
