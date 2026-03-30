@@ -41,7 +41,7 @@ export default class SekaiMasterDB {
 
 	public static async init() {
 		await this.refreshData()
-		setInterval(this.refreshData.bind(this), 4 * 3600 * 1000)
+		setInterval(this.refreshData.bind(this), 1 * 3600 * 1000)
 	}
 
 	private static async getDataVersion(server: string) {
