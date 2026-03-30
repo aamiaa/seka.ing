@@ -37,6 +37,7 @@ export default class ImageGenController {
 			return res.status(400).json({error: "Specified card doesn't exist"})
 		}
 
+		const isTrainedOnly = card.initialSpecialTrainingStatus === UserCardSpecialTrainingStatus.DONE
 		if(trained) {
 			switch(card.cardRarityType) {
 				case "rarity_1":
@@ -56,6 +57,14 @@ export default class ImageGenController {
 			}
 		} else if(!trained && imageType === 1) {
 			return res.status(400).json({error: "Impossible combination: untrained card cannot use trained image"})
+		}
+
+		if(isTrainedOnly) {
+			if(trained && imageType === 0) {
+				return res.status(400).json({error: "This card does not have an untrained image"})
+			} else if(!trained) {
+				return res.status(400).json({error: "This card cannot be untrained"})
+			}
 		}
 
 		const assetbundleName = card.assetbundleName + (imageType === 0 ? "_normal" : "_after_training")
@@ -93,6 +102,7 @@ export default class ImageGenController {
 			return res.status(400).json({error: "Specified card doesn't exist"})
 		}
 
+		const isTrainedOnly = card.initialSpecialTrainingStatus === UserCardSpecialTrainingStatus.DONE
 		if(trained) {
 			switch(card.cardRarityType) {
 				case "rarity_1":
@@ -112,6 +122,14 @@ export default class ImageGenController {
 			}
 		} else if(!trained && imageType === 1) {
 			return res.status(400).json({error: "Impossible combination: untrained card cannot use trained image"})
+		}
+
+		if(isTrainedOnly) {
+			if(trained && imageType === 0) {
+				return res.status(400).json({error: "This card does not have an untrained image"})
+			} else if(!trained) {
+				return res.status(400).json({error: "This card cannot be untrained"})
+			}
 		}
 
 		const backgroundImage = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/character/member_cutout", card.assetbundleName, (imageType === 0 ? "normal" : "after_training"), "deck.png")

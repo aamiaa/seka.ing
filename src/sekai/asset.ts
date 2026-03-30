@@ -94,15 +94,19 @@ export async function ensureEventAssetsExist() {
 		const basePath = path.join(process.env.ASSET_PATH, "assets/sekai/assetbundle/resources/startapp/thumbnail/chara", card.assetbundleName)
 		const normalPath = basePath + "_normal"
 		const trainedPath = basePath + "_after_training"
+		const canBeTrained = (["rarity_3", "rarity_4"].includes(card.cardRarityType))
+		const isTrainedOnly = card.initialSpecialTrainingStatus === "done"
 		try {
 			await fs.promises.stat(normalPath)
 		} catch(ex) {
 			console.log("[SekaiAsset] Downloading missing card thumbnail:", card.assetbundleName)
 
-			nameDestMap[card.assetbundleName + "_normal"] = path.join(normalPath, card.assetbundleName + "_normal.png"),
-			await fs.promises.mkdir(normalPath, {recursive: true})
+			if(!isTrainedOnly) {
+				nameDestMap[card.assetbundleName + "_normal"] = path.join(normalPath, card.assetbundleName + "_normal.png"),
+				await fs.promises.mkdir(normalPath, {recursive: true})
+			}
 
-			if(["rarity_3", "rarity_4"].includes(card.cardRarityType)) {
+			if(canBeTrained) {
 				nameDestMap[card.assetbundleName + "_after_training"] = path.join(trainedPath, card.assetbundleName + "_after_training.png")
 				await fs.promises.mkdir(trainedPath, {recursive: true})
 			}
@@ -125,23 +129,28 @@ export async function ensureEventAssetsExist() {
 		const normalPath = path.join(basePath, "normal")
 		const trainedPath = path.join(basePath, "after_training")
 		const canBeTrained = (["rarity_3", "rarity_4"].includes(card.cardRarityType))
+		const isTrainedOnly = card.initialSpecialTrainingStatus === "done"
 		try {
 			await fs.promises.stat(normalPath)
 		} catch(ex) {
 			console.log("[SekaiAsset] Downloading missing card deck cutout:", card.assetbundleName)
-			await fs.promises.mkdir(normalPath, {recursive: true})
+			if(!isTrainedOnly) {
+				await fs.promises.mkdir(normalPath, {recursive: true})
+			}
 			if(canBeTrained) {
 				await fs.promises.mkdir(trainedPath, {recursive: true})
 			}
 
 			try {
-				await downloadImageAssets({
-					assetPath: `character/member_cutout/${card.assetbundleName}`,
-					container: "normal",
-					nameDestMap: {
-						deck: path.join(normalPath, "deck.png")	
-					}
-				})
+				if(!isTrainedOnly) {
+					await downloadImageAssets({
+						assetPath: `character/member_cutout/${card.assetbundleName}`,
+						container: "normal",
+						nameDestMap: {
+							deck: path.join(normalPath, "deck.png")	
+						}
+					})
+				}
 				if(canBeTrained) {
 					await downloadImageAssets({
 						assetPath: `character/member_cutout/${card.assetbundleName}`,
