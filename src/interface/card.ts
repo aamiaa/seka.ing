@@ -1,3 +1,4 @@
+import { UserCardSpecialTrainingStatus } from "sekai-api"
 import { SekaiUnit } from "./unit"
 
 export default interface SekaiCard {
@@ -7,7 +8,8 @@ export default interface SekaiCard {
 	attr: SekaiCardAttribute,
 	prefix: string,
 	assetbundleName: string,
-	supportUnit: SekaiUnit
+	supportUnit: SekaiUnit,
+	initialSpecialTrainingStatus: UserCardSpecialTrainingStatus
 }
 
 export type SekaiCardRarityType = "rarity_1" | "rarity_2" | "rarity_3" | "rarity_4" | "rarity_birthday"
