@@ -68,6 +68,8 @@ export const RankingSnapshotSchema = new mongoose.Schema({
 				_id: 0,
 				createdAt: 1,
 				"rankings.$": 1,
+			}, {
+				sort: {createdAt: 1}
 			}).lean()
 
 			return timeline.map(x => ({
