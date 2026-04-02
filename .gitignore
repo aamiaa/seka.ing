@@ -4,3 +4,4 @@ dist
 public/assets/event_*
 public/assets/team_*
 sekai-data
+.vscode
