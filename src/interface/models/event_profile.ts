@@ -1,8 +1,14 @@
-import { UserDeck, UserRanking, AnotherTotalPower, AnotherUserCard, AnotherUserCharacter, AnotherUserMusicDifficultyClearCount, AnotherUserMultiLiveTopScoreCount } from "sekai-api";
+import { UserDeck, UserRanking, AnotherTotalPower, AnotherUserCard, AnotherUserCharacter, AnotherUserMusicDifficultyClearCount, AnotherUserMultiLiveTopScoreCount, UserCheerfulCarnival, UserHonorMission, UserProfile, UserProfileHonor } from "sekai-api";
 
-export default interface PlayerEventProfile extends UserRanking {
+export default interface PlayerEventProfile {
+	userId: string,
 	eventId: number,
-
+	name: string,
+	userCard: AnotherUserCard,
+	userProfile: UserProfile,
+	userProfileHonors: UserProfileHonor[],
+	userCheerfulCarnival: UserCheerfulCarnival,
+	userHonorMissions: UserHonorMission[],
 	userDeck?: UserDeck,
 	userCards?: AnotherUserCard[],
 	userCharacters?: AnotherUserCharacter[],
@@ -13,6 +19,6 @@ export default interface PlayerEventProfile extends UserRanking {
 
 	wasTop100: boolean,
 	fullProfileFetched: boolean,
-	fullProfileFetchedAt: Date,
+	fullProfileFetchedAt?: Date,
 	source?: string
 }
