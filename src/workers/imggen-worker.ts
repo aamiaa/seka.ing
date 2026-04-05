@@ -50,7 +50,11 @@ parentPort.on("message", async (data: ImageGenTask) => {
 		case "resize-asset": {
 			let image = sharp(data.params.image)
 			if(data.size) {
-				image = image.resize(data.size)
+				// Only support scaling the image down
+				const metadata = await image.metadata()
+				if(data.size < metadata.width) {
+					image = image.resize(data.size)
+				}
 			}
 			if(data.format === "webp") {
 				image = image.webp({nearLossless: true})

@@ -35,6 +35,7 @@ imageGenRouter.get("/card/deck/:cardId.:format",
 imageGenRouter.get("/asset/:assetName.:format",
 	param("assetName").isString().matches(/^[\w_]+$/),
 	param("format").isIn(["png", "webp"]),
+	query("size").optional().isInt({min: 16, max: 1024}),
 	ValidationMiddleware.sendErrors,
 	ImageGenController.resizeAsset.bind(ImageGenController)
 )
